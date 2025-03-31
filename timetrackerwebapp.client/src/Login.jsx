@@ -14,6 +14,8 @@ function Login() {
     //Пост-запрос, авторизация
     const onFinish = async (values) => {
         try {
+            console.log('Вход:', values);
+
             const response = await axios.post('http://localhost:8080/api/Users', {
                 IsNewUser: false,
                 Name: values.username,
@@ -28,7 +30,7 @@ function Login() {
             message.success('Успешный вход!');
             navigate('/dashboard'); // Перенаправляем на страницу пользователя
         } catch (error) {
-            message.error('Ошибка авторизации');
+            message.error(error.response.data);
             console.error('Ошибка входа:', error);
         }
     };

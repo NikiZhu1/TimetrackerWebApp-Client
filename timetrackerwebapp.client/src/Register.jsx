@@ -1,8 +1,38 @@
-﻿import AuthForm from './components/AuthForm.jsx';
+﻿import { message } from 'antd';
+import '@ant-design/v5-patch-for-react-19';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from '../../node_modules/axios/index';
+import Cookies from 'js-cookie';
+
+//Компоненты
+import AuthForm from './components/AuthForm.jsx';
 
 function Register() {
-    const onFinish = (values) => {
-        console.log('Регистрация:', values);
+    const navigate = useNavigate(); // Хук для навигации между страницами
+
+    //Пост-запрос, регистрация
+    const onFinish = async (values) => {
+        try {
+            console.log('Регистрация:', values);
+
+            const response = await axios.post('http://localhost:8080/api/Users', {
+                IsNewUser: true,
+                Name: values.username,
+                Password: values.password,
+                ChatId: 0
+            });
+
+            // Сохраняем токен в cookies
+            const token = response.data.Token;
+            Cookies.set('token', token, { expires: 1, secure: true, sameSite: 'Strict' });
+
+            message.success('Успешная регистрация!');
+            navigate('/dashboard'); // Перенаправляем на страницу пользователя
+        } catch (error) {
+            message.error(error.response.data);
+            console.error('Ошибка регистрации:', error);
+        }
     };
 
     return (
