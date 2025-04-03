@@ -24,15 +24,36 @@ function Register() {
 
             // Сохраняем токен в cookies
             const token = response.data.Token;
+            if (!token) {
+                throw new Error('Токен отсутствует в ответе сервера');
+            }
+
+            let userId;
+            try {
+                const decoded = jwtDecode(token);
+                userId = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+
+                if (!userId) {
+                    throw new Error('Не удалось извлечь userId из токена');
+                }
+            } catch (decodeError) {
+                console.error('Ошибка при декодировании токена:', decodeError);
+                message.error('Ошибка регистрации. Попробуйте снова.');
+                return;
+            }
+
             Cookies.set('token', token, { expires: 1, secure: true, sameSite: 'Strict' });
 
             message.success('Успешная регистрация!');
+            console.log('Зарегестрированный userId:', userId);
+
             navigate('/dashboard'); // Перенаправляем на страницу пользователя
         } catch (error) {
-            message.error(error.response.data);
             console.error('Ошибка регистрации:', error);
+            message.error(error.response?.data || 'Ошибка регистрации');
         }
     };
+
 
     return (
         <div style={{

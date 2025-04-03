@@ -145,16 +145,6 @@ function Dashboard() {
                                 },
                             }}>
                             <Collapse
-                                classNames={{
-                                    item: 'custom-collapse-item',
-                                    header: 'custom-collapse-header',
-                                    body: 'custom-collapse-content',
-                                }}
-                                styles={{
-                                    body: { paddingBlock: '0px' },
-                                    header: { color: 'red' }
-                                    
-                                }}
                                 defaultActiveKey={['1']}
                                 ghost items={items}>
                             </Collapse>

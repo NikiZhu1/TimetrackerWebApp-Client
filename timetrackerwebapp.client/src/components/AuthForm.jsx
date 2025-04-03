@@ -1,4 +1,5 @@
-﻿import { Button, Typography, Divider, Form } from 'antd';
+﻿import React, { useState } from 'react';
+import { Button, Typography, Divider, Form } from 'antd';
 import { Link } from 'react-router-dom';
 import LoginPasswordInput from './LoginPasswwordInput.jsx';
 
@@ -14,6 +15,23 @@ const { Title } = Typography;
  * @param {string} props.linkTo Путь ссылки.
  */
 function AuthForm({ title, onFinish, buttonText, linkText, linkTo }) {
+
+    const [loadings, setLoadings] = useState([]);
+    const enterLoading = index => {
+        setLoadings(prevLoadings => {
+            const newLoadings = [...prevLoadings];
+            newLoadings[index] = true;
+            return newLoadings;
+        });
+        setTimeout(() => {
+            setLoadings(prevLoadings => {
+                const newLoadings = [...prevLoadings];
+                newLoadings[index] = false;
+                return newLoadings;
+            });
+        }, 3000);
+    };
+
     return (
         <Form
             name="auth-form"
@@ -25,7 +43,7 @@ function AuthForm({ title, onFinish, buttonText, linkText, linkTo }) {
             <LoginPasswordInput/>
 
             <Form.Item>
-                <Button block type="primary" htmlType="submit">
+                <Button block type="primary" htmlType="submit" loading={loadings[0]} onClick={() => enterLoading(0)}>
                     {buttonText}
                 </Button>
             </Form.Item>
