@@ -4,6 +4,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../node_modules/axios/index';
 import Cookies from 'js-cookie';
+import jwt_decode from 'jwt-decode';
 
 //Компоненты
 import AuthForm from './components/AuthForm.jsx';
@@ -24,6 +25,8 @@ function Login() {
 
             // Сохраняем токен в cookies
             const token = response.data.Token;
+
+
             Cookies.set('token', token, { expires: 1, secure: true, sameSite: 'Strict' });
 
             message.success('Успешный вход!');

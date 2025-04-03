@@ -1,9 +1,11 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { Button, message, Layout, Menu, ConfigProvider, Flex } from 'antd';
+import { Button, message, Layout, Collapse, ConfigProvider, Flex } from 'antd';
 import Icon, { AppstoreAddOutlined, AppstoreOutlined, PieChartOutlined, TeamOutlined, ClockCircleOutlined, MenuOutlined, SettingOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
+
+import './Collapse.css';
 
 //Компоненты
 import MyMenu from './components/Menu.jsx';
@@ -28,6 +30,8 @@ const HeaderStyle = {
     width: '100%',
     display: 'flex',
     alignItems: 'center',
+    height: '48px',
+    padding: '24px'
 };
 
 const SiderStyle = {
@@ -42,34 +46,26 @@ const SiderStyle = {
     scrollbarGutter: 'auto',
 };
 
+const text = `
+  A dog is a type of domesticated animal.
+  Known for its loyalty and faithfulness,
+  it can be found as a welcome guest in many households across the world.`;
+
 const items = [
-    { key: '1', icon: <AppstoreAddOutlined />, label: 'Активности' },
-    { key: '2', icon: <PieChartOutlined />, label: 'Статистика' },
-    { key: '3', icon: <ClockCircleOutlined />, label: 'История' },
     {
-        key: '4', icon: <TeamOutlined />, label: 'Проекты',
-        children: [
-            { key: 'p1', label: 'Проект 1' },
-            { key: 'p2', label: 'Проект 2' },
-            { key: 'p3', label: 'Проект 3' }
-        ],
+        key: '1',
+        label: 'Текущие активности',
+        children: <p>{text}</p>,
     },
     {
-        key: '5',
-        label: 'Navigation Two',
-        icon: <AppstoreOutlined />,
-        children: [
-            { key: '9', label: 'Option 9' },
-            { key: '10', label: 'Option 10' },
-            {
-                key: 'sub3',
-                label: 'Submenu',
-                children: [
-                    { key: '11', label: 'Option 11' },
-                    { key: '12', label: 'Option 12' },
-                ],
-            },
-        ],
+        key: '2',
+        label: 'Активности',
+        children: <p>{text}</p>,
+    },
+    {
+        key: '3',
+        label: 'Архив',
+        children: <p>{text}</p>,
     },
 ];
 
@@ -137,8 +133,34 @@ function Dashboard() {
                     </Flex>
                 </Sider>
                 <Layout>
-                    <Header style={HeaderStyle}>Header</Header>
-                    <Content>Content</Content>
+                    <Header style={HeaderStyle}>Headerrr</Header>
+                    <Content style={{ padding: '24px', paddingTop: '0px' }} >
+                        <ConfigProvider
+                            theme={{
+                                components: {
+                                    Collapse: {
+                                        contentPadding: '0px',
+                                        headerPadding: '16px 0 16px 0'
+                                    },
+                                },
+                            }}>
+                            <Collapse
+                                classNames={{
+                                    item: 'custom-collapse-item',
+                                    header: 'custom-collapse-header',
+                                    body: 'custom-collapse-content',
+                                }}
+                                styles={{
+                                    body: { paddingBlock: '0px' },
+                                    header: { color: 'red' }
+                                    
+                                }}
+                                defaultActiveKey={['1']}
+                                ghost items={items}>
+                            </Collapse>
+                        </ConfigProvider>
+                        
+                    </Content>
                     <Footer>Footer</Footer>
                 </Layout>
             </Layout>
