@@ -19,8 +19,7 @@ function Login() {
             const response = await axios.post('http://localhost:8080/api/Users', {
                 IsNewUser: false,
                 Name: values.username,
-                Password: values.password,
-                ChatId: 0
+                Password: values.password
             });
 
             // Сохраняем токен в cookies
@@ -36,16 +35,16 @@ function Login() {
     };
 
     //Тест получения пользователей с бэка
-    const getUsers = () => {
-        axios.get('http://localhost:8080/api/Users').then(r => {
-            console.log('r', r)
-        })
-    }
+    //const getUsers = () => {
+    //    axios.get('http://localhost:8080/api/Users').then(r => {
+    //        console.log('r', r)
+    //    })
+    //}
 
     //Выполнение код при загрузке страницы
-    useEffect(() => {
-        getUsers()
-    }, []);
+    //useEffect(() => {
+    //    getUsers()
+    //}, []);
 
     return (
         <div style={{

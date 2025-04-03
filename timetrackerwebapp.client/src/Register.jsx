@@ -19,8 +19,7 @@ function Register() {
             const response = await axios.post('http://localhost:8080/api/Users', {
                 IsNewUser: true,
                 Name: values.username,
-                Password: values.password,
-                ChatId: 0
+                Password: values.password
             });
 
             // Сохраняем токен в cookies

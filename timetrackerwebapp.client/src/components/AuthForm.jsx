@@ -36,7 +36,7 @@ function AuthForm({ title, onFinish, buttonText, linkText, linkTo }) {
 
             <Form.Item style={{ margin: '0' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <Button block>
+                    <Button block disabled>
                         Продолжить c Telegram
                     </Button>
                     <span className="telegram-description">Больше возможностей, продолжив с помощью Telegram</span>
