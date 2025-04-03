@@ -69,6 +69,8 @@ const items = [
     },
 ];
 
+
+
 function Dashboard() {
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
@@ -77,6 +79,18 @@ function Dashboard() {
     const toggleCollapsed = () => {
         setCollapsed(!collapsed);
     };
+
+    //Тест получения пользователей с бэка
+    //const getUsers = () => {
+    //    axios.get('http://localhost:8080/api/Users/1/activities').then(r => {
+    //        console.log('r', r)
+    //    })
+    //}
+
+    //Выполнение код при загрузке страницы
+    //useEffect(() => {
+    //    getUsers()
+    //}, []);
 
     //Сразу при открытии страницы
     useEffect(() => {
