@@ -4,8 +4,13 @@ import Icon, { AppstoreAddOutlined, AppstoreOutlined, PieChartOutlined, TeamOutl
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import axios from 'axios';
 
+//Стили
 import './Collapse.css';
+
+//Методы
+import { GetJWT } from './methods/UsersMethods.jsx';
 
 //Компоненты
 import MyMenu from './components/Menu.jsx';
@@ -81,16 +86,28 @@ function Dashboard() {
     };
 
     //Тест получения пользователей с бэка
-    //const getUsers = () => {
-    //    axios.get('http://localhost:8080/api/Users/1/activities').then(r => {
-    //        console.log('r', r)
-    //    })
-    //}
+    const getActivities = () => {
+        const token = GetJWT();
+        if (token == null)
+            return;
+
+        axios.get('http://localhost:8080/api/Users/1/activities', {
+            headers: {
+                Authorization: `Bearer ${token}` // Передаем токен в заголовке
+            }
+        })
+        .then(response => {
+            console.log('Данные активностей:', response.data);
+        })
+        .catch(error => {
+            console.error('Ошибка при получении активностей:', error);
+        })
+    }
 
     //Выполнение код при загрузке страницы
-    //useEffect(() => {
-    //    getUsers()
-    //}, []);
+    useEffect(() => {
+        getActivities()
+    }, []);
 
     //Сразу при открытии страницы
     useEffect(() => {

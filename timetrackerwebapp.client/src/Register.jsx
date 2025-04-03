@@ -3,8 +3,8 @@ import '@ant-design/v5-patch-for-react-19';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-//Свои методы
-import { AuthenticateUser } from './methods/Auth.jsx';
+//Методы
+import { AuthenticateUser } from './methods/UsersMethods.jsx';
 
 //Компоненты
 import AuthForm from './components/AuthForm.jsx';

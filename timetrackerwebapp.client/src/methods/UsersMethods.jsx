@@ -10,6 +10,7 @@ import { message } from 'antd';
  * @param {any} navigate Хук для навигации
  * @returns
  */
+
 export const AuthenticateUser = async (values, isRegistration, navigate) => {
     try {
         console.log(isRegistration ? 'Регистрация:' : 'Вход:', values);
@@ -54,4 +55,15 @@ export const AuthenticateUser = async (values, isRegistration, navigate) => {
         console.error(`Ошибка ${isRegistration ? 'регистрации' : 'авторизации'}:`, error);
         message.error(error.response?.data || `Ошибка ${isRegistration ? 'регистрации' : 'авторизации'}`);
     }
+};
+
+export const GetJWT = () => {
+    const token = Cookies.get('token');
+
+    if (!token) {
+        console.error('Ошибка: Токен отсутствует.');
+        return null;
+    }
+
+    return token;
 };

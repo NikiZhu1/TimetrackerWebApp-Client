@@ -6,8 +6,8 @@ import axios from '../../node_modules/axios/index';
 import Cookies from 'js-cookie';
 import { jwtDecode } from 'jwt-decode';
 
-//Свои методы
-import { AuthenticateUser } from './methods/Auth.jsx';
+//Методы
+import { AuthenticateUser } from './methods/UsersMethods.jsx';
 
 //Компоненты
 import AuthForm from './components/AuthForm.jsx';
