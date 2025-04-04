@@ -30,12 +30,8 @@ export const AuthenticateUser = async (values, isRegistration, navigate) => {
         //Декодируем JWT токен для получения UserId
         let userId;
         try {
-            const decoded = jwtDecode(token);
-            userId = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+            userId = GetUserIdFromJWT(token);
 
-            if (!userId) {
-                throw new Error('Не удалось извлечь userId из токена');
-            }
         } catch (decodeError) {
             console.error('Ошибка при декодировании токена:', decodeError);
             message.error(`Ошибка ${isRegistration ? 'регистрации' : 'аутентификации'}. Попробуйте снова.`);
@@ -57,6 +53,10 @@ export const AuthenticateUser = async (values, isRegistration, navigate) => {
     }
 };
 
+/**
+ * Получение JWT токена из cookie
+ * @returns
+ */
 export const GetJWT = () => {
     const token = Cookies.get('token');
 
@@ -67,3 +67,18 @@ export const GetJWT = () => {
 
     return token;
 };
+
+export const GetUserIdFromJWT = (token) => {
+    try {
+        let userId
+        const decoded = jwtDecode(token);
+        userId = decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'];
+
+        if (userId)
+            return userId;
+
+    } catch (decodeError) {;
+        console.error('Ошибка при декодировании токена:', decodeError);
+        return;
+    }
+}

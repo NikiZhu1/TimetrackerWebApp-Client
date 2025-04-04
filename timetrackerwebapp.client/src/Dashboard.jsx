@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { Button, message, Layout, Collapse, ConfigProvider, Flex } from 'antd';
-import Icon, { AppstoreAddOutlined, AppstoreOutlined, PieChartOutlined, TeamOutlined, ClockCircleOutlined, MenuOutlined, SettingOutlined } from '@ant-design/icons';
+import { Button, message, Layout, Collapse, ConfigProvider, Flex, Card, Dropdown } from 'antd';
+import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, TeamOutlined, ClockCircleOutlined, MenuOutlined, SettingOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
@@ -10,11 +10,11 @@ import axios from 'axios';
 import './Collapse.css';
 
 //Методы
-import { GetJWT } from './methods/UsersMethods.jsx';
+import { GetJWT, GetUserIdFromJWT } from './methods/UsersMethods.jsx';
 
 //Компоненты
 import MyMenu from './components/Menu.jsx';
-import MenuButton from './components/MenuButton.jsx';
+import ActivityCard from './components/ActivityCard.jsx';
 
 const { Header, Footer, Sider, Content } = Layout;
 
@@ -39,85 +39,124 @@ const HeaderStyle = {
     padding: '24px'
 };
 
-const SiderStyle = {
-    background: '#282828',
-    overflow: 'auto',
-    height: '100vh',
-    position: 'sticky',
-    insetInlineStart: 0,
-    top: 0,
-    bottom: 0,
-    scrollbarWidth: 'thin',
-    scrollbarGutter: 'auto',
-};
-
-const text = `
-  A dog is a type of domesticated animal.
-  Known for its loyalty and faithfulness,
-  it can be found as a welcome guest in many households across the world.`;
-
-const items = [
-    {
-        key: '1',
-        label: 'Текущие активности',
-        children: <p>{text}</p>,
-    },
-    {
-        key: '2',
-        label: 'Активности',
-        children: <p>{text}</p>,
-    },
-    {
-        key: '3',
-        label: 'Архив',
-        children: <p>{text}</p>,
-    },
-];
-
-
-
 function Dashboard() {
     const navigate = useNavigate();
 
-    //Тест получения пользователей с бэка
-    const getActivities = () => {
-        const token = GetJWT();
-        if (token == null)
-            return;
+    //Хранение и установка активностей
+    const [activities, setActivities] = useState([]);
 
-        axios.get('http://localhost:8080/api/Users/1/activities', {
+    //Получение времени старта
+    const getActivityPeriods = (token, activityId) => {
+        axios.get(`http://localhost:8080/api/ActivityPeriods?activityId=${activityId}`, {
+            headers: {
+                Authorization: `Bearer ${token}` // Передаем токен в заголовке
+            }
+        })
+            .then(response => {
+                setActivities(response.data);
+                console.log(`Полученное время активности ${activityId}:`, response.data);
+            })
+            .catch(error => {
+                console.error('Ошибка при получении периодов активности:', error);
+            })
+    }
+
+    //Получение активностей с бэка
+    const getActivities = (token, userId) => {
+        axios.get(`http://localhost:8080/api/Users/${userId}/activities`, {
             headers: {
                 Authorization: `Bearer ${token}` // Передаем токен в заголовке
             }
         })
         .then(response => {
-            console.log('Данные активностей:', response.data);
+            setActivities(response.data);
+            console.log("Полученные активности: ", response.data);
         })
         .catch(error => {
             console.error('Ошибка при получении активностей:', error);
         })
     }
 
-    //Выполнение код при загрузке страницы
-    useEffect(() => {
-        getActivities()
-    }, []);
-
     //Сразу при открытии страницы
     useEffect(() => {
-        const token = Cookies.get('token'); // Получаем токен из cookies
+        const token = GetJWT(); // Получаем токен из cookies
         if (!token) {
             message.warning('Сначала войдите в систему');
             navigate('/');
         }
+        const userId = GetUserIdFromJWT(token)
+        if (!userId) {
+            message.warning('Сначала войдите в систему');
+            navigate('/');
+        }
+        else {
+            console.log("Используемый userId:", userId);
+            getActivities(token, userId);
+        }
+            
     }, []);
 
-    //Функция при выходе
-    const handleLogout = () => {
-        Cookies.remove('token'); // Удаляем токен
-        message.info('Вы вышли из системы');
-        navigate('/');
+    const renderActivityCards = (statusId) => {
+
+        return activities
+            .filter(activity => activity.StatusId === statusId)
+            .map(activity => (
+                <ActivityCard
+                    key={activity.Id}
+                    title={activity.Name}
+                    dayStats={formatActivityTime(activity.ActiveFrom)} // Форматируем время
+                    color='rgb(204, 194, 255)'
+                    cardOnClick={() => actCard_Click(activity.Id)}
+                    buttonOnClick={() => actButton_Click(activity.Id)}
+                    status={activity.StatusId}
+                />
+            ));
     };
+
+    // Пример функции форматирования времени
+    const formatActivityTime = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
+    // Нажатие на карточку активности
+    const actCard_Click = (activityId) => {
+        console.log('Выбрана активность с ID:', activityId);
+        // Можно добавить навигацию или другие действия
+    };
+
+    // Нажатие кнопки активности
+    const actButton_Click = (activityId) => {
+        console.log('Запуск активности с ID:', activityId);
+        
+    };
+
+    const items = [
+        {
+            key: '1',
+            label: 'Текущие активности',
+            children:
+                <Flex wrap gap='16px'>
+                    {renderActivityCards(2)}
+                </Flex>,
+        },
+        {
+            key: '2',
+            label: 'Активности',
+            children:
+                <Flex wrap gap='16px'>
+                    {renderActivityCards(1)}
+                </Flex>,
+        },
+        {
+            key: '3',
+            label: 'Архив',
+            children:
+                <Flex wrap gap='16px'>
+                    {renderActivityCards(3)}
+                </Flex>,
+        },
+    ];
 
     return (
         <div>
@@ -137,7 +176,7 @@ function Dashboard() {
                                 },
                             }}>
                             <Collapse
-                                defaultActiveKey={['1']}
+                                defaultActiveKey={['2']} //Открытая вкладка по умолчанию
                                 ghost items={items}>
                             </Collapse>
                         </ConfigProvider>
