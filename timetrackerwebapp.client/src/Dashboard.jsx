@@ -11,6 +11,7 @@ import './Collapse.css';
 
 //Методы
 import { GetJWT, GetUserIdFromJWT } from './methods/UsersMethods.jsx';
+import { getActivities, getActivityPeriods, renderActivityCards, initActivitiesState } from './methods/ActivitiesMethods';
 
 //Компоненты
 import MyMenu from './components/Menu.jsx';
@@ -62,7 +63,7 @@ function Dashboard() {
     }
 
     //Получение активностей с бэка
-    const getActivities = (token, userId) => {
+    const getActivities1 = (token, userId) => {
         axios.get(`http://localhost:8080/api/Users/${userId}/activities`, {
             headers: {
                 Authorization: `Bearer ${token}` // Передаем токен в заголовке
@@ -79,6 +80,8 @@ function Dashboard() {
 
     //Сразу при открытии страницы
     useEffect(() => {
+        initActivitiesState(setActivities, () => activities);
+
         const token = GetJWT(); // Получаем токен из cookies
         if (!token) {
             message.warning('Сначала войдите в систему');
@@ -96,10 +99,10 @@ function Dashboard() {
             
     }, []);
 
-    const renderActivityCards = (statusId) => {
+    const renderActivityCards1 = (statusId) => {
 
         return activities
-            .filter(activity => activity.StatusId === statusId)
+            .filter(activity => activity.StatusId === statusId) //фильтруем по статусу
             .map(activity => (
                 <ActivityCard
                     key={activity.Id}
@@ -114,19 +117,19 @@ function Dashboard() {
     };
 
     // Пример функции форматирования времени
-    const formatActivityTime = (dateString) => {
+    const formatActivityTime1 = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
     // Нажатие на карточку активности
-    const actCard_Click = (activityId) => {
+    const actCard_Click1 = (activityId) => {
         console.log('Выбрана активность с ID:', activityId);
         // Можно добавить навигацию или другие действия
     };
 
     // Нажатие кнопки активности
-    const actButton_Click = (activityId) => {
+    const actButton_Click1 = (activityId) => {
         console.log('Запуск активности с ID:', activityId);
         
     };
