@@ -78,12 +78,6 @@ const items = [
 
 function Dashboard() {
     const navigate = useNavigate();
-    const [collapsed, setCollapsed] = useState(false);
-
-    //Скрытие-разворот меню
-    const toggleCollapsed = () => {
-        setCollapsed(!collapsed);
-    };
 
     //Тест получения пользователей с бэка
     const getActivities = () => {
@@ -129,40 +123,7 @@ function Dashboard() {
         <div>
 
             <Layout>
-                <Sider width='200px' style={SiderStyle} collapsible collapsed={collapsed} trigger={null}>
-                    <Flex vertical justify='space-between' style={{ height: '100%' }}>
-                        {/* Верхний блок (меню и кнопка сворачивания) */}
-                        <div>
-                            <Flex justify='flex-end' style={{ margin: '4px' }}>
-                                <Button
-                                    color="default"
-                                    variant="text"
-                                    size="large"
-                                    icon={<MenuOutlined style={{ color: '#fff' }} />}
-                                    onClick={toggleCollapsed}
-                                />
-                            </Flex>
-                            <MyMenu setCollapsed={collapsed} />
-                        </div>
-
-                        {/* Нижний блок (кнопка настроек) */}
-                        <Flex vertical gap="small" style={{ padding: '8px' }}>
-                            <MenuButton
-                                collapsed={collapsed}
-                                text='Бот в Telegram'
-                                icon={<SettingOutlined />}
-                                href="https://t.me/timetracking_hse_bot"
-                                onClick={null}/>
-
-                            <MenuButton
-                                collapsed={collapsed}
-                                text='Настройки'
-                                icon={<SettingOutlined />}
-                                onClick={handleLogout}
-                                border='none'/>
-                        </Flex>
-                    </Flex>
-                </Sider>
+                <MyMenu />
                 <Layout>
                     <Header style={HeaderStyle}>Headerrr</Header>
                     <Content style={{ padding: '24px', paddingTop: '0px' }} >

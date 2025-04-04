@@ -1,7 +1,12 @@
-﻿import React from 'react';
-import { Menu, ConfigProvider } from 'antd';
-import Icon, { AppstoreAddOutlined, AppstoreOutlined, PieChartOutlined, TeamOutlined, ClockCircleOutlined, MenuOutlined } from '@ant-design/icons';
+﻿import React, { useEffect, useState } from 'react';
+import { Menu, ConfigProvider, Layout, Button, Flex } from 'antd';
+import Icon, { AppstoreAddOutlined, AppstoreOutlined, PieChartOutlined, TeamOutlined, ClockCircleOutlined, MenuOutlined, SettingOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
+
+const { Header, Footer, Sider, Content } = Layout;
+
+//Компоненты
+import MenuButton from './MenuButton.jsx';
 
 //Тест своих иконок
 const HistorySvg = () => (
@@ -12,6 +17,18 @@ const HistorySvg = () => (
 );
 const HistoryIcon = props => <Icon component={HistorySvg} {...props} />;
 
+
+const SiderStyle = {
+    background: '#282828',
+    overflow: 'auto',
+    height: '100vh',
+    position: 'sticky',
+    insetInlineStart: 0,
+    top: 0,
+    bottom: 0,
+    scrollbarWidth: 'thin',
+    scrollbarGutter: 'auto',
+};
 
 const items = [
     { key: '1', icon: <AppstoreAddOutlined />, label: 'Активности' },
@@ -44,33 +61,81 @@ const items = [
     },
 ];
 
-function MyMenu({ setCollapsed }) {
+function MyMenu() {
+
+    const [collapsed, setCollapsed] = useState(false);
+
+    //Скрытие-разворот меню
+    const toggleCollapsed = () => {
+        setCollapsed(!collapsed);
+    };
+
+    //Функция при выходе
+    const handleLogout = () => {
+        Cookies.remove('token'); // Удаляем токен
+        message.info('Вы вышли из системы');
+        navigate('/');
+    };
+
     return (
-        <ConfigProvider
-            theme={{
-                components: {
-                    Menu: {
-                        darkItemBg: 'none',
-                        darkSubMenuItemBg: 'none',
-                        darkPopupBg: '#282828',
-                        darkItemSelectedBg: '#fff',
-                        darkItemSelectedColor: '#185de4',
-                        darkItemHoverColor: '#fff',
-                        darkItemColor: '#B4B4B4',
-                        iconSize: 16
-                    },
-                },
-            }}>
-            <Menu
-                defaultSelectedKeys={['1']}
-                defaultOpenKeys={['p1']}
-                inlineIndent={12}
-                mode="inline"
-                theme="dark"
-                inlineCollapsed={setCollapsed}
-                items={items}
-            />
-        </ConfigProvider>
+        <Sider width='200px' style={SiderStyle} collapsible collapsed={collapsed} trigger={null}>
+            <Flex vertical justify='space-between' style={{ height: '100%' }}>
+                {/* Верхний блок (меню и кнопка сворачивания) */}
+                <div>
+                    <Flex justify='flex-end' style={{ margin: '4px' }}>
+                        <Button
+                            color="default"
+                            variant="text"
+                            size="large"
+                            icon={<MenuOutlined style={{ color: '#fff' }} />}
+                            onClick={toggleCollapsed}
+                        />
+                    </Flex>
+                    <ConfigProvider
+                        theme={{
+                            components: {
+                                Menu: {
+                                    darkItemBg: 'none',
+                                    darkSubMenuItemBg: 'none',
+                                    darkPopupBg: '#282828',
+                                    darkItemSelectedBg: '#fff',
+                                    darkItemSelectedColor: '#185de4',
+                                    darkItemHoverColor: '#fff',
+                                    darkItemColor: '#B4B4B4',
+                                    iconSize: 16
+                                },
+                            },
+                        }}>
+                        <Menu
+                            defaultSelectedKeys={['1']}
+                            defaultOpenKeys={['p1']}
+                            inlineIndent={12}
+                            mode="inline"
+                            theme="dark"
+                            inlineCollapsed={collapsed}
+                            items={items}
+                        />
+                    </ConfigProvider>
+                </div>
+
+                {/* Нижний блок (кнопка настроек) */}
+                <Flex vertical gap="small" style={{ padding: '8px' }}>
+                    <MenuButton
+                        collapsed={collapsed}
+                        text='Бот в Telegram'
+                        icon={<SettingOutlined />}
+                        href="https://t.me/timetracking_hse_bot"
+                        onClick={null}/>
+
+                    <MenuButton
+                        collapsed={collapsed}
+                        text='Настройки'
+                        icon={<SettingOutlined />}
+                        onClick={handleLogout}
+                        border='none'/>
+                </Flex>
+            </Flex>
+        </Sider>
     );
 }
 
