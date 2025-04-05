@@ -46,38 +46,6 @@ function Dashboard() {
     //Хранение и установка активностей
     const [activities, setActivities] = useState([]);
 
-    //Получение времени старта
-    const getActivityPeriods = (token, activityId) => {
-        axios.get(`http://localhost:8080/api/ActivityPeriods?activityId=${activityId}`, {
-            headers: {
-                Authorization: `Bearer ${token}` // Передаем токен в заголовке
-            }
-        })
-            .then(response => {
-                setActivities(response.data);
-                console.log(`Полученное время активности ${activityId}:`, response.data);
-            })
-            .catch(error => {
-                console.error('Ошибка при получении периодов активности:', error);
-            })
-    }
-
-    //Получение активностей с бэка
-    const getActivities1 = (token, userId) => {
-        axios.get(`http://localhost:8080/api/Users/${userId}/activities`, {
-            headers: {
-                Authorization: `Bearer ${token}` // Передаем токен в заголовке
-            }
-        })
-        .then(response => {
-            setActivities(response.data);
-            console.log("Полученные активности: ", response.data);
-        })
-        .catch(error => {
-            console.error('Ошибка при получении активностей:', error);
-        })
-    }
-
     //Сразу при открытии страницы
     useEffect(() => {
         initActivitiesState(setActivities, () => activities);
@@ -98,41 +66,6 @@ function Dashboard() {
         }
             
     }, []);
-
-    const renderActivityCards1 = (statusId) => {
-
-        return activities
-            .filter(activity => activity.StatusId === statusId) //фильтруем по статусу
-            .map(activity => (
-                <ActivityCard
-                    key={activity.Id}
-                    title={activity.Name}
-                    dayStats={formatActivityTime(activity.ActiveFrom)} // Форматируем время
-                    color='rgb(204, 194, 255)'
-                    cardOnClick={() => actCard_Click(activity.Id)}
-                    buttonOnClick={() => actButton_Click(activity.Id)}
-                    status={activity.StatusId}
-                />
-            ));
-    };
-
-    // Пример функции форматирования времени
-    const formatActivityTime1 = (dateString) => {
-        const date = new Date(dateString);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    };
-
-    // Нажатие на карточку активности
-    const actCard_Click1 = (activityId) => {
-        console.log('Выбрана активность с ID:', activityId);
-        // Можно добавить навигацию или другие действия
-    };
-
-    // Нажатие кнопки активности
-    const actButton_Click1 = (activityId) => {
-        console.log('Запуск активности с ID:', activityId);
-        
-    };
 
     const items = [
         {
@@ -163,9 +96,8 @@ function Dashboard() {
 
     return (
         <div>
-
             <Layout>
-                <MyMenu />
+                <MyMenu/>
                 <Layout>
                     <Header style={HeaderStyle}>Headerrr</Header>
                     <Content style={{ padding: '24px', paddingTop: '0px' }} >
@@ -188,10 +120,6 @@ function Dashboard() {
                     <Footer>Footer</Footer>
                 </Layout>
             </Layout>
-
-            {/*<h1>Добро пожаловать!</h1>*/}
-            {/*<p>Вы успешно вошли в систему.</p>*/}
-            {/*<Button type="primary" onClick={handleLogout}>Выйти</Button>*/}
         </div>
     );
 }

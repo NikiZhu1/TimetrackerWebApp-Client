@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { Button, message, Layout, Collapse, ConfigProvider, Flex, Card, Avatar } from 'antd';
-import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, PauseOutlined, FolderOpenOutlined, MenuOutlined, SettingOutlined } from '@ant-design/icons';
+import { Button, message, Layout, Collapse, Dropdown, Flex, Card, Avatar } from 'antd';
+import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, PauseOutlined, FolderOpenOutlined, SettingOutlined, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, TeamOutlined, DeleteOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
@@ -24,6 +24,90 @@ function ActivityCard({
 
     const currentConfig = buttonConfig[status];
 
+    const dropMenuItems = [
+        {
+            key: '1',
+            type: 'group',
+            label: title
+        },
+        {
+            key: '1',
+            icon: <EditOutlined />,
+            label: (
+                <a >
+                    Изменить
+                </a>
+            ),
+        },
+        {
+            key: '2',
+            icon: <PieChartOutlined />,
+            label: (
+                <a >
+                    Получить статистику
+                </a>
+            ),
+        },
+        {
+            key: '3',
+            icon: <ClockCircleOutlined />,
+            label: (
+                <a >
+                    Посмотреть в истории
+                </a>
+            ),
+        },
+        {
+            key: '4',
+            icon: <TeamOutlined />,
+            label: (
+                <a >
+                    Добавить в проект
+                </a>
+            ),
+            children: [
+                {
+                    key: 'p0',
+                    icon: <PlusOutlined />,
+                    label: 'Создать новый',
+                },
+                {
+                    type: 'divider',
+                },
+                {
+                    key: 'p1',
+                    label: 'Крутой проект',
+                },
+                {
+                    key: 'p2',
+                    label: 'Мой проект',
+                },
+            ],
+        },
+        {
+            key: '5',
+            icon: <FolderOutlined />,
+            label: (
+                <a >
+                    В архив
+                </a>
+            ),
+        },
+        {
+            type: 'divider',
+        },
+        {
+            key: '6',
+            icon: <DeleteOutlined />,
+            danger: true,
+            label: (
+                <a >
+                    Удалить
+                </a>
+            ),
+        },
+    ];
+
     return (
         <Card
             hoverable
@@ -36,6 +120,7 @@ function ActivityCard({
                         paddingLeft: '16px',
                         paddingRight: '16px',
                     }}>
+
                     <Button
                         icon={currentConfig.icon}
                         onClick={(e) => {
@@ -48,18 +133,25 @@ function ActivityCard({
                         }}>
                         {currentConfig.text}
                     </Button>
+
+                    <Dropdown
+                        menu={{ items: dropMenuItems }}
+                        placement="bottom"
+                        trigger={["hover"]}>
+                        <Button
+                            color="default"
+                            type="text"
+                            icon={<EllipsisOutlined style={{
+                                fontSize: '16px',
+                                color: '#282828'
+                            }} />}>
+                        </Button>
+                    </Dropdown>
                     
-                    <Button
-                        color="default"
-                        variant="text"
-                        icon={<EllipsisOutlined style={{
-                            fontSize: '16px',
-                            color: '#282828' }} />}>
-                    </Button>
                 </Flex>
             ]}
             style={{
-                width: '220px',
+                width: '215px',
                 boxShadow: `0px 0px 0px 0px rgba(204, 194, 255, 0.1),
                            0px 6px 13px 0px rgba(204, 194, 255, 0.1),
                            0px 23px 23px 0px rgba(204, 194, 255, 0.09),

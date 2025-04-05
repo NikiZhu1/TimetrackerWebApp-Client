@@ -18,9 +18,7 @@ export const initActivitiesState = (setActivities, getActivitiesSnapshot) => {
 };
 
 // Получение активностей
-export const getActivities = () => {
-    const token = GetJWT();
-    const userId = GetUserIdFromJWT(token);
+export const getActivities = (token, userId) => {
 
     if (!token || !userId) return;
 
@@ -79,6 +77,23 @@ export const actButton_Click = (activityId) => {
 export const renderActivityCards = (statusId) => {
     return activitiesRef
         .filter(activity => activity.StatusId === statusId)
+        .map(activity => (
+            <ActivityCard
+                key={activity.Id}
+                title={activity.Name}
+                dayStats={formatActivityTime(activity.ActiveFrom)}
+                color='rgb(204, 194, 255)'
+                cardOnClick={() => actCard_Click(activity.Id)}
+                buttonOnClick={() => actButton_Click(activity.Id)}
+                status={activity.StatusId}
+            />
+        ));
+};
+
+// Рендер карточек по статусу
+export const renderActivityDayStats = () => {
+    return activitiesRef
+        .filter(activity => activity.StopTime === null)
         .map(activity => (
             <ActivityCard
                 key={activity.Id}
