@@ -6,12 +6,18 @@ import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import axios from 'axios';
 
+//Компоненты
+import ActivityTimer from './ActivityTimer.jsx';
+
+//Методы
+import { getActivityLastStats } from '../methods/ActivitiesMethods';
+
 function ActivityCard({
+    activityId,
     title,
     cardOnClick,
     buttonOnClick,
     color,
-    dayStats,
     status
 }) {
 
@@ -26,7 +32,7 @@ function ActivityCard({
 
     const dropMenuItems = [
         {
-            key: '1',
+            key: '0',
             type: 'group',
             label: title
         },
@@ -141,6 +147,9 @@ function ActivityCard({
                         <Button
                             color="default"
                             type="text"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                            }}
                             icon={<EllipsisOutlined style={{
                                 fontSize: '16px',
                                 color: '#282828'
@@ -164,8 +173,12 @@ function ActivityCard({
                 title={title}
                 description={
                     <>
-                        <p>За сегодня: {dayStats}</p>
-                        <p>Статус: {status}</p>
+                        {status === 2 && (
+                            <p><ActivityTimer startTime={getActivityLastStats(activityId)} /></p>
+                        )}
+                        {status !== 2 && (
+                            <p>За сегодня: {}</p>
+                        )}
                     </>
                 }
             />

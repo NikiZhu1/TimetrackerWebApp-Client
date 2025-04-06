@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { Button, message, Layout, Collapse, ConfigProvider, Flex, Card, Dropdown } from 'antd';
+import { Button, message, Layout, Collapse, ConfigProvider, Flex, Typography, Dropdown } from 'antd';
 import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, TeamOutlined, ClockCircleOutlined, MenuOutlined, SettingOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate } from 'react-router-dom';
@@ -11,12 +11,12 @@ import './Collapse.css';
 
 //Методы
 import { GetJWT, GetUserIdFromJWT } from './methods/UsersMethods.jsx';
-import { getActivities, getActivityPeriods, renderActivityCards, initActivitiesState } from './methods/ActivitiesMethods';
+import { getActivities, getActivityPeriods, renderActivityCards, initActivitiesState, initActivitiyPeriodState, getAllActivityPeriods } from './methods/ActivitiesMethods';
 
 //Компоненты
 import MyMenu from './components/Menu.jsx';
-import ActivityCard from './components/ActivityCard.jsx';
 
+const { Text } = Typography;
 const { Header, Footer, Sider, Content } = Layout;
 
 //Тест своих иконок
@@ -46,25 +46,65 @@ function Dashboard() {
     //Хранение и установка активностей
     const [activities, setActivities] = useState([]);
 
-    //Сразу при открытии страницы
-    useEffect(() => {
-        initActivitiesState(setActivities, () => activities);
+    //Хранение и установка периудов активности
+    const [activityPeriods, setActivityPeriods] = useState([]);
 
-        const token = GetJWT(); // Получаем токен из cookies
-        if (!token) {
-            message.warning('Сначала войдите в систему');
-            navigate('/');
-        }
-        const userId = GetUserIdFromJWT(token)
-        if (!userId) {
-            message.warning('Сначала войдите в систему');
-            navigate('/');
-        }
-        else {
-            console.log("Используемый userId:", userId);
-            getActivities(token, userId);
-        }
+    //Сразу при открытии страницы
+    //useEffect(() => async () => {
+
+    //    const token = GetJWT(); // Получаем токен из cookies
+    //    if (!token) {
+    //        message.warning('Сначала войдите в систему');
+    //        navigate('/');
+    //    }
+    //    const userId = GetUserIdFromJWT(token)
+    //    if (!userId) {
+    //        Cookies.remove('token'); // Удаляем токен
+    //        message.warning('Сначала войдите в систему');
+    //        navigate('/');
+    //    }
+    //    else {
+    //        console.log("Используемый userId:", userId);
+    //        await getActivities(token, userId);
+    //        await getAllActivityPeriods(token, userId, activities);
+    //    }
+
+    //    initActivitiesState(setActivities, activities);
+    //    initActivitiyPeriodState(setActivityPeriods, activityPeriods);
             
+    //}, []);
+    useEffect(() => {
+        const init = async () => {
+            const token = GetJWT();
+            if (!token) {
+                message.warning('Сначала войдите в систему');
+                navigate('/');
+                return;
+            }
+
+            const userId = GetUserIdFromJWT(token);
+            if (!userId) {
+                Cookies.remove('token');
+                message.warning('Сначала войдите в систему');
+                navigate('/');
+                return;
+            }
+
+            console.log("Используемый userId:", userId);
+
+            //getActivityPeriods(token, 3);
+            //получаем активности
+            const fetchedActivities = await getActivities(token, userId);
+            await setActivities(fetchedActivities);
+
+            //Используем ТОЛЬКО ЧТО ПОЛУЧЕННЫЕ активности
+            await getAllActivityPeriods(token, userId, fetchedActivities);
+
+            initActivitiesState(setActivities, activities);
+            initActivitiyPeriodState(setActivityPeriods, activityPeriods);
+        };
+
+        init();
     }, []);
 
     const items = [
@@ -111,7 +151,7 @@ function Dashboard() {
                                 },
                             }}>
                             <Collapse
-                                defaultActiveKey={['2']} //Открытая вкладка по умолчанию
+                                defaultActiveKey={['1', '2']} //Открытая вкладка по умолчанию
                                 ghost items={items}>
                             </Collapse>
                         </ConfigProvider>
