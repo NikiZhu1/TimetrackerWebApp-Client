@@ -33,6 +33,13 @@ export const initActivitiesPeriodsState = (setActivitiesPeriods, activitiesPerio
     activitiesPeriodsRef = activitiesPeriods;
 };
 
+const refreshActivityData = async () => {
+    const token = GetJWT();
+    const userId = GetUserIdFromJWT(token);
+    const activitiesRef = await getActivities(token, userId); // Ваша существующая функция
+    await getAllActivityPeriods(token, userId, activitiesRef); // Ваша существующая функция
+};
+
 // Получение одной активности из массива полученных
 const getActivity = (activityId) => {
     if (!activitiesRef || !Array.isArray(activitiesRef))
@@ -94,7 +101,7 @@ export const getActivityPeriods = async (token, activityId) => {
         const periods = response.data?.ActivityPeriods || [];
         setActivityPeriodRef?.(periods);
         activityPeriodRef = periods;
-        console.log(`Полученное время активности id ${activityId}:`, periods);
+        //console.log(`Полученное время активности id ${activityId}:`, periods);
         return periods;
 
     } catch (error) {
@@ -157,20 +164,30 @@ export const actButton_Click = (activityId) => {
 
 // Рендер карточек по статусу
 export const renderActivityCards = (statusId) => {
+
+    const token = GetJWT();
+    if (!token) {
+        message.warning('Сначала войдите в систему');
+        navigate('/');
+        return;
+    }
+
     return activitiesRef
         .filter(activity => activity.StatusId === statusId)
         .map(activity => (
-
-
             <ActivityCard
                 key={activity.Id}
                 activityId={activity.Id}
                 title={activity.Name}
                 dayStats={formatActivityTime(activity.ActiveFrom)}
                 color='rgb(204, 194, 255)'
-                cardOnClick={() => actCard_Click(activity.Id)}
-                buttonOnClick={() => { startActivity(activity.Id); () => actButton_Click(activity.Id) }}
                 status={activity.StatusId}
+                cardOnClick={() => actCard_Click(activity.Id)}
+                buttonOnClick={
+                    activity.StatusId === 1
+                        ? () => { startActivity(token, activity.Id) }
+                        : () => { stopActivity(token, activity.Id) }
+                }
             />
         ));
 };
@@ -195,10 +212,11 @@ const manageActivity = async (token, activityId, isStarted) => {
                 IsStarted: isStarted
             },
             {
-                headers: { Authorization: `Bearer ${token}`}
+                headers: { Authorization: `Bearer ${token}` }
             }
         );
 
+        refreshActivityData(); //Обновление данных
         return response.data;
     } catch (error) {
         console.error(`Ошибка при ${isStarted ? 'старте' : 'остановке'} активности:`, error);
@@ -211,6 +229,7 @@ export const startActivity = async (token, activityId) => {
     try {
         const result = await manageActivity(token, activityId, true);
         message.success(`${getActivity(activityId).Name}: Отслеживание началось`);
+        console.log('Запуск активности с ID:', activityId);
         return result;
     }
     catch (error) {
@@ -224,6 +243,7 @@ export const stopActivity = async (token, activityId) => {
     try {
         const result = await manageActivity(token, activityId, false);
         message.success('Активность остановлена');
+        console.log('Остановка активности с ID:', activityId);
         return result;
     } catch (error) {
         message.error('Не удалось остановить активность');

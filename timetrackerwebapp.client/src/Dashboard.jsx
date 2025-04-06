@@ -11,7 +11,7 @@ import './Collapse.css';
 
 //Методы
 import { GetJWT, GetUserIdFromJWT } from './methods/UsersMethods.jsx';
-import { getActivities, getActivityPeriods, renderActivityCards, initActivitiesState, initActivitiyPeriodState, getAllActivityPeriods } from './methods/ActivitiesMethods';
+import { getActivities, initActivitiesPeriodsState, renderActivityCards, initActivitiesState, initActivitiyPeriodState, getAllActivityPeriods } from './methods/ActivitiesMethods';
 
 //Компоненты
 import MyMenu from './components/Menu.jsx';
@@ -48,6 +48,9 @@ function Dashboard() {
 
     //Хранение и установка периудов активности
     const [activityPeriods, setActivityPeriods] = useState([]);
+
+    //Хранение и установка ВСЕХ периудов ВСЕХ активностей
+    const [activitiesPeriods, setActivitiesPeriods] = useState([]);
 
     //Сразу при открытии страницы
     //useEffect(() => async () => {
@@ -97,11 +100,12 @@ function Dashboard() {
             const fetchedActivities = await getActivities(token, userId);
             await setActivities(fetchedActivities);
 
-            //Используем ТОЛЬКО ЧТО ПОЛУЧЕННЫЕ активности
-            await getAllActivityPeriods(token, userId, fetchedActivities);
+            const fetchedActivitiesPeriods = await getAllActivityPeriods(token, userId, fetchedActivities);
+            //await setActivitiesPeriods(fetchedActivitiesPeriods);
 
             initActivitiesState(setActivities, activities);
             initActivitiyPeriodState(setActivityPeriods, activityPeriods);
+            initActivitiesPeriodsState(setActivitiesPeriods, activitiesPeriods);
         };
 
         init();
