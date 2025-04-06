@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useState } from 'react';
 import '@ant-design/v5-patch-for-react-19';
 import axios from 'axios';
+import { message } from 'antd';
 
 //Методы
 import { GetJWT, GetUserIdFromJWT } from './UsersMethods.jsx';
@@ -32,6 +33,13 @@ export const initActivitiesPeriodsState = (setActivitiesPeriods, activitiesPerio
     activitiesPeriodsRef = activitiesPeriods;
 };
 
+// Получение одной активности из массива полученных
+const getActivity = (activityId) => {
+    if (!activitiesRef || !Array.isArray(activitiesRef))
+        return null;
+    return activitiesRef.find(activity => activity.Id === activityId) || null;
+};
+
 // Получение активностей
 export const getActivities = async (token, userId) => {
     if (!token || !userId) return [];
@@ -42,9 +50,13 @@ export const getActivities = async (token, userId) => {
                 Authorization: `Bearer ${token}`
             }
         });
-        setActivitiesRef?.(response.data);
-        activitiesRef = response.data;
-        console.log("Полученные активности: ", response.data);
+
+        // Сортируем активности по ID (по возрастанию)
+        const sortedActivities = response.data.sort((a, b) => a.Id - b.Id);
+
+        setActivitiesRef?.(sortedActivities);
+        activitiesRef = sortedActivities;
+        console.log("Полученные активности: ", sortedActivities);
         return response.data;
     } catch (error) {
         console.error('Ошибка при получении активностей:', error);
@@ -148,6 +160,8 @@ export const renderActivityCards = (statusId) => {
     return activitiesRef
         .filter(activity => activity.StatusId === statusId)
         .map(activity => (
+
+
             <ActivityCard
                 key={activity.Id}
                 activityId={activity.Id}
@@ -155,7 +169,7 @@ export const renderActivityCards = (statusId) => {
                 dayStats={formatActivityTime(activity.ActiveFrom)}
                 color='rgb(204, 194, 255)'
                 cardOnClick={() => actCard_Click(activity.Id)}
-                buttonOnClick={() => actButton_Click(activity.Id)}
+                buttonOnClick={() => { startActivity(activity.Id); () => actButton_Click(activity.Id) }}
                 status={activity.StatusId}
             />
         ));
@@ -170,4 +184,49 @@ export const getActivityLastStats = (activityId) => {
     );
 
     return activePeriod?.StartTime || null;
+};
+
+// Общая функция для управления активностью
+const manageActivity = async (token, activityId, isStarted) => {
+    try {
+        const response = await axios.post('http://localhost:8080/api/ActivityPeriods',
+            {
+                ActivityId: activityId,
+                IsStarted: isStarted
+            },
+            {
+                headers: { Authorization: `Bearer ${token}`}
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error(`Ошибка при ${isStarted ? 'старте' : 'остановке'} активности:`, error);
+        throw error;
+    }
+};
+
+// Старт активности
+export const startActivity = async (token, activityId) => {
+    try {
+        const result = await manageActivity(token, activityId, true);
+        message.success(`${getActivity(activityId).Name}: Отслеживание началось`);
+        return result;
+    }
+    catch (error) {
+        message.error('Не удалось начать активность');
+        return null;
+    }
+};
+
+// Остановка активности
+export const stopActivity = async (token, activityId) => {
+    try {
+        const result = await manageActivity(token, activityId, false);
+        message.success('Активность остановлена');
+        return result;
+    } catch (error) {
+        message.error('Не удалось остановить активность');
+        return null;
+    }
 };
