@@ -7,28 +7,33 @@ import '@ant-design/v5-patch-for-react-19';
 import ActivityTimer from './ActivityTimer.jsx';
 
 //Методы
-import { getActivityLastStats } from '../methods/ActivitiesMethods';
+import { useActivities } from '../useActivities.jsx';
 
 function ActivityCard({
+    token,
     activityId,
     title,
     cardOnClick,
     buttonOnClick,
+    startTime,
     color,
     status
 }) {
 
-    const [startTime, setStartTime] = useState(null);
+    const { startActivity, stopActivity } = useActivities();
 
-    useEffect(() => {
-        if (status === 2) {
-            const fetchLastStats = async () => {
-                const stats = await getActivityLastStats(activityId);
-                setStartTime(stats);
-            };
-            fetchLastStats();
+    const handleAction = async () => {
+        try {
+            if (status === 1) {
+                await startActivity(token, activityId);
+
+            } else if (status === 2) {
+                await stopActivity(token, activityId);
+            }
+        } catch (error) {
+            message.error(`Ошибка: ${error.message}`);
         }
-    }, [activityId, status]);
+    };
 
     // Определяем иконку и текст в зависимости от статуса
     const buttonConfig = {
@@ -140,7 +145,7 @@ function ActivityCard({
                         icon={currentConfig.icon}
                         onClick={(e) => {
                             e.stopPropagation();
-                            buttonOnClick?.();
+                            handleAction?.();
                         }}
                         style={{
                             minWidth: '100px',
@@ -182,6 +187,7 @@ function ActivityCard({
                 title={title}
                 description={
                     <>
+                        
                         {status === 2 && startTime && (
                             <p><ActivityTimer startTime={startTime} /></p>
                         )}

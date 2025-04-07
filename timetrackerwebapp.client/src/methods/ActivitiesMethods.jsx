@@ -4,50 +4,6 @@ import axios from 'axios';
 import { message } from 'antd';
 import { emit } from '../event.jsx';
 
-//Методы
-import { GetJWT, GetUserIdFromJWT } from './UsersMethods.jsx';
-
-//Компоненты
-import ActivityCard from '../components/ActivityCard.jsx';
-
-let setActivitiesRef = null;
-let activitiesRef = [];
-
-export const initActivitiesState = (setActivities, activities) => {
-    setActivitiesRef = setActivities;
-    activitiesRef = activities;
-};
-
-let setActivityPeriodRef = null;
-let activityPeriodRef = [];
-
-export const initActivitiyPeriodState = (setActivityPeriods, activityPeriods) => {
-    setActivityPeriodRef = setActivityPeriods;
-    activityPeriodRef = activityPeriods;
-};
-
-let setActivitiesPeriodsRef = null;
-let activitiesPeriodsRef = [];
-
-export const initActivitiesPeriodsState = (setActivitiesPeriods, activitiesPeriods) => {
-    setActivitiesPeriodsRef = setActivitiesPeriods;
-    activitiesPeriodsRef = activitiesPeriods;
-};
-
-const refreshActivityData = async () => {
-    const token = GetJWT();
-    const userId = GetUserIdFromJWT(token);
-    const activitiesRef = await getActivities(token, userId); // Ваша существующая функция
-    await getAllActivityPeriods(token, userId, activitiesRef); // Ваша существующая функция
-};
-
-// Получение одной активности из массива полученных
-const getActivity = (activityId) => {
-    if (!activitiesRef || !Array.isArray(activitiesRef))
-        return null;
-    return activitiesRef.find(activity => activity.id === activityId) || null;
-};
-
 // Получение активностей
 export const getActivities = async (token, userId) => {
     if (!token || !userId) return [];
@@ -62,12 +18,11 @@ export const getActivities = async (token, userId) => {
         // Сортируем активности по ID (по возрастанию)
         const sortedActivities = response.data.sort((a, b) => a.id - b.id);
 
-        setActivitiesRef?.(sortedActivities);
-        activitiesRef = sortedActivities;
         console.log("Полученные активности: ", sortedActivities);
         return response.data;
     } catch (error) {
         console.error('Ошибка при получении активностей:', error);
+        throw error;
         return [];
     }
 };
@@ -81,32 +36,24 @@ export const getActivityPeriods = async (token, activityId) => {
         const response = await axios.get(
             `http://localhost:8080/api/ActivityPeriods?activityId=${activityId}`,
             {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
-                validateStatus: function (status) {
-                    // Считаем статусы 200 и 404 валидными
-                    return (status >= 200 && status < 300) || status === 404;
-                }
+                headers: { Authorization: `Bearer ${token}` },
+                validateStatus: status => (status >= 200 && status < 300) || status === 404
             }
         );
 
         // Обрабатываем 404 явно
         if (response.status === 404) {
             console.log(`Активность ${activityId} не имеет периодов отслеживания`);
-            setActivityPeriodRef?.([]);
-            activityPeriodRef = [];
             return [];
         }
 
         const periods = response.data?.ActivityPeriods || [];
-        setActivityPeriodRef?.(periods);
-        activityPeriodRef = periods;
         //console.log(`Полученное время активности id ${activityId}:`, periods);
         return periods;
 
     } catch (error) {
         console.error('Ошибка при получении периодов активности:', error);
+        throw error;
         return [];
     }
 };
@@ -135,14 +82,13 @@ export const getAllActivityPeriods = async (token, userId, activities) => {
             periodsByActivity[activityId] = periods;
         });
 
-        setActivitiesPeriodsRef?.(periodsByActivity);
-        activitiesPeriodsRef = periodsByActivity;
         console.log(`Полученные периоды активностей :`, periodsByActivity);
         return periodsByActivity;
 
-    } catch (err) {
-        console.error('Ошибка при получении всех периодов:', err);
-        return {};
+    } catch (error) {
+        console.error('Ошибка при получении всех периодов:', error);
+        throw error;
+        return [];
     }
 };
 
@@ -163,50 +109,8 @@ export const actButton_Click = (activityId) => {
     console.log('Запуск активности с ID:', activityId);
 };
 
-// Рендер карточек по статусу
-export const renderActivityCards = (statusId) => {
-
-    const token = GetJWT();
-    if (!token) {
-        message.warning('Сначала войдите в систему');
-        navigate('/');
-        return;
-    }
-
-    return activitiesRef
-        .filter(activity => activity.statusId === statusId)
-        .map(activity => (
-            <ActivityCard
-                key={activity.id}
-                activityId={activity.id}
-                title={activity.name}
-                dayStats={formatActivityTime(activity.activeFrom)}
-                color='rgb(204, 194, 255)'
-                status={activity.statusId}
-                cardOnClick={() => actCard_Click(activity.id)}
-                buttonOnClick={
-                    activity.statusId === 1
-                        ? () => { startActivity(token, activity.id) }
-                        : () => { stopActivity(token, activity.id) }
-                }
-            />
-        ));
-};
-
-// Получение времени старта текущего отслеживания активности
-export const getActivityLastStats = (activityId) => {
-    if (!activityId || !activitiesPeriodsRef || !activitiesPeriodsRef[activityId])
-        return null;
-
-    const activePeriod = activitiesPeriodsRef[activityId].find(
-        period => period.StopTime === null
-    );
-
-    return activePeriod?.StartTime || null;
-};
-
 // Общая функция для управления активностью
-const manageActivity = async (token, activityId, isStarted) => {
+export const manageActivity = async (token, activityId, isStarted) => {
     try {
         const response = await axios.post('http://localhost:8080/api/ActivityPeriods',
             {
@@ -218,37 +122,10 @@ const manageActivity = async (token, activityId, isStarted) => {
             }
         );
 
-        emit('activityChanged'); //Обновление данных
+        //emit('activityChanged'); //Обновление данных
         return response.data;
     } catch (error) {
         console.error(`Ошибка при ${isStarted ? 'старте' : 'остановке'} активности:`, error);
         throw error;
-    }
-};
-
-// Старт активности
-export const startActivity = async (token, activityId) => {
-    try {
-        const result = await manageActivity(token, activityId, true);
-        message.success(`${getActivity(activityId).name}: Отслеживание началось`);
-        console.log('Запуск активности с ID:', activityId);
-        return result;
-    }
-    catch (error) {
-        message.error('Не удалось начать активность');
-        return null;
-    }
-};
-
-// Остановка активности
-export const stopActivity = async (token, activityId) => {
-    try {
-        const result = await manageActivity(token, activityId, false);
-        message.success('Активность остановлена');
-        console.log('Остановка активности с ID:', activityId);
-        return result;
-    } catch (error) {
-        message.error('Не удалось остановить активность');
-        return null;
     }
 };

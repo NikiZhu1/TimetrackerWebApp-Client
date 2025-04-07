@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { Button, message, Layout, Collapse, ConfigProvider, Flex, Typography, Dropdown } from 'antd';
+import { Button, message, Layout, Collapse, ConfigProvider, Flex, Typography, Skeleton } from 'antd';
 import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, TeamOutlined, ClockCircleOutlined, MenuOutlined, SettingOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate } from 'react-router-dom';
@@ -12,10 +12,12 @@ import './Collapse.css';
 
 //Методы
 import { GetJWT, GetUserIdFromJWT } from './methods/UsersMethods.jsx';
-import { getActivities, initActivitiesPeriodsState, renderActivityCards, initActivitiesState, initActivitiyPeriodState, getAllActivityPeriods } from './methods/ActivitiesMethods';
+//import { getActivities, initActivitiesPeriodsState, renderActivityCards, initActivitiesState, initActivitiyPeriodState, getAllActivityPeriods } from './methods/ActivitiesMethods';
+import { useActivities } from './useActivities.jsx';
 
 //Компоненты
 import MyMenu from './components/Menu.jsx';
+import ActivityCard from './components/ActivityCard.jsx';
 
 const { Text } = Typography;
 const { Header, Footer, Sider, Content } = Layout;
@@ -42,88 +44,72 @@ const HeaderStyle = {
 };
 
 function Dashboard() {
+    const { activities, periods, loading, loadData, actCard_Click, startActivity, stopActivity, getActivityStartTime } = useActivities();
+
     const navigate = useNavigate();
 
-    //Хранение и установка активностей
-    const [activities, setActivities] = useState(null);
-
-    //Хранение и установка периудов активности
-    const [activityPeriods, setActivityPeriods] = useState(null);
-
-    //Хранение и установка ВСЕХ периудов ВСЕХ активностей
-    const [activitiesPeriods, setActivitiesPeriods] = useState(null);
-
-    //Сразу при открытии страницы
-    //useEffect(() => async () => {
-
-    //    const token = GetJWT(); // Получаем токен из cookies
-    //    if (!token) {
-    //        message.warning('Сначала войдите в систему');
-    //        navigate('/');
-    //    }
-    //    const userId = GetUserIdFromJWT(token)
-    //    if (!userId) {
-    //        Cookies.remove('token'); // Удаляем токен
-    //        message.warning('Сначала войдите в систему');
-    //        navigate('/');
-    //    }
-    //    else {
-    //        console.log("Используемый userId:", userId);
-    //        await getActivities(token, userId);
-    //        await getAllActivityPeriods(token, userId, activities);
-    //    }
-
-    //    initActivitiesState(setActivities, activities);
-    //    initActivitiyPeriodState(setActivityPeriods, activityPeriods);
-            
-    //}, []);
     useEffect(() => {
+
         const token = GetJWT();
         const userId = GetUserIdFromJWT(token);
 
+        if (!token || !userId) {
+            if (!token) message.warning('Сначала войдите в систему');
+            if (!userId) Cookies.remove('token');
+            navigate('/');
+            return;
+        }
+
+        console.log("Используемый userId:", userId);
+
         const fetchAll = async () => {
-            
-            if (!token) {
-                message.warning('Сначала войдите в систему');
-                navigate('/');
-                return;
+
+            try {
+                await loadData(token, userId);
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                message.error('Не удалось загрузить данные');
             }
-
-            if (!userId) {
-                Cookies.remove('token');
-                message.warning('Сначала войдите в систему');
-                navigate('/');
-                return;
-            }
-
-            console.log("Используемый userId:", userId);
-
-            const fetchedActivities = await getActivities(token, userId);
-            await setActivities(fetchedActivities);
-
-            const fetchedPeriods = await getAllActivityPeriods(token, userId, fetchedActivities);
-            await setActivitiesPeriods(fetchedPeriods);
-
-            initActivitiesState(setActivities, fetchedActivities);
-            initActivitiesPeriodsState(setActivitiesPeriods, fetchedPeriods);
-
-            //getActivityPeriods(token, 3);
-            //получаем активности
-            //const fetchedActivities = await getActivities(token, userId);
-            //await setActivities(fetchedActivities);
-
-            //const fetchedActivitiesPeriods = await getAllActivityPeriods(token, userId, fetchedActivities);
-            ///*await setActivitiesPeriods(fetchedActivitiesPeriods);*/
-
-            //initActivitiesState(setActivities, activities);
-            ////initActivitiyPeriodState(setActivityPeriods, activityPeriods);
-            //initActivitiesPeriodsState(setActivitiesPeriods, activitiesPeriods);
         };
 
         fetchAll();
         subscribe('activityChanged', fetchAll); // Подписка
 
     }, []);
+
+    // Рендер карточек по статусу
+    const renderActivityCards = (statusId) => {
+
+        if (loading && !activities) return <Skeleton active />;
+
+        const token = GetJWT();
+        if (!token) {
+            message.warning('Сначала войдите в систему');
+            navigate('/');
+            return;
+        }
+
+        return activities
+            .filter(activity => activity.statusId === statusId)
+            .map(activity => (
+                <ActivityCard
+                    key={activity.id}
+                    token={token}
+                    activityId={activity.id}
+                    title={activity.name}
+                    //dayStats={formatActivityTime(activity.activeFrom)}
+                    color='rgb(204, 194, 255)'
+                    startTime={getActivityStartTime(activity.id)}
+                    status={activity.statusId}
+                    cardOnClick={() => actCard_Click(activity.id)}
+                    //buttonOnClick={
+                    //    activity.statusId === 1
+                    //        ? () => { startActivity(token, activity.id) }
+                    //        : () => { stopActivity(token, activity.id) }
+                    //}
+                />
+            ));
+    };
 
     const items = [
         {
