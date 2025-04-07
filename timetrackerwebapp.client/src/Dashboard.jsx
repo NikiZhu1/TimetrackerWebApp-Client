@@ -5,6 +5,7 @@ import '@ant-design/v5-patch-for-react-19';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import axios from 'axios';
+import { subscribe } from './event.jsx';
 
 //Стили
 import './Collapse.css';
@@ -44,13 +45,13 @@ function Dashboard() {
     const navigate = useNavigate();
 
     //Хранение и установка активностей
-    const [activities, setActivities] = useState([]);
+    const [activities, setActivities] = useState(null);
 
     //Хранение и установка периудов активности
-    const [activityPeriods, setActivityPeriods] = useState([]);
+    const [activityPeriods, setActivityPeriods] = useState(null);
 
     //Хранение и установка ВСЕХ периудов ВСЕХ активностей
-    const [activitiesPeriods, setActivitiesPeriods] = useState([]);
+    const [activitiesPeriods, setActivitiesPeriods] = useState(null);
 
     //Сразу при открытии страницы
     //useEffect(() => async () => {
@@ -77,15 +78,17 @@ function Dashboard() {
             
     //}, []);
     useEffect(() => {
-        const init = async () => {
-            const token = GetJWT();
+        const token = GetJWT();
+        const userId = GetUserIdFromJWT(token);
+
+        const fetchAll = async () => {
+            
             if (!token) {
                 message.warning('Сначала войдите в систему');
                 navigate('/');
                 return;
             }
 
-            const userId = GetUserIdFromJWT(token);
             if (!userId) {
                 Cookies.remove('token');
                 message.warning('Сначала войдите в систему');
@@ -95,20 +98,31 @@ function Dashboard() {
 
             console.log("Используемый userId:", userId);
 
-            //getActivityPeriods(token, 3);
-            //получаем активности
             const fetchedActivities = await getActivities(token, userId);
             await setActivities(fetchedActivities);
 
-            const fetchedActivitiesPeriods = await getAllActivityPeriods(token, userId, fetchedActivities);
-            //await setActivitiesPeriods(fetchedActivitiesPeriods);
+            const fetchedPeriods = await getAllActivityPeriods(token, userId, fetchedActivities);
+            await setActivitiesPeriods(fetchedPeriods);
 
-            initActivitiesState(setActivities, activities);
-            initActivitiyPeriodState(setActivityPeriods, activityPeriods);
-            initActivitiesPeriodsState(setActivitiesPeriods, activitiesPeriods);
+            initActivitiesState(setActivities, fetchedActivities);
+            initActivitiesPeriodsState(setActivitiesPeriods, fetchedPeriods);
+
+            //getActivityPeriods(token, 3);
+            //получаем активности
+            //const fetchedActivities = await getActivities(token, userId);
+            //await setActivities(fetchedActivities);
+
+            //const fetchedActivitiesPeriods = await getAllActivityPeriods(token, userId, fetchedActivities);
+            ///*await setActivitiesPeriods(fetchedActivitiesPeriods);*/
+
+            //initActivitiesState(setActivities, activities);
+            ////initActivitiyPeriodState(setActivityPeriods, activityPeriods);
+            //initActivitiesPeriodsState(setActivitiesPeriods, activitiesPeriods);
         };
 
-        init();
+        fetchAll();
+        subscribe('activityChanged', fetchAll); // Подписка
+
     }, []);
 
     const items = [
@@ -117,7 +131,7 @@ function Dashboard() {
             label: 'Текущие активности',
             children:
                 <Flex wrap gap='16px'>
-                    {renderActivityCards(2)}
+                    {activities && renderActivityCards(2)}
                 </Flex>,
         },
         {
@@ -125,7 +139,7 @@ function Dashboard() {
             label: 'Активности',
             children:
                 <Flex wrap gap='16px'>
-                    {renderActivityCards(1)}
+                    {activities && renderActivityCards(1)}
                 </Flex>,
         },
         {
@@ -133,7 +147,7 @@ function Dashboard() {
             label: 'Архив',
             children:
                 <Flex wrap gap='16px'>
-                    {renderActivityCards(3)}
+                    {activities && renderActivityCards(3)}
                 </Flex>,
         },
     ];

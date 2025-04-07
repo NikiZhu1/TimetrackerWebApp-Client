@@ -1,10 +1,7 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { Button, message, Layout, Collapse, Dropdown, Flex, Card, Avatar } from 'antd';
+import { Button, message, Dropdown, Flex, Card } from 'antd';
 import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, PauseOutlined, FolderOpenOutlined, SettingOutlined, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, TeamOutlined, DeleteOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
-import { useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
-import axios from 'axios';
 
 //Компоненты
 import ActivityTimer from './ActivityTimer.jsx';
@@ -20,6 +17,18 @@ function ActivityCard({
     color,
     status
 }) {
+
+    const [startTime, setStartTime] = useState(null);
+
+    useEffect(() => {
+        if (status === 2) {
+            const fetchLastStats = async () => {
+                const stats = await getActivityLastStats(activityId);
+                setStartTime(stats);
+            };
+            fetchLastStats();
+        }
+    }, [activityId, status]);
 
     // Определяем иконку и текст в зависимости от статуса
     const buttonConfig = {
@@ -142,7 +151,7 @@ function ActivityCard({
 
                     <Dropdown
                         menu={{ items: dropMenuItems }}
-                        placement="bottom"
+                        placement="bottomLeft"
                         trigger={["hover"]}>
                         <Button
                             color="default"
@@ -173,8 +182,8 @@ function ActivityCard({
                 title={title}
                 description={
                     <>
-                        {status === 2 && (
-                            <p><ActivityTimer startTime={getActivityLastStats(activityId)} /></p>
+                        {status === 2 && startTime && (
+                            <p><ActivityTimer startTime={startTime} /></p>
                         )}
                         {status !== 2 && (
                             <p>За сегодня: {}</p>

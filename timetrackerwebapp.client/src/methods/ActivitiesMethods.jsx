@@ -2,6 +2,7 @@
 import '@ant-design/v5-patch-for-react-19';
 import axios from 'axios';
 import { message } from 'antd';
+import { emit } from '../event.jsx';
 
 //Методы
 import { GetJWT, GetUserIdFromJWT } from './UsersMethods.jsx';
@@ -44,7 +45,7 @@ const refreshActivityData = async () => {
 const getActivity = (activityId) => {
     if (!activitiesRef || !Array.isArray(activitiesRef))
         return null;
-    return activitiesRef.find(activity => activity.Id === activityId) || null;
+    return activitiesRef.find(activity => activity.id === activityId) || null;
 };
 
 // Получение активностей
@@ -59,7 +60,7 @@ export const getActivities = async (token, userId) => {
         });
 
         // Сортируем активности по ID (по возрастанию)
-        const sortedActivities = response.data.sort((a, b) => a.Id - b.Id);
+        const sortedActivities = response.data.sort((a, b) => a.id - b.id);
 
         setActivitiesRef?.(sortedActivities);
         activitiesRef = sortedActivities;
@@ -116,13 +117,13 @@ export const getAllActivityPeriods = async (token, userId, activities) => {
 
     try {
         const promises = activities.map(activity =>
-            getActivityPeriods(token, activity.Id)
+            getActivityPeriods(token, activity.id)
                 .then(periods => ({
-                    activityId: activity.Id,
+                    activityId: activity.id,
                     periods
                 }))
                 .catch(() => ({
-                    activityId: activity.Id,
+                    activityId: activity.id,
                     periods: []
                 }))
         );
@@ -173,20 +174,20 @@ export const renderActivityCards = (statusId) => {
     }
 
     return activitiesRef
-        .filter(activity => activity.StatusId === statusId)
+        .filter(activity => activity.statusId === statusId)
         .map(activity => (
             <ActivityCard
-                key={activity.Id}
-                activityId={activity.Id}
-                title={activity.Name}
-                dayStats={formatActivityTime(activity.ActiveFrom)}
+                key={activity.id}
+                activityId={activity.id}
+                title={activity.name}
+                dayStats={formatActivityTime(activity.activeFrom)}
                 color='rgb(204, 194, 255)'
-                status={activity.StatusId}
-                cardOnClick={() => actCard_Click(activity.Id)}
+                status={activity.statusId}
+                cardOnClick={() => actCard_Click(activity.id)}
                 buttonOnClick={
-                    activity.StatusId === 1
-                        ? () => { startActivity(token, activity.Id) }
-                        : () => { stopActivity(token, activity.Id) }
+                    activity.statusId === 1
+                        ? () => { startActivity(token, activity.id) }
+                        : () => { stopActivity(token, activity.id) }
                 }
             />
         ));
@@ -194,7 +195,8 @@ export const renderActivityCards = (statusId) => {
 
 // Получение времени старта текущего отслеживания активности
 export const getActivityLastStats = (activityId) => {
-    if (!activityId || !activitiesPeriodsRef[activityId]) return null;
+    if (!activityId || !activitiesPeriodsRef || !activitiesPeriodsRef[activityId])
+        return null;
 
     const activePeriod = activitiesPeriodsRef[activityId].find(
         period => period.StopTime === null
@@ -216,7 +218,7 @@ const manageActivity = async (token, activityId, isStarted) => {
             }
         );
 
-        refreshActivityData(); //Обновление данных
+        emit('activityChanged'); //Обновление данных
         return response.data;
     } catch (error) {
         console.error(`Ошибка при ${isStarted ? 'старте' : 'остановке'} активности:`, error);
@@ -228,7 +230,7 @@ const manageActivity = async (token, activityId, isStarted) => {
 export const startActivity = async (token, activityId) => {
     try {
         const result = await manageActivity(token, activityId, true);
-        message.success(`${getActivity(activityId).Name}: Отслеживание началось`);
+        message.success(`${getActivity(activityId).name}: Отслеживание началось`);
         console.log('Запуск активности с ID:', activityId);
         return result;
     }
