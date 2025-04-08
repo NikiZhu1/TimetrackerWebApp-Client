@@ -1,7 +1,9 @@
 ﻿import React, { act, useEffect, useState } from 'react';
-import { Button, message, Dropdown, Flex, Card } from 'antd';
-import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, PauseOutlined, FolderOpenOutlined, SettingOutlined, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, TeamOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Button, message, Dropdown, Flex, Card, Modal } from 'antd';
+import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, PauseOutlined, FolderOpenOutlined, ExclamationCircleFilled, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, TeamOutlined, DeleteOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
+
+const { confirm } = Modal;
 
 //Компоненты
 import ActivityTimer from './ActivityTimer.jsx';
@@ -20,7 +22,7 @@ function ActivityCard({
     status
 }) {
 
-    const { startActivity, stopActivity, archiveActivity, unarchiveActivity } = useActivities();
+    const { startActivity, stopActivity, archiveActivity, unarchiveActivity, deleteActivity } = useActivities();
 
     //Действие кнопки
     const handleAction = async () => {
@@ -57,7 +59,7 @@ function ActivityCard({
     const currentConfig = buttonConfig[status];
 
     //Нажатие пункта меню
-    const handleMenuClick = e => {
+    const handleMenuClick = async e => {
         e.domEvent.stopPropagation();
         message.info('Click on menu item.');
         console.log('click', e);
@@ -76,15 +78,39 @@ function ActivityCard({
                 //
                 break;
             case 'toArchive':
-                archiveActivity(token, activityId);
+                await archiveActivity(token, activityId);
                 message.success(`${title}: Отпавлено в архив`);
                 break;
             case 'delete':
-                //
+                showDeleteConfirm(() => deleteActivity(token, activityId));
                 break;
             default:
                 message.info(`Выбран пункт: ${e.key}`);
         }
+    };
+
+    const showDeleteConfirm = (onOkClick) => {
+        confirm({
+            title: `Удаление "${title}" без возможности восстановления`,
+            icon: <ExclamationCircleFilled />,
+            content: 'Удаление активности приведёт к удалению всей истории отслеживания, а к удалению из проектов, в которые она была добавлена.',
+            okText: 'Удалить',
+            okType: 'danger',
+            cancelText: 'Отмена',
+            centered: true,
+            closable: true,
+            maskClosable: true,
+            async onOk() {
+                try {
+                    await onOkClick();
+                } catch (error) {
+                    console.error('Ошибка при удалении:', error);
+                    Modal.destroyAll();
+                    message.error(`Не получилось удалить активность ${title}`);
+                }
+            },
+            onCancel() {},
+        });
     };
 
     const dropMenuItems = [

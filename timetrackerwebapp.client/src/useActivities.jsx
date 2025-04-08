@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { getActivities, getAllActivityPeriods, manageArchiveActivity, manageActivity } from './methods/ActivitiesMethods';
+import { getActivities, getAllActivityPeriods, manageArchiveActivity, manageActivity, DeleteActivity } from './methods/ActivitiesMethods';
 import { Button, message } from 'antd';
 import { emit, subscribe } from './event.jsx';
 
@@ -85,6 +85,7 @@ export const useActivities = () => {
         return activePeriod?.StartTime || null;
     };
 
+    //Архивация активности
     const archiveActivity = async (token, activityId) => {
         try {
             await manageArchiveActivity(token, activityId, true);
@@ -95,11 +96,23 @@ export const useActivities = () => {
         }
     };
 
+    //Восстановление активности
     const unarchiveActivity = async (token, activityId) => {
         try {
             await manageArchiveActivity(token, activityId, false);
             emit('activityChanged'); // Обновляем данные
             console.log('Восстановление активности с ID:', activityId);
+        } catch (err) {
+            throw err;
+        }
+    };
+
+    //Удаление активности
+    const deleteActivity = async (token, activityId) => {
+        try {
+            await DeleteActivity(token, activityId);
+            emit('activityChanged'); // Обновляем данные
+            console.log('Удалена активность с ID:', activityId);
         } catch (err) {
             throw err;
         }
@@ -116,6 +129,7 @@ export const useActivities = () => {
         stopActivity,
         getActivityStartTime,
         archiveActivity,
-        unarchiveActivity
+        unarchiveActivity,
+        deleteActivity
     };
 };
