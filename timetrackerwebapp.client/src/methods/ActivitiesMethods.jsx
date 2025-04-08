@@ -109,7 +109,7 @@ export const actButton_Click = (activityId) => {
     console.log('Запуск активности с ID:', activityId);
 };
 
-// Общая функция для управления активностью
+// Общая функция для управления трекером активности
 export const manageActivity = async (token, activityId, isStarted) => {
     try {
         const response = await axios.post('http://localhost:8080/api/ActivityPeriods',
@@ -126,6 +126,48 @@ export const manageActivity = async (token, activityId, isStarted) => {
         return response.data;
     } catch (error) {
         console.error(`Ошибка при ${isStarted ? 'старте' : 'остановке'} активности:`, error);
+        throw error;
+    }
+};
+
+
+// Общая функция для изменения архивации активности
+export const manageArchiveActivity = async (token, activityId, isArchived) => {
+    try {
+        const response = await axios.put(`http://localhost:8080/api/Activities/${activityId}`,
+            {
+                updateName: false,
+                archived: isArchived
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error(`Ошибка при ${isArchived ? 'архивации' : 'восстановлении'} активности:`, error);
+        throw error;
+    }
+};
+
+// Общая функция для изменения названия активности
+export const updateActivityName = async (token, activityId, newActivityName) => {
+    try {
+        const response = await axios.put(`http://localhost:8080/api/Activities/${activityId}`,
+            {
+                updateName: true,
+                archived: false,
+                newName: newActivityName
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error(`Ошибка при изменении названия активности:`, error);
         throw error;
     }
 };

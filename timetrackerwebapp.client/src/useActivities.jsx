@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { getActivities, getAllActivityPeriods, manageActivity } from './methods/ActivitiesMethods';
+import { getActivities, getAllActivityPeriods, manageArchiveActivity, manageActivity } from './methods/ActivitiesMethods';
 import { Button, message } from 'antd';
 import { emit, subscribe } from './event.jsx';
 
@@ -10,11 +10,17 @@ export const useActivities = () => {
     const [error, setError] = useState(null);
 
     const activitiesRef = useRef(activities);
+    const periodsRef = useRef(periods);
 
     // Синхронизируем ref с состоянием
     useEffect(() => {
         activitiesRef.current = activities;
     }, [activities]);
+
+    // Синхронизируем ref с состоянием
+    useEffect(() => {
+        periodsRef.current = periods;
+    }, [periods]);
 
     const loadData = useCallback(async (token, userId) => {
         setLoading(true);
@@ -49,12 +55,8 @@ export const useActivities = () => {
 
     const startActivity = async (token, activityId) => {
         try {
-            // Сохраняем данные перед запросом
-            const activity = activitiesRef.current.find(a => a.id === activityId) || {};
-
             await manageActivity(token, activityId, true);
             emit('activityChanged'); // Обновляем данные
-            message.success(`${activity.name}: Отслеживание началось`);
             console.log('Запуск активности с ID:', activityId);
         } catch (err) {
             throw err;
@@ -83,6 +85,26 @@ export const useActivities = () => {
         return activePeriod?.StartTime || null;
     };
 
+    const archiveActivity = async (token, activityId) => {
+        try {
+            await manageArchiveActivity(token, activityId, true);
+            emit('activityChanged'); // Обновляем данные
+            console.log('Архивирование активности с ID:', activityId);
+        } catch (err) {
+            throw err;
+        }
+    };
+
+    const unarchiveActivity = async (token, activityId) => {
+        try {
+            await manageArchiveActivity(token, activityId, false);
+            emit('activityChanged'); // Обновляем данные
+            console.log('Восстановление активности с ID:', activityId);
+        } catch (err) {
+            throw err;
+        }
+    };
+
     return {
         activities,
         periods,
@@ -92,6 +114,8 @@ export const useActivities = () => {
         actCard_Click,
         startActivity,
         stopActivity,
-        getActivityStartTime
+        getActivityStartTime,
+        archiveActivity,
+        unarchiveActivity
     };
 };

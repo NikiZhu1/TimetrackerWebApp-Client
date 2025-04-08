@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import React, { act, useEffect, useState } from 'react';
 import { Button, message, Dropdown, Flex, Card } from 'antd';
 import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, PauseOutlined, FolderOpenOutlined, SettingOutlined, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, TeamOutlined, DeleteOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
@@ -20,16 +20,29 @@ function ActivityCard({
     status
 }) {
 
-    const { startActivity, stopActivity } = useActivities();
+    const { startActivity, stopActivity, archiveActivity, unarchiveActivity } = useActivities();
 
+    //Действие кнопки
     const handleAction = async () => {
-        try {
-            if (status === 1) {
-                await startActivity(token, activityId);
 
-            } else if (status === 2) {
-                await stopActivity(token, activityId);
+        try {
+            switch (status) {
+                case 1: //Старт
+                    await startActivity(token, activityId);
+                    message.success(`${title}: Отслеживание началось`);
+                    break;
+                case 2: //Стоп
+                    await stopActivity(token, activityId);
+                    message.success(`${title}: Отслеживание закончено`);
+                    break;
+                case 3: //Восстановить
+                    await unarchiveActivity(token, activityId);
+                    message.success(`${title}: Восстановленно из архива`);
+                    break;
+                default:
+                    message.warning(`Неизвестное действие`);
             }
+
         } catch (error) {
             message.error(`Ошибка: ${error.message}`);
         }
@@ -41,17 +54,47 @@ function ActivityCard({
         2: { icon: <PauseOutlined />, text: 'Стоп' },
         3: { icon: <FolderOpenOutlined />, text: 'Восстановить' }
     };
-
     const currentConfig = buttonConfig[status];
+
+    //Нажатие пункта меню
+    const handleMenuClick = e => {
+        e.domEvent.stopPropagation();
+        message.info('Click on menu item.');
+        console.log('click', e);
+
+        switch (e.key) {
+            case 'edit':
+                //
+                break;
+            case 'getStats':
+                // 
+                break;
+            case 'checkHistory':
+                //
+                break;
+            case 'createNewProject':
+                //
+                break;
+            case 'toArchive':
+                archiveActivity(token, activityId);
+                message.success(`${title}: Отпавлено в архив`);
+                break;
+            case 'delete':
+                //
+                break;
+            default:
+                message.info(`Выбран пункт: ${e.key}`);
+        }
+    };
 
     const dropMenuItems = [
         {
-            key: '0',
+            key: 'title',
             type: 'group',
             label: title
         },
         {
-            key: '1',
+            key: 'edit',
             icon: <EditOutlined />,
             label: (
                 <a >
@@ -60,7 +103,7 @@ function ActivityCard({
             ),
         },
         {
-            key: '2',
+            key: 'getStats',
             icon: <PieChartOutlined />,
             label: (
                 <a >
@@ -69,7 +112,7 @@ function ActivityCard({
             ),
         },
         {
-            key: '3',
+            key: 'checkHistory',
             icon: <ClockCircleOutlined />,
             label: (
                 <a >
@@ -78,7 +121,7 @@ function ActivityCard({
             ),
         },
         {
-            key: '4',
+            key: 'addToProject',
             icon: <TeamOutlined />,
             label: (
                 <a >
@@ -87,7 +130,7 @@ function ActivityCard({
             ),
             children: [
                 {
-                    key: 'p0',
+                    key: 'createNewProject',
                     icon: <PlusOutlined />,
                     label: 'Создать новый',
                 },
@@ -105,7 +148,7 @@ function ActivityCard({
             ],
         },
         {
-            key: '5',
+            key: 'toArchive',
             icon: <FolderOutlined />,
             label: (
                 <a >
@@ -117,7 +160,7 @@ function ActivityCard({
             type: 'divider',
         },
         {
-            key: '6',
+            key: 'delete',
             icon: <DeleteOutlined />,
             danger: true,
             label: (
@@ -155,7 +198,9 @@ function ActivityCard({
                     </Button>
 
                     <Dropdown
-                        menu={{ items: dropMenuItems }}
+                        menu={{
+                            items: dropMenuItems.filter(item =>!(item.key === 'toArchive' && status === 3)),
+                            onClick: handleMenuClick }}
                         placement="bottomLeft"
                         trigger={["hover"]}>
                         <Button

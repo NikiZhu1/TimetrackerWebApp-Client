@@ -64,6 +64,7 @@ function Dashboard() {
 
         const fetchAll = async () => {
 
+            console.log("Событие");
             try {
                 await loadData(token, userId);
             } catch (error) {
