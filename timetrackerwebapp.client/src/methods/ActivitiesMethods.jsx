@@ -109,8 +109,28 @@ export const actButton_Click = (activityId) => {
     console.log('Запуск активности с ID:', activityId);
 };
 
+// Добавление активности
+export const AddActivity = async (token, userId, name) => {
+    try {
+        const response = await axios.post('http://localhost:8080/api/Activities',
+            {
+                userId: userId,
+                activityName: name
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error(`Ошибка при добавлении активности:`, error);
+        throw error;
+    }
+}
+
 // Общая функция для управления трекером активности
-export const manageActivity = async (token, activityId, isStarted) => {
+export const ManageActivity = async (token, activityId, isStarted) => {
     try {
         const response = await axios.post('http://localhost:8080/api/ActivityPeriods',
             {
@@ -132,7 +152,7 @@ export const manageActivity = async (token, activityId, isStarted) => {
 
 
 // Общая функция для изменения архивации активности
-export const manageArchiveActivity = async (token, activityId, isArchived) => {
+export const ManageArchiveActivity = async (token, activityId, isArchived) => {
     try {
         const response = await axios.put(`http://localhost:8080/api/Activities/${activityId}`,
             {
@@ -152,7 +172,7 @@ export const manageArchiveActivity = async (token, activityId, isArchived) => {
 };
 
 // Общая функция для изменения названия активности
-export const updateActivityName = async (token, activityId, newActivityName) => {
+export const UpdateActivityName = async (token, activityId, newActivityName) => {
     try {
         const response = await axios.put(`http://localhost:8080/api/Activities/${activityId}`,
             {

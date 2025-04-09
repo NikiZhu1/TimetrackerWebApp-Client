@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { getActivities, getAllActivityPeriods, manageArchiveActivity, manageActivity, DeleteActivity } from './methods/ActivitiesMethods';
+import { getActivities, getAllActivityPeriods, ManageArchiveActivity, ManageActivity, DeleteActivity, AddActivity } from './methods/ActivitiesMethods';
 import { Button, message } from 'antd';
 import { emit, subscribe } from './event.jsx';
 
@@ -9,12 +9,24 @@ export const useActivities = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    const [countStatus1, setCountStatus1] = useState(0);
+    const [countStatus2, setCountStatus2] = useState(0);
+    const [countStatus3, setCountStatus3] = useState(0);
+
     const activitiesRef = useRef(activities);
     const periodsRef = useRef(periods);
 
     // Синхронизируем ref с состоянием
     useEffect(() => {
         activitiesRef.current = activities;
+        const activitiesWithStatus1 = activities.filter(activity => activity.statusId === 1);
+        setCountStatus1(activitiesWithStatus1 ? activitiesWithStatus1.length : 0);
+
+        const activitiesWithStatus2 = activities.filter(activity => activity.statusId === 2);
+        setCountStatus2(activitiesWithStatus2 ? activitiesWithStatus2.length : 0);
+
+        const activitiesWithStatus3 = activities.filter(activity => activity.statusId === 3);
+        setCountStatus3(activitiesWithStatus3 ? activitiesWithStatus3.length : 0);
     }, [activities]);
 
     // Синхронизируем ref с состоянием
@@ -53,9 +65,26 @@ export const useActivities = () => {
         return activities.find(activity => activity.id === activityId) || null;
     };
 
+    // Добавление новой активности
+    const addActivity = async (token, userId, name) => {
+        setLoading(true);
+        setError(null);
+        try {
+            await AddActivity(token, userId, name);
+            emit('activityChanged'); // Обновляем данные
+            console.log('Добавлена активность ', name);
+        } catch (err) {
+            setError(err);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Старт отслеживания активности
     const startActivity = async (token, activityId) => {
         try {
-            await manageActivity(token, activityId, true);
+            await ManageActivity(token, activityId, true);
             emit('activityChanged'); // Обновляем данные
             console.log('Запуск активности с ID:', activityId);
         } catch (err) {
@@ -63,9 +92,10 @@ export const useActivities = () => {
         }
     };
 
+    // Остановка отслеживания активности
     const stopActivity = async (token, activityId) => {
         try {
-            await manageActivity(token, activityId, false);
+            await ManageActivity(token, activityId, false);
             emit('activityChanged'); // Обновляем данные
             console.log('Остановка активности с ID:', activityId);
         } catch (err) {
@@ -88,7 +118,7 @@ export const useActivities = () => {
     //Архивация активности
     const archiveActivity = async (token, activityId) => {
         try {
-            await manageArchiveActivity(token, activityId, true);
+            await ManageArchiveActivity(token, activityId, true);
             emit('activityChanged'); // Обновляем данные
             console.log('Архивирование активности с ID:', activityId);
         } catch (err) {
@@ -99,7 +129,7 @@ export const useActivities = () => {
     //Восстановление активности
     const unarchiveActivity = async (token, activityId) => {
         try {
-            await manageArchiveActivity(token, activityId, false);
+            await ManageArchiveActivity(token, activityId, false);
             emit('activityChanged'); // Обновляем данные
             console.log('Восстановление активности с ID:', activityId);
         } catch (err) {
@@ -120,10 +150,14 @@ export const useActivities = () => {
 
     return {
         activities,
+        countStatus1,
+        countStatus2,
+        countStatus3,
         periods,
         loading,
         error,
         loadData,
+        addActivity,
         actCard_Click,
         startActivity,
         stopActivity,

@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { Button, message, Layout, Collapse, ConfigProvider, Flex, Typography, Skeleton } from 'antd';
-import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, TeamOutlined, ClockCircleOutlined, MenuOutlined, SettingOutlined } from '@ant-design/icons';
+import { Button, message, Layout, Collapse, ConfigProvider, Flex, Typography, Skeleton, Image } from 'antd';
+import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, TeamOutlined, ClockCircleOutlined, MenuOutlined, PlusOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
@@ -17,6 +17,7 @@ import { useActivities } from './useActivities.jsx';
 
 //Компоненты
 import MyMenu from './components/Menu.jsx';
+import Empty from './components/Empty.jsx';
 import ActivityCard from './components/ActivityCard.jsx';
 
 const { Text } = Typography;
@@ -44,7 +45,7 @@ const HeaderStyle = {
 };
 
 function Dashboard() {
-    const { activities, periods, loading, loadData, actCard_Click, startActivity, stopActivity, getActivityStartTime } = useActivities();
+    const { activities, periods, loading, loadData, actCard_Click, startActivity, stopActivity, getActivityStartTime, countStatus1 } = useActivities();
 
     const navigate = useNavigate();
 
@@ -94,7 +95,7 @@ function Dashboard() {
             .filter(activity => activity.statusId === statusId)
             .map(activity => (
                 <ActivityCard
-                    key={activity.id}
+                    key={`activity${activity.id}`}
                     token={token}
                     activityId={activity.id}
                     title={activity.name}
@@ -103,18 +104,13 @@ function Dashboard() {
                     startTime={getActivityStartTime(activity.id)}
                     status={activity.statusId}
                     cardOnClick={() => actCard_Click(activity.id)}
-                    //buttonOnClick={
-                    //    activity.statusId === 1
-                    //        ? () => { startActivity(token, activity.id) }
-                    //        : () => { stopActivity(token, activity.id) }
-                    //}
                 />
             ));
     };
 
     const items = [
         {
-            key: '1',
+            key: 'collapse1',
             label: 'Текущие активности',
             children:
                 <Flex wrap gap='16px'>
@@ -122,15 +118,46 @@ function Dashboard() {
                 </Flex>,
         },
         {
-            key: '2',
-            label: 'Активности',
-            children:
-                <Flex wrap gap='16px'>
-                    {activities && renderActivityCards(1)}
+            key: 'collapse2',
+            label:
+                <Flex gap='12px'>
+                    Активности
+                    {countStatus1 !== 0 && (<Button
+                        color="default"
+                        variant="text"
+                        icon={<PlusOutlined />}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            () => showAddNewActivity();
+                        }}>
+                        Создать
+                    </Button>)}
                 </Flex>,
+            children:
+            <div>
+                {countStatus1 === 0 ? (
+                    <Empty hasActivities={activities && activities.length > 0} />)
+                        : (
+                    <Flex wrap gap='16px'>
+                        {/*<Button color="default" variant="dashed" style={*/}
+                        {/*    {*/}
+                        {/*        width: '215px',*/}
+                        {/*        height: 'auto',*/}
+                        {/*        background: '#f1f1f1',*/}
+                        {/*        borderRadius: '8px'*/}
+                        {/*    }}>*/}
+                        {/*    <Flex vertical gap='20px' align='center'>*/}
+                        {/*        <PlusOutlined style={{ fontSize: '24px' }} />*/}
+                        {/*        Создать активность*/}
+                        {/*    </Flex>*/}
+                        {/*</Button>*/}
+                        {renderActivityCards(1)}
+                    </Flex>
+                )}
+            </div>,
         },
         {
-            key: '3',
+            key: 'collapse3',
             label: 'Архив',
             children:
                 <Flex wrap gap='16px'>

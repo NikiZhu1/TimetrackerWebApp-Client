@@ -61,8 +61,7 @@ function ActivityCard({
     //Нажатие пункта меню
     const handleMenuClick = async e => {
         e.domEvent.stopPropagation();
-        message.info('Click on menu item.');
-        console.log('click', e);
+        console.log('Клик меню карточки', e);
 
         switch (e.key) {
             case 'edit':
@@ -78,6 +77,10 @@ function ActivityCard({
                 //
                 break;
             case 'toArchive':
+                if (status === 3)
+                    break;
+                if (status === 2)
+                    await stopActivity(token, activityId);
                 await archiveActivity(token, activityId);
                 message.success(`${title}: Отпавлено в архив`);
                 break;
@@ -262,7 +265,7 @@ function ActivityCard({
                         {status === 2 && startTime && (
                             <p><ActivityTimer startTime={startTime} /></p>
                         )}
-                        {status !== 2 && (
+                        {status === 1 && (
                             <p>За сегодня: {}</p>
                         )}
                     </>
