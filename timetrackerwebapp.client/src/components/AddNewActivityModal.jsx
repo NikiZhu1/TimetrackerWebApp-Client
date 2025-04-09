@@ -33,7 +33,7 @@ function AddNewActivityForm() {
         }
     ]
 
-    //Авторизация
+    // Добавление активности
     const onFinish = async (values) => {
         try {
             const token = GetJWT();
@@ -48,6 +48,7 @@ function AddNewActivityForm() {
 
             await addActivity(token, userId, values.name);
             Modal.destroyAll();
+            message.success(`${values.name}: Добавлена новая активность`);
             console.log("Добавлена новая активность: ", values);
         }
         catch (error) {

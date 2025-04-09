@@ -92,11 +92,32 @@ export const getAllActivityPeriods = async (token, userId, activities) => {
     }
 };
 
-
 // Форматирование времени
 export const formatActivityTime = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+// Форматирование времени
+export const getStats = async (token, activityId, date1 = null, date2 = null) => {
+    if (!token || !activityId) return;
+
+    try {
+        const response = await axios.get(
+            `http://localhost:8080/api/ActivityPeriods?activityId=${activityId}${date1 && (`&data1=${date1}`)}${date2 && (`&data2=${date2}`)}`,
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+
+        const periods = response.data?.ActivityPeriods || [];
+        return periods;
+
+    } catch (error) {
+        console.error(`Ошибка при получении статистики у activityId ${activityId}:`, error);
+        throw error;
+        return [];
+    }
 };
 
 // Нажатие на карточку
@@ -130,7 +151,7 @@ export const AddActivity = async (token, userId, name) => {
 }
 
 // Общая функция для управления трекером активности
-export const ManageActivity = async (token, activityId, isStarted) => {
+export const ManageTrackerActivity = async (token, activityId, isStarted) => {
     try {
         const response = await axios.post('http://localhost:8080/api/ActivityPeriods',
             {
@@ -149,7 +170,6 @@ export const ManageActivity = async (token, activityId, isStarted) => {
         throw error;
     }
 };
-
 
 // Общая функция для изменения архивации активности
 export const ManageArchiveActivity = async (token, activityId, isArchived) => {

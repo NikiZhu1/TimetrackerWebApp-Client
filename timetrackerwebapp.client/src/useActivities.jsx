@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { getActivities, getAllActivityPeriods, ManageArchiveActivity, ManageActivity, DeleteActivity, AddActivity } from './methods/ActivitiesMethods';
+import { getActivities, getAllActivityPeriods, ManageArchiveActivity, ManageTrackerActivity, DeleteActivity, AddActivity, getStats } from './methods/ActivitiesMethods';
 import { Button, message } from 'antd';
 import { emit, subscribe } from './event.jsx';
 
@@ -65,6 +65,12 @@ export const useActivities = () => {
         return activities.find(activity => activity.id === activityId) || null;
     };
 
+    const getActivityStats = async (token, userId, date1 = null, date2 = null) => {
+        try {
+            getStats(token, userId, date1, date2)
+        }
+    }
+
     // Добавление новой активности
     const addActivity = async (token, userId, name) => {
         setLoading(true);
@@ -84,7 +90,7 @@ export const useActivities = () => {
     // Старт отслеживания активности
     const startActivity = async (token, activityId) => {
         try {
-            await ManageActivity(token, activityId, true);
+            await ManageTrackerActivity(token, activityId, true);
             emit('activityChanged'); // Обновляем данные
             console.log('Запуск активности с ID:', activityId);
         } catch (err) {
@@ -95,7 +101,7 @@ export const useActivities = () => {
     // Остановка отслеживания активности
     const stopActivity = async (token, activityId) => {
         try {
-            await ManageActivity(token, activityId, false);
+            await ManageTrackerActivity(token, activityId, false);
             emit('activityChanged'); // Обновляем данные
             console.log('Остановка активности с ID:', activityId);
         } catch (err) {

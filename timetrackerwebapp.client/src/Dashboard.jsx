@@ -19,6 +19,7 @@ import { useActivities } from './useActivities.jsx';
 import MyMenu from './components/Menu.jsx';
 import Empty from './components/Empty.jsx';
 import ActivityCard from './components/ActivityCard.jsx';
+import { showAddNewActivity } from './components/AddNewActivityModal.jsx';
 
 const { Text } = Typography;
 const { Header, Footer, Sider, Content } = Layout;
@@ -45,7 +46,7 @@ const HeaderStyle = {
 };
 
 function Dashboard() {
-    const { activities, periods, loading, loadData, actCard_Click, startActivity, stopActivity, getActivityStartTime, countStatus1 } = useActivities();
+    const { activities, periods, loading, loadData, actCard_Click, getActivityStartTime, countStatus1 } = useActivities();
 
     const navigate = useNavigate();
 
@@ -128,7 +129,7 @@ function Dashboard() {
                         icon={<PlusOutlined />}
                         onClick={(e) => {
                             e.stopPropagation();
-                            () => showAddNewActivity();
+                            showAddNewActivity();
                         }}>
                         Создать
                     </Button>)}
@@ -183,7 +184,7 @@ function Dashboard() {
                                 },
                             }}>
                             <Collapse
-                                defaultActiveKey={['1', '2']} //Открытая вкладка по умолчанию
+                                defaultActiveKey={['collapse1', 'collapse2']} //Открытая вкладка по умолчанию
                                 ghost items={items}>
                             </Collapse>
                         </ConfigProvider>
