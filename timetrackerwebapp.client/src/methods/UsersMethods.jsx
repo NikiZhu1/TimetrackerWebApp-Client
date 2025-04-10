@@ -45,7 +45,7 @@ export const AuthenticateUser = async (values, isRegistration, navigate) => {
         console.log(`${isRegistration ? 'Зарегистрированный' : 'Авторизованный'} userId:`, userId);
 
         // Перенаправляем на страницу пользователя
-        navigate('/dashboard'); 
+        navigate('/dashboard/activities'); 
     }
     catch (error) {
         console.error(`Ошибка ${isRegistration ? 'регистрации' : 'авторизации'}:`, error);

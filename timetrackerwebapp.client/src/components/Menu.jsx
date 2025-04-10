@@ -2,7 +2,7 @@
 import { Menu, message, ConfigProvider, Layout, Button, Flex } from 'antd';
 import Icon, { AppstoreAddOutlined, AppstoreOutlined, PieChartOutlined, TeamOutlined, ClockCircleOutlined, MenuOutlined, SettingOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
 const { Header, Footer, Sider, Content } = Layout;
@@ -23,17 +23,10 @@ const SiderStyle = {
 };
 
 const items = [
-    { key: 'menu1', icon: <AppstoreAddOutlined />, label: 'Активности' },
-    { key: 'menu2', icon: <PieChartOutlined />, label: 'Статистика' },
-    { key: 'menu3', icon: <ClockCircleOutlined />, label: 'История' },
-    {
-        key: 'menu4', icon: <TeamOutlined />, label: 'Проекты',
-        children: [
-            { key: 'p1', label: 'Проект 1' },
-            { key: 'p2', label: 'Проект 2' },
-            { key: 'p3', label: 'Проект 3' }
-        ],
-    },
+    { key: 'activities', icon: <AppstoreAddOutlined />, label: 'Активности' },
+    { key: 'statistics', icon: <PieChartOutlined />, label: 'Статистика' },
+    { key: 'history', icon: <ClockCircleOutlined />, label: 'История' },
+    { key: 'projects', icon: <TeamOutlined />, label: 'Проекты' },
     {
         key: 'menu5',
         label: 'Navigation Two',
@@ -55,8 +48,10 @@ const items = [
 
 function MyMenu({ onMenuClick }) {
     const navigate = useNavigate();
+    const { activeTab } = useParams(); // Получаем активную вкладку из URL
+
     const [collapsed, setCollapsed] = useState(false);
-    const [selectedKey, setSelectedKey] = useState('menu1');
+    const [selectedKey, setSelectedKey] = useState(activeTab);
 
     //Скрытие-разворот меню
     const toggleCollapsed = () => {
@@ -70,6 +65,7 @@ function MyMenu({ onMenuClick }) {
         navigate('/');
     };
 
+    // Выбор вкладки меню
     const handleMenuClick = (e) => {
         console.log("Click menu", e.key)
         setSelectedKey(e.key); // Обновляем состояние
@@ -79,7 +75,7 @@ function MyMenu({ onMenuClick }) {
     };
 
     return (
-        <Sider width='200px' style={SiderStyle} collapsible collapsed={collapsed} trigger={null}>
+        <Sider width='225px' style={SiderStyle} collapsible collapsed={collapsed} trigger={null}>
             <Flex vertical justify='space-between' style={{ height: '100%' }}>
                 {/* Верхний блок (меню и кнопка сворачивания) */}
                 <div>
@@ -108,7 +104,7 @@ function MyMenu({ onMenuClick }) {
                             },
                         }}>
                         <Menu
-                            selectedKeys={[selectedKey]} //по умолчанию открытая вкладка
+                            selectedKeys={[selectedKey || 'activities']} //по умолчанию открытая вкладка
                             defaultOpenKeys={['p1']} //по умолчанию открытое под-меню
                             inlineIndent={12}
                             mode="inline"

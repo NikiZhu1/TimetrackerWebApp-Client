@@ -122,18 +122,6 @@ function ActivitiesTab() {
                     <Empty hasActivities={activities && activities.length > 0} />)
                         : (
                     <Flex wrap gap='16px'>
-                        {/*<Button color="default" variant="dashed" style={*/}
-                        {/*    {*/}
-                        {/*        width: '215px',*/}
-                        {/*        height: 'auto',*/}
-                        {/*        background: '#f1f1f1',*/}
-                        {/*        borderRadius: '8px'*/}
-                        {/*    }}>*/}
-                        {/*    <Flex vertical gap='20px' align='center'>*/}
-                        {/*        <PlusOutlined style={{ fontSize: '24px' }} />*/}
-                        {/*        Создать активность*/}
-                        {/*    </Flex>*/}
-                        {/*</Button>*/}
                         {renderActivityCards(1)}
                     </Flex>
                 )}

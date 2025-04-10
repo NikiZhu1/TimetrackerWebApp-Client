@@ -2,7 +2,7 @@
 import { Button, message, Layout, Collapse, ConfigProvider, Flex, Typography, Skeleton, Image } from 'antd';
 import Icon from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { subscribe } from './event.jsx';
 
@@ -44,14 +44,24 @@ const HeaderStyle = {
 function Dashboard() {
     const { activities, periods, loading, loadData, actCard_Click, getActivityStartTime, countStatus1 } = useActivities();
     const navigate = useNavigate();
+    const { activeTab = 'activities' } = useParams(); // Получаем активную вкладку из URL
 
     // Состояние для активной вкладки
-    const [activeTab, setActiveTab] = useState('menu1'); 
+    const [activeMenuTab, setActiveMenuTab] = useState(activeTab); 
 
     // Обработчик изменения вкладки
     const handleMenuClick = (key) => {
-        setActiveTab(key);
+        setActiveMenuTab(key);
+        navigate(`/dashboard/${key}`);
     };
+
+    // Проверяем валидность activeTab
+    useEffect(() => {
+        const validTabs = ['activities', 'statistics', 'history', 'projects'];
+        if (activeTab && !validTabs.includes(activeTab)) {
+            navigate('/dashboard/activities', { replace: true });
+        }
+    }, [activeMenuTab, navigate]);
 
     useEffect(() => {
 
@@ -86,16 +96,16 @@ function Dashboard() {
     // Рендер контента в зависимости от вкладки
     const renderContent = () => {
         switch (activeTab) {
-            case 'menu1': // Активности
+            case 'activities': // Активности
                 return (<Activities />);
 
-            case 'menu2': // Статистика
+            case 'statistics': // Статистика
                 return <div>Контент статистики</div>;
 
-            case 'menu3': // История
+            case 'history': // История
                 return <div>Контент истории</div>;
 
-            case 'menu4': // Проекты
+            case 'projects': // Проекты
                 return <div>Контент проектов</div>;
 
             default:
