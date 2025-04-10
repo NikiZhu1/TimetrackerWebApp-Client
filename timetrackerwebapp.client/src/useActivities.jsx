@@ -69,6 +69,9 @@ export const useActivities = () => {
         try {
             getStats(token, userId, date1, date2)
         }
+        catch {
+
+        }
     }
 
     // Добавление новой активности

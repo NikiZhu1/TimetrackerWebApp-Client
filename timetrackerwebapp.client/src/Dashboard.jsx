@@ -1,10 +1,9 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { Button, message, Layout, Collapse, ConfigProvider, Flex, Typography, Skeleton, Image } from 'antd';
-import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, TeamOutlined, ClockCircleOutlined, MenuOutlined, PlusOutlined } from '@ant-design/icons';
+import Icon from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import axios from 'axios';
 import { subscribe } from './event.jsx';
 
 //Стили
@@ -12,16 +11,13 @@ import './Collapse.css';
 
 //Методы
 import { GetJWT, GetUserIdFromJWT } from './methods/UsersMethods.jsx';
-//import { getActivities, initActivitiesPeriodsState, renderActivityCards, initActivitiesState, initActivitiyPeriodState, getAllActivityPeriods } from './methods/ActivitiesMethods';
 import { useActivities } from './useActivities.jsx';
 
 //Компоненты
 import MyMenu from './components/Menu.jsx';
-import Empty from './components/Empty.jsx';
-import ActivityCard from './components/ActivityCard.jsx';
-import { showAddNewActivity } from './components/AddNewActivityModal.jsx';
 
-const { Text } = Typography;
+import Activities from './pages/ActivitiesTab.jsx';
+
 const { Header, Footer, Sider, Content } = Layout;
 
 //Тест своих иконок
@@ -47,8 +43,15 @@ const HeaderStyle = {
 
 function Dashboard() {
     const { activities, periods, loading, loadData, actCard_Click, getActivityStartTime, countStatus1 } = useActivities();
-
     const navigate = useNavigate();
+
+    // Состояние для активной вкладки
+    const [activeTab, setActiveTab] = useState('menu1'); 
+
+    // Обработчик изменения вкладки
+    const handleMenuClick = (key) => {
+        setActiveTab(key);
+    };
 
     useEffect(() => {
 
@@ -80,115 +83,34 @@ function Dashboard() {
 
     }, []);
 
-    // Рендер карточек по статусу
-    const renderActivityCards = (statusId) => {
+    // Рендер контента в зависимости от вкладки
+    const renderContent = () => {
+        switch (activeTab) {
+            case 'menu1': // Активности
+                return (<Activities />);
 
-        if (loading && !activities) return <Skeleton active />;
+            case 'menu2': // Статистика
+                return <div>Контент статистики</div>;
 
-        const token = GetJWT();
-        if (!token) {
-            message.warning('Сначала войдите в систему');
-            navigate('/');
-            return;
+            case 'menu3': // История
+                return <div>Контент истории</div>;
+
+            case 'menu4': // Проекты
+                return <div>Контент проектов</div>;
+
+            default:
+                return (<Activities />);
         }
-
-        return activities
-            .filter(activity => activity.statusId === statusId)
-            .map(activity => (
-                <ActivityCard
-                    key={`activity${activity.id}`}
-                    token={token}
-                    activityId={activity.id}
-                    title={activity.name}
-                    //dayStats={formatActivityTime(activity.activeFrom)}
-                    color='rgb(204, 194, 255)'
-                    startTime={getActivityStartTime(activity.id)}
-                    status={activity.statusId}
-                    cardOnClick={() => actCard_Click(activity.id)}
-                />
-            ));
     };
-
-    const items = [
-        {
-            key: 'collapse1',
-            label: 'Текущие активности',
-            children:
-                <Flex wrap gap='16px'>
-                    {activities && renderActivityCards(2)}
-                </Flex>,
-        },
-        {
-            key: 'collapse2',
-            label:
-                <Flex gap='12px'>
-                    Активности
-                    {countStatus1 !== 0 && (<Button
-                        color="default"
-                        variant="text"
-                        icon={<PlusOutlined />}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            showAddNewActivity();
-                        }}>
-                        Создать
-                    </Button>)}
-                </Flex>,
-            children:
-            <div>
-                {countStatus1 === 0 ? (
-                    <Empty hasActivities={activities && activities.length > 0} />)
-                        : (
-                    <Flex wrap gap='16px'>
-                        {/*<Button color="default" variant="dashed" style={*/}
-                        {/*    {*/}
-                        {/*        width: '215px',*/}
-                        {/*        height: 'auto',*/}
-                        {/*        background: '#f1f1f1',*/}
-                        {/*        borderRadius: '8px'*/}
-                        {/*    }}>*/}
-                        {/*    <Flex vertical gap='20px' align='center'>*/}
-                        {/*        <PlusOutlined style={{ fontSize: '24px' }} />*/}
-                        {/*        Создать активность*/}
-                        {/*    </Flex>*/}
-                        {/*</Button>*/}
-                        {renderActivityCards(1)}
-                    </Flex>
-                )}
-            </div>,
-        },
-        {
-            key: 'collapse3',
-            label: 'Архив',
-            children:
-                <Flex wrap gap='16px'>
-                    {activities && renderActivityCards(3)}
-                </Flex>,
-        },
-    ];
 
     return (
         <div>
             <Layout>
-                <MyMenu/>
+                <MyMenu onMenuClick={handleMenuClick} />
                 <Layout>
                     <Header style={HeaderStyle}>Headerrr</Header>
                     <Content style={{ padding: '24px', paddingTop: '0px' }} >
-                        <ConfigProvider
-                            theme={{
-                                components: {
-                                    Collapse: {
-                                        contentPadding: '0px',
-                                        headerPadding: '16px 0 16px 0'
-                                    },
-                                },
-                            }}>
-                            <Collapse
-                                defaultActiveKey={['collapse1', 'collapse2']} //Открытая вкладка по умолчанию
-                                ghost items={items}>
-                            </Collapse>
-                        </ConfigProvider>
-                        
+                        {renderContent()}
                     </Content>
                     <Footer>Footer</Footer>
                 </Layout>

@@ -10,16 +10,6 @@ const { Header, Footer, Sider, Content } = Layout;
 //Компоненты
 import MenuButton from './MenuButton.jsx';
 
-//Тест своих иконок
-const HistorySvg = () => (
-    <svg width="24" height="23" viewBox="0 0 24 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <title>history icon</title>
-        <path d="M12 5.5V11.5L16 13.5M22 11.5C22 17.0228 17.5228 21.5 12 21.5C6.47715 21.5 2 17.0228 2 11.5C2 5.97715 6.47715 1.5 12 1.5C17.5228 1.5 22 5.97715 22 11.5Z" stroke="#B4B4B4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-    </svg>
-);
-const HistoryIcon = props => <Icon component={HistorySvg} {...props} />;
-
-
 const SiderStyle = {
     background: '#282828',
     overflow: 'auto',
@@ -33,11 +23,11 @@ const SiderStyle = {
 };
 
 const items = [
-    { key: '1', icon: <AppstoreAddOutlined />, label: 'Активности' },
-    { key: '2', icon: <PieChartOutlined />, label: 'Статистика' },
-    { key: '3', icon: <ClockCircleOutlined />, label: 'История' },
+    { key: 'menu1', icon: <AppstoreAddOutlined />, label: 'Активности' },
+    { key: 'menu2', icon: <PieChartOutlined />, label: 'Статистика' },
+    { key: 'menu3', icon: <ClockCircleOutlined />, label: 'История' },
     {
-        key: '4', icon: <TeamOutlined />, label: 'Проекты',
+        key: 'menu4', icon: <TeamOutlined />, label: 'Проекты',
         children: [
             { key: 'p1', label: 'Проект 1' },
             { key: 'p2', label: 'Проект 2' },
@@ -45,7 +35,7 @@ const items = [
         ],
     },
     {
-        key: '5',
+        key: 'menu5',
         label: 'Navigation Two',
         icon: <AppstoreOutlined />,
         children: [
@@ -63,9 +53,10 @@ const items = [
     },
 ];
 
-function MyMenu() {
+function MyMenu({ onMenuClick }) {
     const navigate = useNavigate();
     const [collapsed, setCollapsed] = useState(false);
+    const [selectedKey, setSelectedKey] = useState('menu1');
 
     //Скрытие-разворот меню
     const toggleCollapsed = () => {
@@ -77,6 +68,14 @@ function MyMenu() {
         Cookies.remove('token'); // Удаляем токен
         message.info('Вы вышли из системы');
         navigate('/');
+    };
+
+    const handleMenuClick = (e) => {
+        console.log("Click menu", e.key)
+        setSelectedKey(e.key); // Обновляем состояние
+        if (onMenuClick) {
+            onMenuClick(e.key); // Пробрасываем событие в родительский компонент
+        }
     };
 
     return (
@@ -109,13 +108,14 @@ function MyMenu() {
                             },
                         }}>
                         <Menu
-                            defaultSelectedKeys={['1']}
-                            defaultOpenKeys={['p1']}
+                            selectedKeys={[selectedKey]} //по умолчанию открытая вкладка
+                            defaultOpenKeys={['p1']} //по умолчанию открытое под-меню
                             inlineIndent={12}
                             mode="inline"
                             theme="dark"
                             inlineCollapsed={collapsed}
                             items={items}
+                            onClick={handleMenuClick}
                         />
                     </ConfigProvider>
                 </div>
