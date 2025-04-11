@@ -249,12 +249,6 @@ function ActivityCard({
             ]}
             style={{
                 width: '215px',
-                boxShadow: `0px 0px 0px 0px rgba(204, 194, 255, 0.1),
-                           0px 6px 13px 0px rgba(204, 194, 255, 0.1),
-                           0px 23px 23px 0px rgba(204, 194, 255, 0.09),
-                           0px 51px 31px 0px rgba(204, 194, 255, 0.05),
-                           0px 91px 37px 0px rgba(204, 194, 255, 0.01),
-                           0px 143px 40px 0px rgba(204, 194, 255, 0)`,
                 background: color
             }}>
             <Card.Meta

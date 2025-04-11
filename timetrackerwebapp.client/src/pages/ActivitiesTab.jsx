@@ -109,12 +109,13 @@ function ActivitiesTab() {
                     Активности
                     {countStatus1 !== 0 && (<Button
                         color="default"
-                        variant="text"
+                        variant="outlined"
                         icon={<PlusOutlined />}
                         onClick={(e) => {
                             e.stopPropagation();
                             showAddNewActivity();
-                        }}>
+                        }}
+                        style={{background: 'transparent'}}>
                         Создать
                     </Button>)}
                 </Flex>,
@@ -151,8 +152,9 @@ function ActivitiesTab() {
             }}>
             <Title level={3}>h3. Ant Design</Title>
             <Collapse
-                defaultActiveKey={['collapseActLive', 'collapseActArchive']} //Открытая вкладка по умолчанию
-                ghost items={items}>
+                defaultActiveKey={['collapseActLive', 'collapseAct']} //Открытая вкладка по умолчанию
+                ghost items={items}
+                collapsible='icon'>
             </Collapse>
         </ConfigProvider>
     );

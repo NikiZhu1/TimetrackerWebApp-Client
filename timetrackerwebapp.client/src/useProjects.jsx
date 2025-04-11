@@ -1,32 +1,20 @@
-﻿import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { getActivities, getAllActivityPeriods, ManageArchiveActivity, ManageTrackerActivity, DeleteActivity, AddActivity, getStats } from './methods/ActivitiesMethods';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { getActivities, getAllActivityPeriods, ManageArchiveActivity, ManageTrackerActivity, DeleteActivity, AddActivity, getStats } from './methods/ProjectsMethods.jsx';
 import { emit, subscribe } from './event.jsx';
 
-export const useActivities = () => {
-    const [activities, setActivities] = useState([]);
+export const useProjects = () => {
+    const [projects, setProjects] = useState([]);
     const [periods, setPeriods] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const [countStatus1, setCountStatus1] = useState(0);
-    const [countStatus2, setCountStatus2] = useState(0);
-    const [countStatus3, setCountStatus3] = useState(0);
-
-    const activitiesRef = useRef(activities);
+    const activitiesRef = useRef(projects);
     const periodsRef = useRef(periods);
 
     // Синхронизируем ref с состоянием
     useEffect(() => {
-        activitiesRef.current = activities;
-        const activitiesWithStatus1 = activities.filter(activity => activity.statusId === 1);
-        setCountStatus1(activitiesWithStatus1 ? activitiesWithStatus1.length : 0);
-
-        const activitiesWithStatus2 = activities.filter(activity => activity.statusId === 2);
-        setCountStatus2(activitiesWithStatus2 ? activitiesWithStatus2.length : 0);
-
-        const activitiesWithStatus3 = activities.filter(activity => activity.statusId === 3);
-        setCountStatus3(activitiesWithStatus3 ? activitiesWithStatus3.length : 0);
-    }, [activities]);
+        activitiesRef.current = projects;
+    }, [projects]);
 
     // Синхронизируем ref с состоянием
     useEffect(() => {
@@ -39,7 +27,7 @@ export const useActivities = () => {
         try {
             // 1. Сначала загружаем активности
             const activitiesData = await getActivities(token, userId);
-            setActivities(activitiesData);
+            setProjects(activitiesData);
 
             // 2. Затем загружаем периоды для полученных активностей
             const periodsData = await getAllActivityPeriods(token, userId, activitiesData);
@@ -59,9 +47,9 @@ export const useActivities = () => {
 
     // Получение одной активности из массива полученных
     const getActivity = (activityId) => {
-        if (!activities || !Array.isArray(activities))
+        if (!projects || !Array.isArray(projects))
             return null;
-        return activities.find(activity => activity.id === activityId) || null;
+        return projects.find(activity => activity.id === activityId) || null;
     };
 
     const getActivityStats = async (token, userId, date1 = null, date2 = null) => {
@@ -157,7 +145,7 @@ export const useActivities = () => {
     };
 
     return {
-        activities,
+        activities: projects,
         countStatus1,
         countStatus2,
         countStatus3,

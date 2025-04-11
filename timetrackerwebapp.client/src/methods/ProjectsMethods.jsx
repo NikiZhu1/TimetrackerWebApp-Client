@@ -1,0 +1,266 @@
+import axios from 'axios';
+import {getActivity} from './ActivitiesMethods';
+import { getUserInfo } from './UsersMethods';
+
+// 1 получаем инфу в каких проектах состоит пользователь http://localhost:8080/api/Users/{userID}/projects
+// [
+//     {
+//       "id": 1,
+//       "userId": 1,
+//       "projectId": 1,
+//       "isCreator": true
+//     },
+//     {
+//       "id": 2,
+//       "userId": 1,
+//       "projectId": 2,
+//       "isCreator": true
+//     },
+//     {
+//       "id": 3,
+//       "userId": 1,
+//       "projectId": 3,
+//       "isCreator": true
+//     }
+// ]
+// 2 получаем циклом инфу про проект http://localhost:8080/api/Projects/{projectId}
+// {
+//     "projectId": 2,
+//     "projectName": "test",
+//     "projectKey": "GStMpeyM",
+//     "creationDate": "2025-04-11 00:00:00",
+//     "finishDate": null
+// }
+// 3 получаем id участников в проекте http://localhost:8080/api/Projects/{projectId}/users
+// [
+//     {
+//       "id": 2,
+//       "userId": 1,
+//       "projectId": 2,
+//       "isCreator": true
+//     },
+//     {
+//       "id": 4,
+//       "userId": 2,
+//       "projectId": 2,
+//       "isCreator": false
+//     }
+// ]
+// 3.1 получаем циклом участников http://localhost:8080/api/Users/{userId}
+// {
+//     "id": 1,
+//     "chatId": 0,
+//     "name": "nikizhu"
+// }
+// 4 получаем id акивностей в проекте http://localhost:8080/api/Projects/{projectId}/activities
+// [
+//     {
+//       "id": 1,
+//       "activityId": 1,
+//       "projectId": 2
+//     }
+// ]
+// 4.1 получаем циклом активности http://localhost:8080/api/Activities/{activityId}
+// {
+//     "id": 1,
+//     "name": "Работа",
+//     "activeFrom": "2025-04-10 00:00:00",
+//     "userId": 1,
+//     "statusId": 1
+// }
+
+// Получение информации о проектах, в которых участвует пользователь
+export const getFullProjectInfo = async (token, userProject) => {
+    const [projectInfo, members, activities] = await Promise.all([
+      getProjectDetails(token, userProject.projectId),
+      getProjectMembers(token, userProject.projectId),
+      getProjectActivities(token, userProject.projectId)
+    ]);
+  
+    return {
+      ...projectInfo,
+      isCreator: userProject.isCreator,
+      members,
+      activities
+    };
+};
+
+// Получение информации в каких проектах состоит пользователь
+export const getUserProjectInfo = async (token, userId) => {
+    if (!token || !userId) return [];
+
+    try {
+        const response = await axios.get(`http://localhost:8080/api/Users/${userId}/projects`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        console.log("Проекты пользователя: ", response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Ошибка при получении проектов пользователя:', error);
+        throw error;
+        return [];
+    }
+};
+
+// Получение деталей проекта
+export const getProjectDetails = async (token, projectId) => {
+    const response = await axios.get(`http://localhost:8080/api/Projects/${projectId}`, 
+        { 
+            headers: { Authorization: `Bearer ${token}` } 
+        }
+    );
+    return response.data;
+  };
+
+// Получение участников проекта
+export const getProjectMembers = async (token, projectId) => {
+    // 1. Получаем связи пользователей с проектом
+    const response = await axios.get(`http://localhost:8080/api/Projects/${projectId}/users`,
+        { 
+            headers: { Authorization: `Bearer ${token}` } 
+        }
+    );
+    
+    // 2. Получаем информацию о каждом участнике
+    const members = await Promise.all(
+      response.data.map(async (projectUser) => {
+        const userInfo = await getUserInfo(token, projectUser.userId);
+        return {
+          ...userInfo,
+          isCreator: projectUser.isCreator
+        };
+      })
+    );
+    
+    return members;
+  };
+
+// Получение активностей проекта
+export const getProjectActivities = async (token, projectId) => {
+    // 1. Получаем связи активностей с проектом
+    const response = await axios.get(`http://localhost:8080/api/Projects/${projectId}/activities`,
+        { 
+            headers: { Authorization: `Bearer ${token}` } 
+        }
+    );
+    
+    // 2. Получаем информацию о каждой активности
+    const activities = await Promise.all(
+      response.data.map(projectActivity => 
+        getActivity(token, projectActivity.activityId)
+      )
+    );
+    
+    return activities;
+  };
+
+// Нажатие на карточку
+export const actCard_Click = (activityId) => {
+    console.log('Выбрана активность с ID:', activityId);
+};
+
+// Нажатие на кнопку
+export const actButton_Click = (activityId) => {
+    console.log('Запуск активности с ID:', activityId);
+};
+
+// Добавление активности
+export const AddActivity = async (token, userId, name) => {
+    try {
+        const response = await axios.post('http://localhost:8080/api/Activities',
+            {
+                userId: userId,
+                activityName: name
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error(`Ошибка при добавлении активности:`, error);
+        throw error;
+    }
+}
+
+// Общая функция для управления трекером активности
+export const ManageTrackerActivity = async (token, activityId, isStarted) => {
+    try {
+        const response = await axios.post('http://localhost:8080/api/ActivityPeriods',
+            {
+                ActivityId: activityId,
+                IsStarted: isStarted
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+
+        //emit('activityChanged'); //Обновление данных
+        return response.data;
+    } catch (error) {
+        console.error(`Ошибка при ${isStarted ? 'старте' : 'остановке'} активности:`, error);
+        throw error;
+    }
+};
+
+// Общая функция для изменения архивации активности
+export const ManageArchiveActivity = async (token, activityId, isArchived) => {
+    try {
+        const response = await axios.put(`http://localhost:8080/api/Activities/${activityId}`,
+            {
+                updateName: false,
+                archived: isArchived
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error(`Ошибка при ${isArchived ? 'архивации' : 'восстановлении'} активности:`, error);
+        throw error;
+    }
+};
+
+// Общая функция для изменения названия активности
+export const UpdateActivityName = async (token, activityId, newActivityName) => {
+    try {
+        const response = await axios.put(`http://localhost:8080/api/Activities/${activityId}`,
+            {
+                updateName: true,
+                archived: false,
+                newName: newActivityName
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error(`Ошибка при изменении названия активности:`, error);
+        throw error;
+    }
+};
+
+// Общая функция для изменения названия активности
+export const DeleteActivity = async (token, activityId) => {
+    try {
+        const response = await axios.delete(`http://localhost:8080/api/Activities/${activityId}`,
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error(`Ошибка при удаении активности:`, error);
+        throw error;
+    }
+};

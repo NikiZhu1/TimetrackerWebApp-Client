@@ -1,9 +1,13 @@
 ﻿import React, { act, useEffect, useState } from 'react';
-import { Button, message, Dropdown, Flex, Card, Modal, Typography } from 'antd';
-import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, PauseOutlined, FolderOpenOutlined, ExclamationCircleFilled, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, TeamOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Button, message, Dropdown, Flex, Card, Modal, Typography, Tag, Divider } from 'antd';
+import Icon, { EditOutlined, EllipsisOutlined, CalendarOutlined, CarryOutOutlined, CheckCircleFilled, ExclamationCircleFilled, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, TeamOutlined, DeleteOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 
 const { confirm } = Modal;
+const { Text } = Typography;
+
+//Стили
+import '../App.css';
 
 //Компоненты
 import ActivityTimer from './ActivityTimer.jsx';
@@ -16,6 +20,8 @@ function ProjectCard({
     projectId,
     title,
     cardOnClick = null,
+    ascessKey,
+    isUserProjet,
     dateCreate,
     dateFinish,
     paricipants,
@@ -168,12 +174,6 @@ function ProjectCard({
             onClick={cardOnClick}
             style={{
                 width: '430px',
-                boxxShadow: `0px 0px 0px 0px rgba(204, 194, 255, 0.1),
-                           0px 6px 13px 0px rgba(204, 194, 255, 0.1),
-                           0px 23px 23px 0px rgba(204, 194, 255, 0.09),
-                           0px 51px 31px 0px rgba(204, 194, 255, 0.05),
-                           0px 91px 37px 0px rgba(204, 194, 255, 0.01),
-                           0px 143px 40px 0px rgba(204, 194, 255, 0)`,
                 //background: 'red'
             }}>
             <Card.Meta
@@ -201,13 +201,56 @@ function ProjectCard({
                         </Dropdown>
                     </Flex>
                 }
-                description={
-                    <>
-                        <Typography.Text>FFFFFF</Typography.Text>
-                    </>
-                }
             />
-            <Typography.Text>FFFFFF</Typography.Text>
+            <Flex vertical gap='8px' style ={{paddingTop: '8px'}}>
+                <Flex align='flex-start' gap='10px'>
+
+                    <CheckCircleFilled style ={{color: '#4DCF5C', fontSize: '16px', paddingTop: '2px'}}/>
+
+                    <Flex vertical gap='4px'>
+                        <Text>Активности в процессе:</Text>
+                        <Flex>
+                            <Tag color="purple">Бэкэнд</Tag>
+                            <Tag color="purple">Фронтенд</Tag>
+                        </Flex>
+                    </Flex>
+                </Flex>
+
+                <Flex align='flex-start' gap='10px'>
+                
+                    <TeamOutlined style ={{fontSize: '16px', paddingTop: '2px'}}/>
+                    
+                    <Flex vertical gap='4px'>
+                        <Text>Участники: 3</Text>
+                        <Flex>
+                            <Tag>@nikizhu</Tag>
+                            <Tag>@crissier</Tag>
+                            <Tag>@crissier</Tag>
+                            <Tag>@crissier</Tag>
+                        </Flex>
+                    </Flex>
+                </Flex>
+
+                <Flex justify='space-between'>
+                    <Flex align='flex-start' gap='10px'>
+                        <CalendarOutlined style ={{fontSize: '16px', paddingTop: '2px'}}/>
+                        
+                        <Flex vertical gap='4px'>
+                            <Text>Страт: 03.04.2025</Text>
+                        </Flex>
+                    </Flex>
+
+
+                    <Flex align='flex-start' gap='10px'>
+                        <CarryOutOutlined style ={{fontSize: '16px', paddingTop: '2px'}}/>
+                        
+                        <Flex vertical gap='4px'>
+                            <Text>Финиш: 03.04.2025</Text>
+                        </Flex>
+                    </Flex>
+                </Flex>
+                
+            </Flex>
         </Card>
     );
 }

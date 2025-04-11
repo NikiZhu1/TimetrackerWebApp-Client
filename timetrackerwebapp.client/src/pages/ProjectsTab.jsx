@@ -39,19 +39,19 @@ function ProjectsTab() {
 
         console.log("Используемый userId:", userId);
 
-        const fetchAll = async () => {
+        // const fetchAll = async () => {
 
-            console.log("Событие");
-            try {
-                await loadData(token, userId);
-            } catch (error) {
-                console.error('Ошибка загрузки данных:', error);
-                message.error('Не удалось загрузить данные');
-            }
-        };
+        //     console.log("Событие");
+        //     try {
+        //         await loadData(token, userId);
+        //     } catch (error) {
+        //         console.error('Ошибка загрузки данных:', error);
+        //         message.error('Не удалось загрузить данные');
+        //     }
+        // };
 
-        fetchAll();
-        subscribe('activityChanged', fetchAll); // Подписка
+        // fetchAll();
+        // subscribe('activityChanged', fetchAll); // Подписка
 
     }, []);
 
@@ -86,18 +86,19 @@ function ProjectsTab() {
 
     const items = [
         {
-            key: 'collapse1',
+            key: 'collapseMyProjects',
             label: 
                 <Flex gap='12px'>
                     Мои проекты
                     {countStatus1 !== 0 && (<Button
                         color="default"
-                        variant="text"
+                        variant="outlined"
                         icon={<PlusOutlined />}
                         onClick={(e) => {
                             e.stopPropagation();
                             showAddNewActivity();
-                        }}>
+                        }}
+                        style={{background: 'transparent'}}>
                         Создать
                     </Button>)}
                 </Flex>,
@@ -108,18 +109,19 @@ function ProjectsTab() {
                 </Flex>,
         },
         {
-            key: 'collapse2',
+            key: 'collapsePartisipatingProjects',
             label:
                 <Flex gap='12px'>
-                    Активности
+                    Совместные проекты
                     {countStatus1 !== 0 && (<Button
                         color="default"
-                        variant="text"
+                        variant="dashed"
                         icon={<LinkOutlined />}
                         onClick={(e) => {
                             e.stopPropagation();
                             showAddNewActivity();
-                        }}>
+                        }}
+                        style={{background: 'transparent'}}>
                         Присоединиться
                     </Button>)}
                 </Flex>,
@@ -155,10 +157,10 @@ function ProjectsTab() {
                         },
                     },
                 }}>
-                <Title level={3}>h3. Ant Design</Title>
                 <Collapse
-                    defaultActiveKey={['collapseActLive', 'collapseActArchive']} //Открытая вкладка по умолчанию
-                    ghost items={items}>
+                    defaultActiveKey={['collapseMyProjects', 'collapsePartisipatingProjects']} //Открытая вкладка по умолчанию
+                    ghost items={items}
+                    collapsible='icon'>
                 </Collapse>
             </ConfigProvider>
         </>

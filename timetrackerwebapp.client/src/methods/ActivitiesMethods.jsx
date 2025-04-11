@@ -1,8 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
-import '@ant-design/v5-patch-for-react-19';
-import axios from 'axios';
-import { message } from 'antd';
-import { emit } from '../event.jsx';
+﻿import axios from 'axios';
 
 // Получение активностей
 export const getActivities = async (token, userId) => {
@@ -26,6 +22,15 @@ export const getActivities = async (token, userId) => {
         return [];
     }
 };
+
+const getActivity = async (token, activityId) => {
+    const response = await axios.get(`http://localhost:8080/api/Activities/${activityId}`,
+        { 
+            headers: { Authorization: `Bearer ${token}` } 
+        }
+    );
+    return response.data;
+  };
 
 // Получение периодов активности
 export const getActivityPeriods = async (token, activityId) => {

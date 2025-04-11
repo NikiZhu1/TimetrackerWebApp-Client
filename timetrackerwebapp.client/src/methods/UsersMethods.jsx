@@ -81,4 +81,14 @@ export const GetUserIdFromJWT = (token) => {
         console.error('Ошибка при декодировании токена:', decodeError);
         return;
     }
-}
+};
+
+// Получение информации о пользователе
+export const getUserInfo = async (token, userId) => {
+    const response = await axios.get(`http://localhost:8080/api/Users/${userId}`,
+        { 
+            headers: { Authorization: `Bearer ${token}` } 
+        }
+    );
+    return response.data;
+  };
