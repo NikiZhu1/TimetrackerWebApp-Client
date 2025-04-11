@@ -16,7 +16,8 @@ import { useActivities } from './useActivities.jsx';
 //Компоненты
 import MyMenu from './components/Menu.jsx';
 
-import Activities from './pages/ActivitiesTab.jsx';
+import ActivitiesTab from './pages/ActivitiesTab.jsx';
+import ProjectsTab from './pages/ProjectsTab.jsx';
 
 const { Header, Footer, Sider, Content } = Layout;
 
@@ -97,7 +98,7 @@ function Dashboard() {
     const renderContent = () => {
         switch (activeTab) {
             case 'activities': // Активности
-                return (<Activities />);
+                return (<ActivitiesTab />);
 
             case 'statistics': // Статистика
                 return <div>Контент статистики</div>;
@@ -106,7 +107,7 @@ function Dashboard() {
                 return <div>Контент истории</div>;
 
             case 'projects': // Проекты
-                return <div>Контент проектов</div>;
+                return (<ProjectsTab />);
 
             default:
                 return (<Activities />);

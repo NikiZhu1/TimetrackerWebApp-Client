@@ -1,12 +1,12 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { Button, message, Collapse, ConfigProvider, Flex, Skeleton, Typography } from 'antd';
-import Icon, { PlusOutlined } from '@ant-design/icons';
+import Icon, { PlusOutlined, LinkOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { subscribe } from '../event.jsx';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 //Стили
 import '../Collapse.css';
@@ -17,19 +17,10 @@ import { useActivities } from '../useActivities.jsx';
 
 //Компоненты
 import Empty from '../components/Empty.jsx';
-import ActivityCard from '../components/ActivityCard.jsx';
+import ProjectCard from '../components/ProjectCard.jsx';
 import { showAddNewActivity } from '../components/AddNewActivityModal.jsx';
 
-//Тест своих иконок
-const HistorySvg = () => (
-    <svg width="24" height="23" viewBox="0 0 24 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <title>history icon</title>
-        <path d="M12 5.5V11.5L16 13.5M22 11.5C22 17.0228 17.5228 21.5 12 21.5C6.47715 21.5 2 17.0228 2 11.5C2 5.97715 6.47715 1.5 12 1.5C17.5228 1.5 22 5.97715 22 11.5Z" stroke="#B4B4B4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
-    </svg>
-);
-const HistoryIcon = props => <Icon component={HistorySvg} {...props} />;
-
-function ActivitiesTab() {
+function ProjectsTab() {
     const { activities, periods, loading, loadData, actCard_Click, getActivityStartTime, countStatus1 } = useActivities();
 
     const navigate = useNavigate();
@@ -65,7 +56,7 @@ function ActivitiesTab() {
     }, []);
 
     // Рендер карточек по статусу
-    const renderActivityCards = (statusId) => {
+    const renderProjectsCards = (statusId) => {
 
         if (loading && !activities) return <Skeleton active />;
 
@@ -95,18 +86,10 @@ function ActivitiesTab() {
 
     const items = [
         {
-            key: 'collapseActLive',
-            label: 'Текущие активности',
-            children:
-                <Flex wrap gap='16px'>
-                    {activities && renderActivityCards(2)}
-                </Flex>,
-        },
-        {
-            key: 'collapseAct',
-            label:
+            key: 'collapse1',
+            label: 
                 <Flex gap='12px'>
-                    Активности
+                    Мои проекты
                     {countStatus1 !== 0 && (<Button
                         color="default"
                         variant="text"
@@ -119,43 +102,67 @@ function ActivitiesTab() {
                     </Button>)}
                 </Flex>,
             children:
+                <Flex wrap gap='16px'>
+                    <ProjectCard title='Курсовой проект'/>
+                    {/*{activities && renderActivityCards(2)}*/}
+                </Flex>,
+        },
+        {
+            key: 'collapse2',
+            label:
+                <Flex gap='12px'>
+                    Активности
+                    {countStatus1 !== 0 && (<Button
+                        color="default"
+                        variant="text"
+                        icon={<LinkOutlined />}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            showAddNewActivity();
+                        }}>
+                        Присоединиться
+                    </Button>)}
+                </Flex>,
+            children:
             <div>
                 {countStatus1 === 0 ? (
                     <Empty hasActivities={activities && activities.length > 0} />)
                         : (
                     <Flex wrap gap='16px'>
-                        {renderActivityCards(1)}
+                        {/*{renderActivityCards(1)}*/}
                     </Flex>
                 )}
             </div>,
         },
         {
-            key: 'collapseActArchive',
+            key: 'collapse3',
             label: 'Архив',
             children:
                 <Flex wrap gap='16px'>
-                    {activities && renderActivityCards(3)}
+                    {/*{activities && renderActivityCards(3)}*/}
                 </Flex>,
         },
     ];
 
     return (
-        <ConfigProvider
-            theme={{
-                components: {
-                    Collapse: {
-                        contentPadding: '0px',
-                        headerPadding: '16px 0 16px 0'
+        <>
+            <ConfigProvider
+                theme={{
+                    components: {
+                        Collapse: {
+                            contentPadding: '0px',
+                            headerPadding: '16px 0 16px 0'
+                        },
                     },
-                },
-            }}>
-            <Title level={3}>h3. Ant Design</Title>
-            <Collapse
-                defaultActiveKey={['collapseActLive', 'collapseActArchive']} //Открытая вкладка по умолчанию
-                ghost items={items}>
-            </Collapse>
-        </ConfigProvider>
+                }}>
+                <Title level={3}>h3. Ant Design</Title>
+                <Collapse
+                    defaultActiveKey={['collapseActLive', 'collapseActArchive']} //Открытая вкладка по умолчанию
+                    ghost items={items}>
+                </Collapse>
+            </ConfigProvider>
+        </>
     );
 }
 
-export default ActivitiesTab;
+export default ProjectsTab;
