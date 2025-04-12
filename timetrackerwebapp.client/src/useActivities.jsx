@@ -42,7 +42,7 @@ export const useActivities = () => {
             setActivities(activitiesData);
 
             // 2. Затем загружаем периоды для полученных активностей
-            const periodsData = await getAllActivityPeriods(token, userId, activitiesData);
+            const periodsData = await getAllActivityPeriods(token, activitiesData);
             setPeriods(periodsData);
 
         } catch (err) {

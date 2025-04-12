@@ -69,21 +69,45 @@ import { getUserInfo } from './UsersMethods';
 //     "statusId": 1
 // }
 
-// Получение информации о проектах, в которых участвует пользователь
-export const getFullProjectInfo = async (token, userProject) => {
+// Получение полной информации по всем проектам пользователя
+export const getFullUserProjectsInfo = async (token, userId) => {
+    if (!token || !userId) return [];
+  
+    try {
+      // 1. Получаем проекты пользователя
+      const userProjects = await getUserProjectInfo(token, userId);
+      console.log("Проекты пользователя:", userProjects);
+  
+      // 2. Для каждого проекта получаем полную информацию
+      const projectsData = await Promise.all(
+        userProjects.map(userProject => 
+          getSingleProjectFullInfo(token, userProject)
+        )
+      );
+  
+      console.log("Полная информация по всем проектам:", projectsData);
+      return projectsData;
+    } catch (error) {
+      console.error('Ошибка при получении информации о проектах:', error);
+      throw error;
+    }
+  };
+  
+  // Получение полной информации по одному проекту
+  const getSingleProjectFullInfo = async (token, userProject) => {
     const [projectInfo, members, activities] = await Promise.all([
       getProjectDetails(token, userProject.projectId),
       getProjectMembers(token, userProject.projectId),
       getProjectActivities(token, userProject.projectId)
     ]);
-  
+    
     return {
       ...projectInfo,
       isCreator: userProject.isCreator,
       members,
       activities
     };
-};
+  };
 
 // Получение информации в каких проектах состоит пользователь
 export const getUserProjectInfo = async (token, userId) => {
@@ -107,55 +131,83 @@ export const getUserProjectInfo = async (token, userId) => {
 
 // Получение деталей проекта
 export const getProjectDetails = async (token, projectId) => {
-    const response = await axios.get(`http://localhost:8080/api/Projects/${projectId}`, 
-        { 
-            headers: { Authorization: `Bearer ${token}` } 
-        }
-    );
-    return response.data;
+    try {
+        const response = await axios.get(`http://localhost:8080/api/Projects/${projectId}`, 
+            { 
+                headers: { Authorization: `Bearer ${token}` } 
+            }
+        );
+        return response.data;
+    }
+    catch (error) {
+        console.error(`Ошибка при получении деталей проекта #${projectId}`, error);
+        throw error;
+    }
+    
   };
 
 // Получение участников проекта
 export const getProjectMembers = async (token, projectId) => {
-    // 1. Получаем связи пользователей с проектом
-    const response = await axios.get(`http://localhost:8080/api/Projects/${projectId}/users`,
-        { 
-            headers: { Authorization: `Bearer ${token}` } 
-        }
-    );
+    try {
+        // 1. Получаем связи пользователей с проектом
+        const response = await axios.get(`http://localhost:8080/api/Projects/${projectId}/users`,
+            { 
+                headers: { Authorization: `Bearer ${token}` } 
+            }
+        );
+        
+        // 2. Получаем информацию о каждом участнике
+        const members = await Promise.all(
+        response.data.map(async (projectUser) => {
+            const userInfo = await getUserInfo(token, projectUser.userId);
+            return {
+            ...userInfo,
+            isCreator: projectUser.isCreator
+            };
+        })
+        );
+        
+        return members;
+    }
+    catch (error) {
+        console.error(`Ошибка при получении участников проекта #${projectId}`, error);
+        throw error;
+    }
     
-    // 2. Получаем информацию о каждом участнике
-    const members = await Promise.all(
-      response.data.map(async (projectUser) => {
-        const userInfo = await getUserInfo(token, projectUser.userId);
-        return {
-          ...userInfo,
-          isCreator: projectUser.isCreator
-        };
-      })
-    );
-    
-    return members;
   };
 
 // Получение активностей проекта
 export const getProjectActivities = async (token, projectId) => {
-    // 1. Получаем связи активностей с проектом
-    const response = await axios.get(`http://localhost:8080/api/Projects/${projectId}/activities`,
+    try {
+        // 1. Получаем связи активностей с проектом
+        const response = await axios.get(`http://localhost:8080/api/Projects/${projectId}/activities`,
         { 
-            headers: { Authorization: `Bearer ${token}` } 
+            headers: { Authorization: `Bearer ${token}` },
+            validateStatus: status => (status >= 200 && status < 300) || status === 404
         }
     );
+
+        // Обрабатываем 404 явно
+        if (response.status === 404) {
+            return [];
+        }
     
-    // 2. Получаем информацию о каждой активности
-    const activities = await Promise.all(
-      response.data.map(projectActivity => 
-        getActivity(token, projectActivity.activityId)
-      )
+        // 2. Получаем информацию о каждой активности
+        const activities = await Promise.all(
+        response.data.map(projectActivity => 
+            getActivity(token, projectActivity.activityId)
+        )
     );
     
     return activities;
+    }
+    catch (error) {
+        console.error(`Ошибка при получении активностей проекта #${projectId}`, error);
+    }
   };
+
+
+
 
 // Нажатие на карточку
 export const actCard_Click = (activityId) => {

@@ -1,7 +1,8 @@
-﻿import axios from 'axios';
+﻿import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import Cookies from 'js-cookie';
-import { message } from 'antd';
+import { message, Avatar, Tooltip } from 'antd';
 
 /**
  * Функция для отправки пост-запроса 
@@ -85,10 +86,49 @@ export const GetUserIdFromJWT = (token) => {
 
 // Получение информации о пользователе
 export const getUserInfo = async (token, userId) => {
-    const response = await axios.get(`http://localhost:8080/api/Users/${userId}`,
-        { 
-            headers: { Authorization: `Bearer ${token}` } 
-        }
+    try {
+        const response = await axios.get(`http://localhost:8080/api/Users/${userId}`,
+            { 
+                headers: { Authorization: `Bearer ${token}` } 
+            }
+        );
+        return response.data;
+    }
+    catch (error) {
+        console.error(`Ошибка при получении информациии пользователя #${userId}`, error);
+    }
+    
+};
+
+export const getColorFromString = (str, id) => {
+    if (!str || typeof str !== 'string') return '#000000';
+  
+    const firstChar = str.charCodeAt(0) || 0;
+    const noise = id * 37; // Произвольный множитель для "шума"
+  
+    const r = (firstChar + noise) % 256;
+    const g = (firstChar * 3 + noise) % 256;
+    const b = (firstChar * 4 + noise) % 256;
+  
+    const toHex = (n) => n.toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
+
+export const UserAvatar = ({ name, id }) => {
+
+    const safeName = typeof name === 'string' ? name : '??';
+    // Берём первые 2 буквы и переводим в верхний регистр
+    const letters = safeName.slice(0, 2).toUpperCase();
+
+    return (
+        <Tooltip title={`@${safeName}`} placement="top">
+            <Avatar
+                style={{ 
+                    backgroundColor: getColorFromString(safeName, id), 
+                    verticalAlign: 'middle' 
+                }}>
+                {letters}
+            </Avatar>
+        </Tooltip>
     );
-    return response.data;
-  };
+};

@@ -23,13 +23,19 @@ export const getActivities = async (token, userId) => {
     }
 };
 
-const getActivity = async (token, activityId) => {
-    const response = await axios.get(`http://localhost:8080/api/Activities/${activityId}`,
+export const getActivity = async (token, activityId) => {
+    try {
+        const response = await axios.get(`http://localhost:8080/api/Activities/${activityId}`,
         { 
             headers: { Authorization: `Bearer ${token}` } 
         }
     );
     return response.data;
+    }
+    catch (error) {
+        console.error(`Ошибка при получении активности #${activityId}`, error);
+        throw error;
+    }
   };
 
 // Получение периодов активности
@@ -64,8 +70,8 @@ export const getActivityPeriods = async (token, activityId) => {
 };
 
 // Получение всех периодов по всем активностям
-export const getAllActivityPeriods = async (token, userId, activities) => {
-    if (!token || !userId || !activities?.length) return {};
+export const getAllActivityPeriods = async (token, activities) => {
+    if (!token || !activities?.length) return {};
 
     try {
         const promises = activities.map(activity =>

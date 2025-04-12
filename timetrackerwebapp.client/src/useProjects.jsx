@@ -1,37 +1,41 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { getActivities, getAllActivityPeriods, ManageArchiveActivity, ManageTrackerActivity, DeleteActivity, AddActivity, getStats } from './methods/ProjectsMethods.jsx';
+import * as api from './methods/ProjectsMethods.jsx';
 import { emit, subscribe } from './event.jsx';
 
 export const useProjects = () => {
     const [projects, setProjects] = useState([]);
-    const [periods, setPeriods] = useState({});
+    const [projectsActivities, setProjectsActivities] = useState({});
+    const [projectsMembers, setProjectsMembers] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
-    const activitiesRef = useRef(projects);
-    const periodsRef = useRef(periods);
+    const projectsRef = useRef(projects);
+    const projectsActivitiesRef = useRef(projectsActivities);
+    const projectsMembersRef = useRef(projectsMembers);
 
     // Синхронизируем ref с состоянием
     useEffect(() => {
-        activitiesRef.current = projects;
+        projectsRef.current = projects;
     }, [projects]);
 
     // Синхронизируем ref с состоянием
     useEffect(() => {
-        periodsRef.current = periods;
-    }, [periods]);
+        projectsActivitiesRef.current = projectsActivities;
+    }, [projectsActivities]);
 
+    // Синхронизируем ref с состоянием
+    useEffect(() => {
+        projectsMembersRef.current = projectsMembers;
+    }, [projectsMembers]);
+    
+    //Загрузка всех данных
     const loadData = useCallback(async (token, userId) => {
         setLoading(true);
         setError(null);
         try {
             // 1. Сначала загружаем активности
-            const activitiesData = await getActivities(token, userId);
-            setProjects(activitiesData);
-
-            // 2. Затем загружаем периоды для полученных активностей
-            const periodsData = await getAllActivityPeriods(token, userId, activitiesData);
-            setPeriods(periodsData);
+            const projectsData = await api.getFullUserProjectsInfo(token, userId);
+            setProjects(projectsData);
 
         } catch (err) {
             setError(err);
@@ -43,13 +47,6 @@ export const useProjects = () => {
     // Нажатие на карточку
     const actCard_Click = (activityId) => {
         console.log('Выбрана активность с ID:', activityId);
-    };
-
-    // Получение одной активности из массива полученных
-    const getActivity = (activityId) => {
-        if (!projects || !Array.isArray(projects))
-            return null;
-        return projects.find(activity => activity.id === activityId) || null;
     };
 
     const getActivityStats = async (token, userId, date1 = null, date2 = null) => {
@@ -145,21 +142,10 @@ export const useProjects = () => {
     };
 
     return {
-        activities: projects,
-        countStatus1,
-        countStatus2,
-        countStatus3,
-        periods,
+        projects,
+        projectsRef,
         loading,
         error,
-        loadData,
-        addActivity,
-        actCard_Click,
-        startActivity,
-        stopActivity,
-        getActivityStartTime,
-        archiveActivity,
-        unarchiveActivity,
-        deleteActivity
+        loadData
     };
 };

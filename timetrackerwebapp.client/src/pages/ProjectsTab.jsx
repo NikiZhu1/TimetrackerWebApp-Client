@@ -13,15 +13,17 @@ import '../Collapse.css';
 
 //Методы
 import { GetJWT, GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
-import { useActivities } from '../useActivities.jsx';
+import { useProjects } from '../useProjects.jsx';
 
 //Компоненты
 import Empty from '../components/Empty.jsx';
 import ProjectCard from '../components/ProjectCard.jsx';
 import { showAddNewActivity } from '../components/AddNewActivityModal.jsx';
+import { useActivities } from '../useActivities.jsx';
 
 function ProjectsTab() {
-    const { activities, periods, loading, loadData, actCard_Click, getActivityStartTime, countStatus1 } = useActivities();
+    const { projects, projectsRef, loading, loadData } = useProjects();
+    // const { getLiveActivities } = useActivities();
 
     const navigate = useNavigate();
 
@@ -39,26 +41,27 @@ function ProjectsTab() {
 
         console.log("Используемый userId:", userId);
 
-        // const fetchAll = async () => {
+        const fetchAll = async () => {
 
-        //     console.log("Событие");
-        //     try {
-        //         await loadData(token, userId);
-        //     } catch (error) {
-        //         console.error('Ошибка загрузки данных:', error);
-        //         message.error('Не удалось загрузить данные');
-        //     }
-        // };
+            // console.log("Событие");
+            try {
+                await loadData(token, userId);
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+                message.error('Не удалось загрузить данные');
+            }
+        };
 
-        // fetchAll();
+        fetchAll();
+        console.log("проекты", projects);
         // subscribe('activityChanged', fetchAll); // Подписка
 
     }, []);
 
     // Рендер карточек по статусу
-    const renderProjectsCards = (statusId) => {
+    const renderProjectsCards = (isCreator) => {
 
-        if (loading && !activities) return <Skeleton active />;
+        if (loading) return <Skeleton active />;
 
         const token = GetJWT();
         if (!token) {
@@ -67,19 +70,20 @@ function ProjectsTab() {
             return;
         }
 
-        return activities
-            .filter(activity => activity.statusId === statusId)
-            .map(activity => (
-                <ActivityCard
-                    key={`activity${activity.id}`}
+        return projects
+            .filter(project => project.isCreator === isCreator)
+            .map(project => (
+                <ProjectCard
+                    key={`ptoject${project.projectId}`}
                     token={token}
-                    activityId={activity.id}
-                    title={activity.name}
-                    //dayStats={formatActivityTime(activity.activeFrom)}
-                    color='rgb(204, 194, 255)'
-                    startTime={getActivityStartTime(activity.id)}
-                    status={activity.statusId}
-                    cardOnClick={() => actCard_Click(activity.id)}
+                    projectIdId={project.projectId}
+                    title={project.projectName}
+                    projectKey={project.projectKey}
+                    dateCreate={project.creationDate}
+                    dateFinish={project.finishDate}
+                    isUserProjet={project.isCreator}
+                    members={project.members}
+                    acts={project.activities}
                 />
             ));
     };
@@ -90,7 +94,7 @@ function ProjectsTab() {
             label: 
                 <Flex gap='12px'>
                     Мои проекты
-                    {countStatus1 !== 0 && (<Button
+                    {1 !== 0 && (<Button
                         color="default"
                         variant="outlined"
                         icon={<PlusOutlined />}
@@ -104,7 +108,7 @@ function ProjectsTab() {
                 </Flex>,
             children:
                 <Flex wrap gap='16px'>
-                    <ProjectCard title='Курсовой проект'/>
+                    {renderProjectsCards(true)}
                     {/*{activities && renderActivityCards(2)}*/}
                 </Flex>,
         },
@@ -113,7 +117,7 @@ function ProjectsTab() {
             label:
                 <Flex gap='12px'>
                     Совместные проекты
-                    {countStatus1 !== 0 && (<Button
+                    {1 !== 0 && (<Button
                         color="default"
                         variant="dashed"
                         icon={<LinkOutlined />}
@@ -127,7 +131,7 @@ function ProjectsTab() {
                 </Flex>,
             children:
             <div>
-                {countStatus1 === 0 ? (
+                {1 === 0 ? (
                     <Empty hasActivities={activities && activities.length > 0} />)
                         : (
                     <Flex wrap gap='16px'>

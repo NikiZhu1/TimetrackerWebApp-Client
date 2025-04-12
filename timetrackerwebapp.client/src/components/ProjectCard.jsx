@@ -1,6 +1,6 @@
-﻿import React, { act, useEffect, useState } from 'react';
-import { Button, message, Dropdown, Flex, Card, Modal, Typography, Tag, Divider } from 'antd';
-import Icon, { EditOutlined, EllipsisOutlined, CalendarOutlined, CarryOutOutlined, CheckCircleFilled, ExclamationCircleFilled, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, TeamOutlined, DeleteOutlined } from '@ant-design/icons';
+﻿import React, { useEffect, useState } from 'react';
+import { Button, message, Dropdown, Flex, Card, Modal, Typography, Tag, Avatar, Tooltip } from 'antd';
+import Icon, { EditOutlined, EllipsisOutlined, CalendarOutlined, CarryOutOutlined, CheckCircleFilled, ExclamationCircleFilled, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, TeamOutlined, DeleteOutlined, PauseCircleFilled, FrownOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 
 const { confirm } = Modal;
@@ -13,7 +13,9 @@ import '../App.css';
 import ActivityTimer from './ActivityTimer.jsx';
 
 //Методы
-import { useActivities } from '../useActivities.jsx';
+import { useProjects } from '../useProjects.jsx';
+import { useActivities } from '../useActivities.jsx'
+import { UserAvatar } from '../methods/UsersMethods.jsx';
 
 function ProjectCard({
     token,
@@ -24,12 +26,33 @@ function ProjectCard({
     isUserProjet,
     dateCreate,
     dateFinish,
-    paricipants,
-    acts,
-    status = 0
+    members,
+    acts
 }) {
 
-    const { startActivity, stopActivity, archiveActivity, unarchiveActivity, deleteActivity } = useActivities();
+    const {  } = useProjects();
+
+    // Определяем иконку и текст в зависимости от статуса
+    const liveActs = acts.filter(act => act.statusId === 2);
+    let status;
+
+    if (acts.length === 0) {
+        status = 0; // Нет активностей в проекте
+    } else if (liveActs.length === 0) {
+        status = 1; // Есть активности, но нет отслеживаемых
+    } else {
+        status = 2; // Активности в процессе
+    }
+    
+    const activityInfoConfig = {
+        2: { icon: CheckCircleFilled, color: '#4DCF5C', text: 'Активности в процессе:' },
+        1: { icon: PauseCircleFilled, color: '#F6DD4E', text: 'Нет отслеживаемых активностей' },
+        0: { icon: FrownOutlined, color: '#282828', text: 'В проекте нет активностей' }
+    };
+    const currentConfig = activityInfoConfig[status];
+
+    // Создаём иконку с динамическими стилями
+    const StatusIcon = currentConfig.icon;
 
     //Нажатие пункта меню
     const handleMenuClick = async e => {
@@ -205,13 +228,18 @@ function ProjectCard({
             <Flex vertical gap='8px' style ={{paddingTop: '8px'}}>
                 <Flex align='flex-start' gap='10px'>
 
-                    <CheckCircleFilled style ={{color: '#4DCF5C', fontSize: '16px', paddingTop: '2px'}}/>
+                    <StatusIcon style ={{color: currentConfig.color, fontSize: '16px', paddingTop: '2px'}}/>
 
                     <Flex vertical gap='4px'>
-                        <Text>Активности в процессе:</Text>
-                        <Flex>
-                            <Tag color="purple">Бэкэнд</Tag>
-                            <Tag color="purple">Фронтенд</Tag>
+                        <Text>{currentConfig.text}</Text>
+                        <Flex wrap gap='8px'>
+                            {acts.filter(act => act.statusId === 2).slice(0, 3).map(act => (
+                                <Tag key={`liveActTag${act.id}`} style={{margin: 0}} color='purple'>{act.name}</Tag>
+                            ))}
+
+                            {acts.length > 3 && (
+                                <Text>+ ещё {liveActs.length - 3}</Text>
+                            )}
                         </Flex>
                     </Flex>
                 </Flex>
@@ -221,13 +249,21 @@ function ProjectCard({
                     <TeamOutlined style ={{fontSize: '16px', paddingTop: '2px'}}/>
                     
                     <Flex vertical gap='4px'>
-                        <Text>Участники: 3</Text>
-                        <Flex>
-                            <Tag>@nikizhu</Tag>
-                            <Tag>@crissier</Tag>
-                            <Tag>@crissier</Tag>
-                            <Tag>@crissier</Tag>
+                        <Text>Участники: {members.length}</Text>
+                        <Flex wrap gap='8px' align="center">
+                            {members.slice(0, 3).map(member => (
+                                <Tag key={`userTag${member.id}`} style={{margin: 0}}>@{member.name}</Tag>
+                            ))}
+
+                            {members.length > 3 && (
+                                <Text>+ ещё {members.length - 3}</Text>
+                            )}
                         </Flex>
+                        {/* <Flex gap='4px'>
+                            {members.map( member => (
+                                <UserAvatar key={`userAvatar${member.id}`} name={`${member.name}`} id={member.id}/>
+                            ))}
+                        </Flex> */}
                     </Flex>
                 </Flex>
 
@@ -236,7 +272,7 @@ function ProjectCard({
                         <CalendarOutlined style ={{fontSize: '16px', paddingTop: '2px'}}/>
                         
                         <Flex vertical gap='4px'>
-                            <Text>Страт: 03.04.2025</Text>
+                            <Text>Старт: {dateCreate}</Text>
                         </Flex>
                     </Flex>
 
@@ -245,7 +281,7 @@ function ProjectCard({
                         <CarryOutOutlined style ={{fontSize: '16px', paddingTop: '2px'}}/>
                         
                         <Flex vertical gap='4px'>
-                            <Text>Финиш: 03.04.2025</Text>
+                            <Text>Финиш: {dateFinish}</Text>
                         </Flex>
                     </Flex>
                 </Flex>
