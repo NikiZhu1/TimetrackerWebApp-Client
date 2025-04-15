@@ -214,27 +214,42 @@ export const actCard_Click = (activityId) => {
     console.log('Выбрана активность с ID:', activityId);
 };
 
-// Нажатие на кнопку
-export const actButton_Click = (activityId) => {
-    console.log('Запуск активности с ID:', activityId);
-};
-
-// Добавление активности
-export const AddActivity = async (token, userId, name) => {
+// Создание проекта
+export const CreateProject = async (token, name) => {
     try {
-        const response = await axios.post('http://localhost:8080/api/Activities',
+        const response = await axios.post('http://localhost:8080/api/Projects',
             {
-                userId: userId,
-                activityName: name
+                projectName: name
             },
             {
                 headers: { Authorization: `Bearer ${token}` }
             }
         );
 
+        //Возвращаем ключ доступа
         return response.data;
     } catch (error) {
-        console.error(`Ошибка при добавлении активности:`, error);
+        console.error(`Ошибка при создании проекта:`, error);
+        throw error;
+    }
+};
+
+// Добавить пользователя в проект
+export const AddUserToProject = async (token, projectKey) => {
+    try {
+        const response = await axios.post('http://localhost:8080/api/Users/project',
+            {
+                accessKey: projectKey
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+
+        //Возвращаем связь пользователь-проект
+        return response.data;
+    } catch (error) {
+        console.error(`Ошибка при создании проекта:`, error);
         throw error;
     }
 }

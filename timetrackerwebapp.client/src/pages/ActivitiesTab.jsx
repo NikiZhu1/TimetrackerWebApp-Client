@@ -150,7 +150,6 @@ function ActivitiesTab() {
                     },
                 },
             }}>
-            <Title level={3}>h3. Ant Design</Title>
             <Collapse
                 defaultActiveKey={['collapseActLive', 'collapseAct']} //Открытая вкладка по умолчанию
                 ghost items={items}

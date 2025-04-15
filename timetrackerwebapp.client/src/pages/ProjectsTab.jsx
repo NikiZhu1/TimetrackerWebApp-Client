@@ -18,7 +18,7 @@ import { useProjects } from '../useProjects.jsx';
 //Компоненты
 import Empty from '../components/Empty.jsx';
 import ProjectCard from '../components/ProjectCard.jsx';
-import { showAddNewActivity } from '../components/AddNewActivityModal.jsx';
+import { showAddNewProject } from '../components/AddNewProjectModal.jsx';
 import { useActivities } from '../useActivities.jsx';
 
 function ProjectsTab() {
@@ -54,12 +54,12 @@ function ProjectsTab() {
 
         fetchAll();
         console.log("проекты", projects);
-        // subscribe('activityChanged', fetchAll); // Подписка
+        subscribe('projectChanged', fetchAll); // Подписка
 
     }, []);
 
     // Рендер карточек по статусу
-    const renderProjectsCards = (isCreator) => {
+    const renderProjectsCards = (isCreator, isArchived) => {
 
         if (loading) return <Skeleton active />;
 
@@ -70,8 +70,21 @@ function ProjectsTab() {
             return;
         }
 
+        let filterRule;
+    
+        if (isCreator === true && isArchived === false) {
+            // Для создателя: показываем все его проекты
+            filterRule = project => project.isCreator === true && project.finishDate === null;
+        } else if (isCreator === false && isArchived == false) {
+            // Для не-создателя: показываем только завершенные проекты
+            filterRule = project => project.isCreator === false && project.finishDate === null;
+        } else {
+            // По умолчанию: показываем все активные проекты
+            filterRule = project => project.finishDate !== null;
+        }
+            
         return projects
-            .filter(project => project.isCreator === isCreator)
+            .filter(filterRule)
             .map(project => (
                 <ProjectCard
                     key={`ptoject${project.projectId}`}
@@ -100,16 +113,18 @@ function ProjectsTab() {
                         icon={<PlusOutlined />}
                         onClick={(e) => {
                             e.stopPropagation();
-                            showAddNewActivity();
+                            showAddNewProject();
                         }}
                         style={{background: 'transparent'}}>
                         Создать
                     </Button>)}
                 </Flex>,
             children:
-                <Flex wrap gap='16px'>
-                    {renderProjectsCards(true)}
-                    {/*{activities && renderActivityCards(2)}*/}
+                <Flex wrap gap='16px' style={{
+                    order: 1,
+                    alignSelf: 'stretch',
+                    flexGrow: 0}}>
+                    {renderProjectsCards(true, false)}
                 </Flex>,
         },
         {
@@ -135,7 +150,7 @@ function ProjectsTab() {
                     <Empty hasActivities={activities && activities.length > 0} />)
                         : (
                     <Flex wrap gap='16px'>
-                        {/*{renderActivityCards(1)}*/}
+                        {renderProjectsCards(false, false)}
                     </Flex>
                 )}
             </div>,
@@ -145,7 +160,7 @@ function ProjectsTab() {
             label: 'Архив',
             children:
                 <Flex wrap gap='16px'>
-                    {/*{activities && renderActivityCards(3)}*/}
+                    {renderProjectsCards(null, true)}
                 </Flex>,
         },
     ];

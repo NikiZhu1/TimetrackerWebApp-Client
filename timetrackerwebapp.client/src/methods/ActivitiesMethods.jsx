@@ -1,11 +1,11 @@
 ﻿import axios from 'axios';
 
 // Получение активностей
-export const getActivities = async (token, userId) => {
+export const getAllActivities = async (token, userId) => {
     if (!token || !userId) return [];
 
     try {
-        const response = await axios.get(`http://localhost:8080/api/Users/${userId}/activities`, {
+        const response = await axios.get(`http://localhost:8080/api/Users/${userId}/activities?onlyArchived=false&onlyInProcces=false&onlyActive=false`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -58,7 +58,7 @@ export const getActivityPeriods = async (token, activityId) => {
             return [];
         }
 
-        const periods = response.data?.ActivityPeriods || [];
+        const periods = response.data;
         //console.log(`Полученное время активности id ${activityId}:`, periods);
         return periods;
 

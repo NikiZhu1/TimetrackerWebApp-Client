@@ -1,6 +1,7 @@
 ﻿import React, { useEffect, useState } from 'react';
+import { format, parse } from 'date-fns';
 import { Button, message, Dropdown, Flex, Card, Modal, Typography, Tag, Avatar, Tooltip } from 'antd';
-import Icon, { EditOutlined, EllipsisOutlined, CalendarOutlined, CarryOutOutlined, CheckCircleFilled, ExclamationCircleFilled, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, TeamOutlined, DeleteOutlined, PauseCircleFilled, FrownOutlined } from '@ant-design/icons';
+import Icon, { EditOutlined, EllipsisOutlined, LinkOutlined, CalendarOutlined, CarryOutOutlined, CheckCircleFilled, ExclamationCircleFilled, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, FolderOpenOutlined, TeamOutlined, DeleteOutlined, PauseCircleFilled, FrownOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 
 const { confirm } = Modal;
@@ -36,7 +37,9 @@ function ProjectCard({
     const liveActs = acts.filter(act => act.statusId === 2);
     let status;
 
-    if (acts.length === 0) {
+    if (dateFinish !== null)
+        status = 3
+    else if (acts.length === 0) {
         status = 0; // Нет активностей в проекте
     } else if (liveActs.length === 0) {
         status = 1; // Есть активности, но нет отслеживаемых
@@ -45,14 +48,18 @@ function ProjectCard({
     }
     
     const activityInfoConfig = {
+        3: { icon: FolderOutlined, color: '#282828', text: 'Проект в архиве,\n отслеживание активностей невозможно'},
         2: { icon: CheckCircleFilled, color: '#4DCF5C', text: 'Активности в процессе:' },
-        1: { icon: PauseCircleFilled, color: '#F6DD4E', text: 'Нет отслеживаемых активностей' },
-        0: { icon: FrownOutlined, color: '#282828', text: 'В проекте нет активностей' }
+        1: { icon: PauseCircleFilled, color: '#F6DD4E', text: 'Нет отслеживаемых активностей,\n откройте проект для управления' },
+        0: { icon: FrownOutlined, color: '#282828', text: 'В проекте нет активностей,\n откройте проект для добавления' }
     };
     const currentConfig = activityInfoConfig[status];
-
-    // Создаём иконку с динамическими стилями
     const StatusIcon = currentConfig.icon;
+
+    //Конвертируем даты в нормальный вид
+    dateCreate = format(parse(dateCreate, 'yyyy-MM-dd HH:mm:ss', new Date()), 'dd.MM.yyyy');
+    if (dateFinish !== null)
+        dateFinish = format(parse(dateFinish, 'yyyy-MM-dd HH:mm:ss', new Date()), 'dd.MM.yyyy');
 
     //Нажатие пункта меню
     const handleMenuClick = async e => {
@@ -107,6 +114,7 @@ function ProjectCard({
         });
     };
 
+    //Элементы выпадающего меню
     const dropMenuItems = [
         {
             key: 'title',
@@ -123,56 +131,29 @@ function ProjectCard({
             ),
         },
         {
-            key: 'getStats',
-            icon: <PieChartOutlined />,
+            key: 'getKey',
+            icon: <LinkOutlined />,
             label: (
                 <a >
-                    Получить статистику
+                    Получить код приглашения
                 </a>
             ),
-        },
-        {
-            key: 'checkHistory',
-            icon: <ClockCircleOutlined />,
-            label: (
-                <a >
-                    Посмотреть в истории
-                </a>
-            ),
-        },
-        {
-            key: 'addToProject',
-            icon: <TeamOutlined />,
-            label: (
-                <a >
-                    Добавить в проект
-                </a>
-            ),
-            children: [
-                {
-                    key: 'createNewProject',
-                    icon: <PlusOutlined />,
-                    label: 'Создать новый',
-                },
-                {
-                    type: 'divider',
-                },
-                {
-                    key: 'p1',
-                    label: 'Крутой проект',
-                },
-                {
-                    key: 'p2',
-                    label: 'Мой проект',
-                },
-            ],
         },
         {
             key: 'toArchive',
             icon: <FolderOutlined />,
             label: (
                 <a >
-                    В архив
+                    Завершить проект
+                </a>
+            ),
+        },
+        {
+            key: 'unArchive',
+            icon: <FolderOpenOutlined />,
+            label: (
+                <a >
+                    Восстановить
                 </a>
             ),
         },
@@ -197,7 +178,11 @@ function ProjectCard({
             onClick={cardOnClick}
             style={{
                 width: '430px',
-                //background: 'red'
+                minWidth: '300px',
+                maxWidth: '500px',
+                flex: 'none',
+                order: 2,
+                flexGrow: 1,
             }}>
             <Card.Meta
                 title={
@@ -205,7 +190,11 @@ function ProjectCard({
                         {title}
                         <Dropdown
                             menu={{
-                                items: dropMenuItems.filter(item => !(item.key === 'toArchive' && status === 3)),
+                                items: dropMenuItems.filter(item => 
+                                    !(item.key === 'toArchive' && status === 3) && 
+                                    !(item.key === 'edit' && status === 3) && 
+                                    !(item.key === 'getKey' && status === 3) && 
+                                    !(item.key === 'unArchive' && status !== 3)),
                                 onClick: handleMenuClick
                             }}
                             placement="bottomLeft"
@@ -230,8 +219,8 @@ function ProjectCard({
 
                     <StatusIcon style ={{color: currentConfig.color, fontSize: '16px', paddingTop: '2px'}}/>
 
-                    <Flex vertical gap='4px'>
-                        <Text>{currentConfig.text}</Text>
+                    <Flex vertical gap='4px' style={{height: '48px'}}>
+                        <Text style={{ whiteSpace: 'pre-line' }}>{currentConfig.text}</Text>
                         <Flex wrap gap='8px'>
                             {acts.filter(act => act.statusId === 2).slice(0, 3).map(act => (
                                 <Tag key={`liveActTag${act.id}`} style={{margin: 0}} color='purple'>{act.name}</Tag>
@@ -276,14 +265,15 @@ function ProjectCard({
                         </Flex>
                     </Flex>
 
-
-                    <Flex align='flex-start' gap='10px'>
-                        <CarryOutOutlined style ={{fontSize: '16px', paddingTop: '2px'}}/>
-                        
-                        <Flex vertical gap='4px'>
-                            <Text>Финиш: {dateFinish}</Text>
+                    {dateFinish && (
+                        <Flex align='flex-start' gap='10px'>
+                            <CarryOutOutlined style ={{fontSize: '16px', paddingTop: '2px'}}/>
+                            
+                            <Flex vertical gap='4px'>
+                                <Text>Финиш: {dateFinish}</Text>
+                            </Flex>
                         </Flex>
-                    </Flex>
+                    )}
                 </Flex>
                 
             </Flex>

@@ -59,13 +59,13 @@ export const useProjects = () => {
     }
 
     // Добавление новой активности
-    const addActivity = async (token, userId, name) => {
+    const createProject = async (token, name) => {
         setLoading(true);
         setError(null);
         try {
-            await AddActivity(token, userId, name);
-            emit('activityChanged'); // Обновляем данные
-            console.log('Добавлена активность ', name);
+            await api.CreateProject(token, name);
+            emit('projectChanged'); // Обновляем данные
+            console.log('Добавлена проект ', name);
         } catch (err) {
             setError(err);
             throw err;
@@ -146,6 +146,7 @@ export const useProjects = () => {
         projectsRef,
         loading,
         error,
-        loadData
+        loadData,
+        createProject
     };
 };

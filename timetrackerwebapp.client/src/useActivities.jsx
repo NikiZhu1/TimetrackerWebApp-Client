@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { getActivities, getAllActivityPeriods, ManageArchiveActivity, ManageTrackerActivity, DeleteActivity, AddActivity, getStats } from './methods/ActivitiesMethods';
+import { getAllActivities, getAllActivityPeriods, ManageArchiveActivity, ManageTrackerActivity, DeleteActivity, AddActivity, getStats } from './methods/ActivitiesMethods';
 import { emit, subscribe } from './event.jsx';
 
 export const useActivities = () => {
@@ -38,7 +38,7 @@ export const useActivities = () => {
         setError(null);
         try {
             // 1. Сначала загружаем активности
-            const activitiesData = await getActivities(token, userId);
+            const activitiesData = await getAllActivities(token, userId);
             setActivities(activitiesData);
 
             // 2. Затем загружаем периоды для полученных активностей
