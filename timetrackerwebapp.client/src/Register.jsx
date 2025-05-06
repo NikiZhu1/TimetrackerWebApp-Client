@@ -14,8 +14,17 @@ function Register() {
 
     //Регистрация
     const onFinish = async (values) => {
-        AuthenticateUser(values, true, navigate);
-    };
+            try{
+                await AuthenticateUser(values, true);
+                // Перенаправляем на страницу пользователя
+                navigate('/dashboard/activities');
+    
+                message.success('Успешная регистрация!');
+            }
+            catch (error) {
+                message.error('Ошибка регистрации. Попробуйте позже');
+            }
+        };
 
 
     return (

@@ -17,7 +17,16 @@ function Login() {
 
     //Авторизация
     const onFinish = async (values) => {
-        AuthenticateUser(values, false, navigate);
+        try{
+            await AuthenticateUser(values, false);
+            // Перенаправляем на страницу пользователя
+            navigate('/dashboard/activities');
+
+            message.success('Успешный вход!');
+        }
+        catch (error) {
+            message.error('Неверный логин или пароль');
+        }
     };
 
     return (

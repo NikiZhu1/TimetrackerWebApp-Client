@@ -12,14 +12,17 @@ import { message, Avatar, Tooltip } from 'antd';
  * @returns
  */
 
-export const AuthenticateUser = async (values, isRegistration, navigate) => {
+export const AuthenticateUser = async (values, isRegistration) => {
     try {
         console.log(isRegistration ? 'Регистрация:' : 'Вход:', values);
 
-        const response = await axios.post('http://localhost:8080/api/Users', {
-            IsNewUser: isRegistration,
-            Name: values.username,
-            Password: values.password
+        const url = 'http://localhost:8080/api/Auth/login';
+        if (isRegistration) 
+            url = 'http://localhost:8080/api/Users';
+
+        const response = await axios.post(url, {
+            name: values.username,
+            password: values.password
         });
 
         //Получаем JWT токен из ответа на авторизацию
@@ -41,16 +44,10 @@ export const AuthenticateUser = async (values, isRegistration, navigate) => {
 
         // Сохраняем токен в cookies
         Cookies.set('token', token, { expires: 1, secure: true, sameSite: 'Strict' });
-
-        message.success(isRegistration ? 'Успешная регистрация!' : 'Успешный вход!');
-        console.log(`${isRegistration ? 'Зарегистрированный' : 'Авторизованный'} userId:`, userId);
-
-        // Перенаправляем на страницу пользователя
-        navigate('/dashboard/activities'); 
     }
     catch (error) {
         console.error(`Ошибка ${isRegistration ? 'регистрации' : 'авторизации'}:`, error);
-        message.error(error.response?.data || `Ошибка ${isRegistration ? 'регистрации' : 'авторизации'}`);
+        throw error;
     }
 };
 
