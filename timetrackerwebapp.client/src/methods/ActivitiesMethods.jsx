@@ -136,11 +136,6 @@ export const actCard_Click = (activityId) => {
     console.log('Выбрана активность с ID:', activityId);
 };
 
-// Нажатие на кнопку
-export const actButton_Click = (activityId) => {
-    console.log('Запуск активности с ID:', activityId);
-};
-
 // Добавление активности
 export const AddActivity = async (token, userId, name) => {
     try {
@@ -202,7 +197,7 @@ export const ManageArchiveActivity = async (token, activityId, isArchived) => {
     }
 };
 
-// Общая функция для изменения названия активности
+// Изменение названия активности
 export const UpdateActivityName = async (token, activityId, newActivityName) => {
     try {
         const response = await axios.put(`http://localhost:8080/api/Activities/${activityId}`,
@@ -223,7 +218,7 @@ export const UpdateActivityName = async (token, activityId, newActivityName) => 
     }
 };
 
-// Общая функция для изменения названия активности
+// Удаление активности
 export const DeleteActivity = async (token, activityId) => {
     try {
         const response = await axios.delete(`http://localhost:8080/api/Activities/${activityId}`,

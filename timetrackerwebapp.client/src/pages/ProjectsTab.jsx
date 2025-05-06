@@ -1,12 +1,10 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { Button, message, Collapse, ConfigProvider, Flex, Skeleton, Typography } from 'antd';
-import Icon, { PlusOutlined, LinkOutlined } from '@ant-design/icons';
+import { Button, message, Collapse, ConfigProvider, Flex, Skeleton } from 'antd';
+import { PlusOutlined, LinkOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { subscribe } from '../event.jsx';
-
-const { Title, Text } = Typography;
 
 //Стили
 import '../Collapse.css';
@@ -19,12 +17,10 @@ import { useProjects } from '../useProjects.jsx';
 import Empty from '../components/Empty.jsx';
 import ProjectCard from '../components/ProjectCard.jsx';
 import { showAddNewProject } from '../components/AddNewProjectModal.jsx';
-import { useActivities } from '../useActivities.jsx';
+import { showJoinToProject } from '../components/JoinToProjectModal.jsx';
 
 function ProjectsTab() {
-    const { projects, projectsRef, loading, loadData } = useProjects();
-    // const { getLiveActivities } = useActivities();
-
+    const { projects, loading, loadData } = useProjects();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -42,8 +38,6 @@ function ProjectsTab() {
         console.log("Используемый userId:", userId);
 
         const fetchAll = async () => {
-
-            // console.log("Событие");
             try {
                 await loadData(token, userId);
             } catch (error) {
@@ -87,9 +81,9 @@ function ProjectsTab() {
             .filter(filterRule)
             .map(project => (
                 <ProjectCard
-                    key={`ptoject${project.projectId}`}
+                    key={`project${project.projectId}`}
                     token={token}
-                    projectIdId={project.projectId}
+                    projectId={project.projectId}
                     title={project.projectName}
                     projectKey={project.projectKey}
                     dateCreate={project.creationDate}
@@ -138,7 +132,7 @@ function ProjectsTab() {
                         icon={<LinkOutlined />}
                         onClick={(e) => {
                             e.stopPropagation();
-                            showAddNewActivity();
+                            showJoinToProject();
                         }}
                         style={{background: 'transparent'}}>
                         Присоединиться

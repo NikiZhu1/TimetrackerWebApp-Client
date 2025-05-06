@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { Button, message, Layout, Collapse, ConfigProvider, Flex, Typography, Skeleton, Image } from 'antd';
+import { Button, message, Layout, Flex } from 'antd';
 import Icon from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -10,22 +10,22 @@ import { subscribe } from './event.jsx';
 import './Collapse.css';
 
 //Методы
-import { GetJWT, GetUserIdFromJWT } from './methods/UsersMethods.jsx';
-import { useActivities } from './useActivities.jsx';
+import { GetJWT, GetUserIdFromJWT, getUserInfo } from './methods/UsersMethods.jsx';
+import { useUsers } from './useUsers.jsx';
 
 //Компоненты
 import MyMenu from './components/Menu.jsx';
-
 import ActivitiesTab from './pages/ActivitiesTab.jsx';
 import ProjectsTab from './pages/ProjectsTab.jsx';
+import ProjectDetailsTab from './pages/ProjectDetailsTab.jsx';
+import UserInfo from './components/UserInfo.jsx';
 
 const { Header, Footer, Sider, Content } = Layout;
 
 //Тест своих иконок
 const HistorySvg = () => (
-    <svg width="24" height="23" viewBox="0 0 24 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <title>history icon</title>
-        <path d="M12 5.5V11.5L16 13.5M22 11.5C22 17.0228 17.5228 21.5 12 21.5C6.47715 21.5 2 17.0228 2 11.5C2 5.97715 6.47715 1.5 12 1.5C17.5228 1.5 22 5.97715 22 11.5Z" stroke="#B4B4B4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+    <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M6 14.5H3.33333C2.97971 14.5 2.64057 14.3595 2.39052 14.1095C2.14048 13.8594 2 13.5203 2 13.1667V3.83333C2 3.47971 2.14048 3.14057 2.39052 2.89052C2.64057 2.64048 2.97971 2.5 3.33333 2.5H6M10.6667 11.8333L14 8.5M14 8.5L10.6667 5.16667M14 8.5H6" stroke="#E31E1E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
 );
 const HistoryIcon = props => <Icon component={HistorySvg} {...props} />;
@@ -43,9 +43,9 @@ const HeaderStyle = {
 };
 
 function Dashboard() {
-    const { activities, periods, loading, loadData, actCard_Click, getActivityStartTime, countStatus1 } = useActivities();
     const navigate = useNavigate();
-    const { activeTab = 'activities' } = useParams(); // Получаем активную вкладку из URL
+    const { activeTab = 'activities', projectId } = useParams(); // Получаем активную вкладку из URL
+    const { user, loadData, UserAvatar } = useUsers();
 
     // Состояние для активной вкладки
     const [activeMenuTab, setActiveMenuTab] = useState(activeTab); 
@@ -64,10 +64,14 @@ function Dashboard() {
         }
     }, [activeMenuTab, navigate]);
 
+    //Выполняем сразу при открытии
     useEffect(() => {
 
         const token = GetJWT();
         const userId = GetUserIdFromJWT(token);
+        
+        if (projectId !== undefined)
+            console.log("project select", projectId);
 
         if (!token || !userId) {
             if (!token) message.warning('Сначала войдите в систему');
@@ -96,6 +100,9 @@ function Dashboard() {
 
     // Рендер контента в зависимости от вкладки
     const renderContent = () => {
+        if (projectId !== undefined)
+            return (<ProjectDetailsTab/>); // Детали проекта
+
         switch (activeTab) {
             case 'activities': // Активности
                 return (<ActivitiesTab />);
@@ -110,7 +117,7 @@ function Dashboard() {
                 return (<ProjectsTab />);
 
             default:
-                return (<Activities />);
+                return (<ActivitiesTab />);
         }
     };
 
@@ -119,7 +126,12 @@ function Dashboard() {
             <Layout>
                 <MyMenu onMenuClick={handleMenuClick} />
                 <Layout>
-                    <Header style={HeaderStyle}>Headerrr</Header>
+                    <Header style={HeaderStyle}>
+                        <Flex justify='space-between' align='center' style={{width: '100%'}}>
+                            <p>adadada</p>
+                            <UserInfo userId={user.id} userName={user.name}/>
+                        </Flex>
+                    </Header>
                     <Content style={{ padding: '24px', paddingTop: '0px' }} >
                         {renderContent()}
                     </Content>

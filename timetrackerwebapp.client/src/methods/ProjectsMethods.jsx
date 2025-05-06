@@ -93,8 +93,8 @@ export const getFullUserProjectsInfo = async (token, userId) => {
     }
   };
   
-  // Получение полной информации по одному проекту
-  const getSingleProjectFullInfo = async (token, userProject) => {
+// Получение полной информации по одному проекту
+export const getSingleProjectFullInfo = async (token, userProject) => {
     const [projectInfo, members, activities] = await Promise.all([
       getProjectDetails(token, userProject.projectId),
       getProjectMembers(token, userProject.projectId),
@@ -107,7 +107,7 @@ export const getFullUserProjectsInfo = async (token, userId) => {
       members,
       activities
     };
-  };
+};
 
 // Получение информации в каких проектах состоит пользователь
 export const getUserProjectInfo = async (token, userId) => {
@@ -206,14 +206,6 @@ export const getProjectActivities = async (token, projectId) => {
     }
   };
 
-
-
-
-// Нажатие на карточку
-export const actCard_Click = (activityId) => {
-    console.log('Выбрана активность с ID:', activityId);
-};
-
 // Создание проекта
 export const CreateProject = async (token, name) => {
     try {
@@ -249,7 +241,7 @@ export const AddUserToProject = async (token, projectKey) => {
         //Возвращаем связь пользователь-проект
         return response.data;
     } catch (error) {
-        console.error(`Ошибка при создании проекта:`, error);
+        console.error(`Ошибка при присоединению к проекту:`, error);
         throw error;
     }
 }
@@ -275,13 +267,14 @@ export const ManageTrackerActivity = async (token, activityId, isStarted) => {
     }
 };
 
-// Общая функция для изменения архивации активности
-export const ManageArchiveActivity = async (token, activityId, isArchived) => {
+// Общая функция для изменения архивации проекта
+export const ManageArchiveProject = async (token, projectId, isArchived) => {
     try {
-        const response = await axios.put(`http://localhost:8080/api/Activities/${activityId}`,
+        const response = await axios.put(`http://localhost:8080/api/Projects/${projectId}`,
             {
+                closeProject: isArchived,
                 updateName: false,
-                archived: isArchived
+                projectName: ""
             },
             {
                 headers: { Authorization: `Bearer ${token}` }
@@ -290,19 +283,19 @@ export const ManageArchiveActivity = async (token, activityId, isArchived) => {
 
         return response.data;
     } catch (error) {
-        console.error(`Ошибка при ${isArchived ? 'архивации' : 'восстановлении'} активности:`, error);
+        console.error(`Ошибка при ${isArchived ? 'архивации' : 'восстановлении'} проекта:`, error);
         throw error;
     }
 };
 
-// Общая функция для изменения названия активности
-export const UpdateActivityName = async (token, activityId, newActivityName) => {
+// Изменения названия активности
+export const UpdateProjectName = async (token, projectId, newProjectName) => {
     try {
-        const response = await axios.put(`http://localhost:8080/api/Activities/${activityId}`,
+        const response = await axios.put(`http://localhost:8080/api/Projects/${projectId}`,
             {
+                closeProject: false,
                 updateName: true,
-                archived: false,
-                newName: newActivityName
+                projectName: newProjectName
             },
             {
                 headers: { Authorization: `Bearer ${token}` }
@@ -311,15 +304,15 @@ export const UpdateActivityName = async (token, activityId, newActivityName) => 
 
         return response.data;
     } catch (error) {
-        console.error(`Ошибка при изменении названия активности:`, error);
+        console.error(`Ошибка при изменении названия проекта:`, error);
         throw error;
     }
 };
 
-// Общая функция для изменения названия активности
-export const DeleteActivity = async (token, activityId) => {
+// Удаление проекта
+export const DeleteProject = async (token, projectId) => {
     try {
-        const response = await axios.delete(`http://localhost:8080/api/Activities/${activityId}`,
+        const response = await axios.delete(`http://localhost:8080/api/Projects/${projectId}`,
             {
                 headers: { Authorization: `Bearer ${token}` }
             }
@@ -327,7 +320,7 @@ export const DeleteActivity = async (token, activityId) => {
 
         return response.data;
     } catch (error) {
-        console.error(`Ошибка при удаении активности:`, error);
+        console.error(`Ошибка при удаении проекта:`, error);
         throw error;
     }
 };

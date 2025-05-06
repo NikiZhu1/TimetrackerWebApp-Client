@@ -1,10 +1,12 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { Button, message, Collapse, ConfigProvider, Flex, Skeleton } from 'antd';
+import { Button, message, Collapse, ConfigProvider, Flex, Skeleton, Typography } from 'antd';
 import Icon, { PlusOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { subscribe } from '../event.jsx';
+
+const { Title } = Typography;
 
 //Стили
 import '../Collapse.css';
@@ -12,15 +14,20 @@ import '../Collapse.css';
 //Методы
 import { GetJWT, GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
 import { useActivities } from '../useActivities.jsx';
+import { useProjects } from '../useProjects.jsx';
 
 //Компоненты
 import Empty from '../components/Empty.jsx';
 import ActivityCard from '../components/ActivityCard.jsx';
 import { showAddNewActivity } from '../components/AddNewActivityModal.jsx';
 
-function ActivitiesTab() {
-    const { activities, loading, loadData, actCard_Click, getActivityStartTime, countStatus1 } = useActivities();
+function ProjectDetailsTab() {
+    const { periods, actCard_Click, getActivityStartTime } = useActivities();
+    const { singleProject, loading, loadData, getSingleProjectInfo, checkUserInProject } = useProjects();
     const navigate = useNavigate();
+    const { projectId } = useParams();
+
+    const [access, setAccess] = useState({ isMember: false, isCreator: false });
 
     useEffect(() => {
 
@@ -36,26 +43,42 @@ function ActivitiesTab() {
 
         console.log("Используемый userId:", userId);
 
-        const fetchAll = async () => {
+        const fetchProject = async () => {
+
+            try {
+                // 1. Проверяем доступ
+                const accessInfo = await checkUserInProject(token, userId, projectId);
+                setAccess(accessInfo);
+
+                console.log("Права:", accessInfo);
+                if (!accessInfo.isMember) {
+                    throw new Error('У вас нет доступа к этому проекту');
+                }
+            }
+            catch (error) {
+                message.error(error.message);
+                navigate('/dashboard/projects', { state: { activeTab: 'projects' } });
+                return;
+            }
 
             console.log("Событие");
             try {
-                await loadData(token, userId);
+                await getSingleProjectInfo(token, projectId);
             } catch (error) {
                 console.error('Ошибка загрузки данных:', error);
                 message.error('Не удалось загрузить данные');
             }
         };
 
-        fetchAll();
-        subscribe('activityChanged', fetchAll); // Подписка
+        fetchProject();
+        // subscribe('activityChanged', fetchAll); // Подписка
 
     }, []);
 
     // Рендер карточек по статусу
     const renderActivityCards = (statusId) => {
 
-        if (loading && !activities) return <Skeleton active />;
+        if (loading && !singleProject) return <Skeleton active />;
 
         const token = GetJWT();
         if (!token) {
@@ -64,7 +87,13 @@ function ActivitiesTab() {
             return;
         }
 
-        return activities
+        // Проверяем наличие singleProject и его свойств
+        if (!singleProject || !singleProject.activities) {
+            return null; // или <Empty description="Нет данных об активностях" />
+        }
+
+
+        return singleProject.activities
             .filter(activity => activity.statusId === statusId)
             .map(activity => (
                 <ActivityCard
@@ -87,7 +116,7 @@ function ActivitiesTab() {
             label: 'Текущие активности',
             children:
                 <Flex wrap gap='16px'>
-                    {activities && renderActivityCards(2)}
+                    {renderActivityCards(2)}
                 </Flex>,
         },
         {
@@ -95,7 +124,7 @@ function ActivitiesTab() {
             label:
                 <Flex gap='12px'>
                     Активности
-                    {countStatus1 !== 0 && (<Button
+                    {(<Button
                         color="default"
                         variant="outlined"
                         icon={<PlusOutlined />}
@@ -109,8 +138,8 @@ function ActivitiesTab() {
                 </Flex>,
             children:
             <div>
-                {countStatus1 === 0 ? (
-                    <Empty hasActivities={activities && activities.length > 0} />)
+                {1 === 0 ? (
+                    <Empty />)
                         : (
                     <Flex wrap gap='16px'>
                         {renderActivityCards(1)}
@@ -123,7 +152,7 @@ function ActivitiesTab() {
             label: 'Архив',
             children:
                 <Flex wrap gap='16px'>
-                    {activities && renderActivityCards(3)}
+                    {renderActivityCards(3)}
                 </Flex>,
         },
     ];
@@ -147,4 +176,4 @@ function ActivitiesTab() {
     );
 }
 
-export default ActivitiesTab;
+export default ProjectDetailsTab;

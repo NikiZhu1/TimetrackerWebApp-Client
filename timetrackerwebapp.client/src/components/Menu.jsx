@@ -2,10 +2,10 @@
 import { Menu, message, ConfigProvider, Layout, Button, Flex } from 'antd';
 import Icon, { AppstoreAddOutlined, AppstoreOutlined, PieChartOutlined, TeamOutlined, ClockCircleOutlined, MenuOutlined, SettingOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import Cookies from 'js-cookie';
 
-const { Header, Footer, Sider, Content } = Layout;
+const { Sider } = Layout;
 
 //Компоненты
 import MenuButton from './MenuButton.jsx';
@@ -48,10 +48,26 @@ const items = [
 
 function MyMenu({ onMenuClick }) {
     const navigate = useNavigate();
+    const location = useLocation();
     const { activeTab } = useParams(); // Получаем активную вкладку из URL
 
+    // Определяем активную вкладку на основе URL и state
+    const getActiveTab = () => {
+        // 1. Проверяем state из navigation
+        if (location.state?.activeTab) return location.state.activeTab;
+        
+        // 2. Проверяем параметр из URL
+        if (activeTab) return activeTab;
+        
+        // 3. Проверяем путь
+        if (location.pathname.includes('/projects')) return 'projects';
+        if (location.pathname.includes('/history')) return 'history';
+        
+        return 'activities'; // Значение по умолчанию
+    };
+
     const [collapsed, setCollapsed] = useState(false);
-    const [selectedKey, setSelectedKey] = useState(activeTab);
+    const [selectedKey, setSelectedKey] = useState(getActiveTab());
 
     //Скрытие-разворот меню
     const toggleCollapsed = () => {
@@ -73,6 +89,10 @@ function MyMenu({ onMenuClick }) {
             onMenuClick(e.key); // Пробрасываем событие в родительский компонент
         }
     };
+
+    useEffect(() => {
+        setSelectedKey(getActiveTab());
+      }, [location.pathname, activeTab, location.state]);
 
     return (
         <Sider width='225px' style={SiderStyle} collapsible collapsed={collapsed} trigger={null}>
@@ -125,12 +145,12 @@ function MyMenu({ onMenuClick }) {
                         href="https://t.me/timetracking_hse_bot"
                         onClick={null}/>
 
-                    <MenuButton
+                    {/* <MenuButton
                         collapsed={collapsed}
                         text='Настройки'
                         icon={<SettingOutlined />}
                         onClick={handleLogout}
-                        border='none'/>
+                        border='none'/> */}
                 </Flex>
             </Flex>
         </Sider>

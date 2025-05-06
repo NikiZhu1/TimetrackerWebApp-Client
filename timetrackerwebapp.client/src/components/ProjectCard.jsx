@@ -1,7 +1,8 @@
 ﻿import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { format, parse } from 'date-fns';
 import { Button, message, Dropdown, Flex, Card, Modal, Typography, Tag, Avatar, Tooltip } from 'antd';
-import Icon, { EditOutlined, EllipsisOutlined, LinkOutlined, CalendarOutlined, CarryOutOutlined, CheckCircleFilled, ExclamationCircleFilled, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, FolderOpenOutlined, TeamOutlined, DeleteOutlined, PauseCircleFilled, FrownOutlined } from '@ant-design/icons';
+import Icon, { EditOutlined, EllipsisOutlined, LinkOutlined, CalendarOutlined, CarryOutOutlined, CheckCircleFilled, ExclamationCircleFilled, UserDeleteOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, FolderOpenOutlined, TeamOutlined, DeleteOutlined, PauseCircleFilled, FrownOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 
 const { confirm } = Modal;
@@ -16,13 +17,12 @@ import ActivityTimer from './ActivityTimer.jsx';
 //Методы
 import { useProjects } from '../useProjects.jsx';
 import { useActivities } from '../useActivities.jsx'
-import { UserAvatar } from '../methods/UsersMethods.jsx';
+// import { UserAvatar } from '../methods/UsersMethods.jsx';
 
 function ProjectCard({
     token,
     projectId,
     title,
-    cardOnClick = null,
     ascessKey,
     isUserProjet,
     dateCreate,
@@ -31,14 +31,19 @@ function ProjectCard({
     acts
 }) {
 
-    const {  } = useProjects();
+    const { deleteProject, archiveProject } = useProjects();
+    const navigate = useNavigate();
+
+    const cardOnClick = () => {
+        navigate(`/dashboard/projects/${projectId}`);
+    };
 
     // Определяем иконку и текст в зависимости от статуса
     const liveActs = acts.filter(act => act.statusId === 2);
     let status;
 
     if (dateFinish !== null)
-        status = 3
+        status = 3 // Архив
     else if (acts.length === 0) {
         status = 0; // Нет активностей в проекте
     } else if (liveActs.length === 0) {
@@ -76,14 +81,12 @@ function ProjectCard({
             case 'checkHistory':
                 //
                 break;
-            case 'createNewProject':
-                //
-                break;
             case 'toArchive':
-                //
+                await archiveProject(token, projectId);
+                message.success(`${title}: проект закрыт`)
                 break;
             case 'delete':
-                /*showDeleteConfirm(() => deleteActivity(token, activityId));*/
+                showDeleteConfirm(() => deleteProject(token, projectId));
                 break;
             default:
                 message.info(`Выбран пункт: ${e.key}`);
@@ -94,7 +97,7 @@ function ProjectCard({
         confirm({
             title: `Удаление "${title}" без возможности восстановления`,
             icon: <ExclamationCircleFilled />,
-            content: 'Удаление активности приведёт к удалению всей истории отслеживания, а к удалению из проектов, в которые она была добавлена.',
+            content: 'Вы удаляете лишь проект. Все активности, которые были в проекте останутся у их создателей, периоды отслеживания также сохранятся.',
             okText: 'Удалить',
             okType: 'danger',
             cancelText: 'Отмена',
@@ -107,7 +110,7 @@ function ProjectCard({
                 } catch (error) {
                     console.error('Ошибка при удалении:', error);
                     Modal.destroyAll();
-                    message.error(`Не получилось удалить активность ${title}`);
+                    message.error(`Не получилось удалить проект ${title}`);
                 }
             },
             onCancel() {},
@@ -140,15 +143,6 @@ function ProjectCard({
             ),
         },
         {
-            key: 'toArchive',
-            icon: <FolderOutlined />,
-            label: (
-                <a >
-                    Завершить проект
-                </a>
-            ),
-        },
-        {
             key: 'unArchive',
             icon: <FolderOpenOutlined />,
             label: (
@@ -159,6 +153,26 @@ function ProjectCard({
         },
         {
             type: 'divider',
+        },
+        {
+            key: 'leave',
+            icon: <UserDeleteOutlined />,
+            danger: true,
+            label: (
+                <a >
+                    Покинуть проект
+                </a>
+            ),
+        },
+        {
+            key: 'toArchive',
+            icon: <FolderOutlined />,
+            danger: true,
+            label: (
+                <a >
+                    Завершить проект
+                </a>
+            ),
         },
         {
             key: 'delete',
@@ -194,7 +208,11 @@ function ProjectCard({
                                     !(item.key === 'toArchive' && status === 3) && 
                                     !(item.key === 'edit' && status === 3) && 
                                     !(item.key === 'getKey' && status === 3) && 
-                                    !(item.key === 'unArchive' && status !== 3)),
+                                    !(item.key === 'unArchive' && status !== 3) && 
+                                    !(item.key === 'delete' && status !== 3) && 
+                                    !(item.key === 'edit' && isUserProjet === false) && 
+                                    !(item.key === 'toArchive' && isUserProjet === false) && 
+                                    !(item.key === 'leave' && isUserProjet === true)),
                                 onClick: handleMenuClick
                             }}
                             placement="bottomLeft"

@@ -3,15 +3,13 @@ import * as api from './methods/ProjectsMethods.jsx';
 import { emit, subscribe } from './event.jsx';
 
 export const useProjects = () => {
+    const [singleProject, setSingleProject] = useState([]);
     const [projects, setProjects] = useState([]);
-    const [projectsActivities, setProjectsActivities] = useState({});
-    const [projectsMembers, setProjectsMembers] = useState({});
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     const projectsRef = useRef(projects);
-    const projectsActivitiesRef = useRef(projectsActivities);
-    const projectsMembersRef = useRef(projectsMembers);
+    const singleProjectRef = useRef(singleProject);
 
     // Синхронизируем ref с состоянием
     useEffect(() => {
@@ -20,13 +18,8 @@ export const useProjects = () => {
 
     // Синхронизируем ref с состоянием
     useEffect(() => {
-        projectsActivitiesRef.current = projectsActivities;
-    }, [projectsActivities]);
-
-    // Синхронизируем ref с состоянием
-    useEffect(() => {
-        projectsMembersRef.current = projectsMembers;
-    }, [projectsMembers]);
+        singleProjectRef.current = singleProject;
+    }, [singleProject]);
     
     //Загрузка всех данных
     const loadData = useCallback(async (token, userId) => {
@@ -44,19 +37,64 @@ export const useProjects = () => {
         }
     }, []);
 
-    // Нажатие на карточку
-    const actCard_Click = (activityId) => {
-        console.log('Выбрана активность с ID:', activityId);
-    };
-
-    const getActivityStats = async (token, userId, date1 = null, date2 = null) => {
+    //Проверяет, состоит ли пользователь в указанном проекте
+    const checkUserInProject = async (token, userId, projectId) => {
+        if (!token || !userId || !projectId) {
+          throw new Error('Необходимы токен, ID пользователя и ID проекта');
+        }
+        
+        setLoading(true);
+        setError(null);
         try {
-            getStats(token, userId, date1, date2)
+          // 1. Получаем все проекты пользователя
+          const userProjects = await api.getUserProjectInfo(token, userId);
+          
+          // 2. Ищем нужный проект
+          const projectRelation = userProjects.find(p => p.projectId === Number(projectId));
+          
+          return {
+            isMember: !!projectRelation,
+            isCreator: projectRelation ? projectRelation.isCreator : false
+          };
+        } catch (error) {
+            setError(error);
+            console.error('Ошибка при проверке участия пользователя в проекте:', error);
+            throw error;
+        } finally {
+            setLoading(false);
         }
-        catch {
+      };
 
+    //Получение информации по одному проекту
+    const getSingleProjectInfo = async (token, projectId) => {
+        setLoading(true);
+        setError(null);
+        try {
+            // 1. Получаем основную информацию о проекте
+            const projectDetails = await api.getProjectDetails(token, projectId);
+            
+            // 2. Параллельно получаем участников и активности
+            const [members, activities] = await Promise.all([
+            api.getProjectMembers(token, projectId),
+            api.getProjectActivities(token, projectId)
+            ]);
+
+            // 3. Формируем итоговый объект
+            const fullProjectInfo = {
+            ...projectDetails,
+            members,
+            activities
+            };
+
+            console.log('Полная информация о проекте:', fullProjectInfo);
+            setSingleProject(fullProjectInfo);
+            return fullProjectInfo;
         }
-    }
+        catch (err) {
+            console.error(`Ошибка при получении информации о проекте ${projectId}:`, error);
+            throw error;
+        }
+    };
 
     // Добавление новой активности
     const createProject = async (token, name) => {
@@ -65,7 +103,7 @@ export const useProjects = () => {
         try {
             await api.CreateProject(token, name);
             emit('projectChanged'); // Обновляем данные
-            console.log('Добавлена проект ', name);
+            console.log('Добавлен проект ', name);
         } catch (err) {
             setError(err);
             throw err;
@@ -74,46 +112,39 @@ export const useProjects = () => {
         }
     };
 
-    // Старт отслеживания активности
-    const startActivity = async (token, activityId) => {
+    // Добавление новой активности
+    const joinToProject = async (token, projectKey) => {
+        setLoading(true);
+        setError(null);
         try {
-            await ManageTrackerActivity(token, activityId, true);
-            emit('activityChanged'); // Обновляем данные
-            console.log('Запуск активности с ID:', activityId);
+            await api.AddUserToProject(token, projectKey);
+            emit('projectChanged'); // Обновляем данные
+            console.log('Присоединение к проекту', projectKey);
+        } catch (err) {
+            setError(err);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    //Архивация проекта
+    const archiveProject = async (token, projectId) => {
+        try {
+            await api.ManageArchiveProject(token, projectId, true);
+            emit('projectChanged'); // Обновляем данные
+            console.log('Архивирование проекта с ID:', projectId);
         } catch (err) {
             throw err;
         }
     };
 
-    // Остановка отслеживания активности
-    const stopActivity = async (token, activityId) => {
+    //Изменение названия проекта
+    const updateProjectName = async (tokem, projectId, newProjectName) => {
         try {
-            await ManageTrackerActivity(token, activityId, false);
-            emit('activityChanged'); // Обновляем данные
-            console.log('Остановка активности с ID:', activityId);
-        } catch (err) {
-            throw err;
-        }
-    };
-
-    // Получение времени старта текущего отслеживания активности
-    const getActivityStartTime = (activityId) => {
-        if (!activityId || !periods || !periods[activityId])
-            return null;
-
-        const activePeriod = periods[activityId].find(
-            period => period.stopTime === null
-        );
-
-        return activePeriod?.startTime || null;
-    };
-
-    //Архивация активности
-    const archiveActivity = async (token, activityId) => {
-        try {
-            await ManageArchiveActivity(token, activityId, true);
-            emit('activityChanged'); // Обновляем данные
-            console.log('Архивирование активности с ID:', activityId);
+            await api.UpdateProjectName(token, projectId, newProjectName);
+            emit('projectChanged'); // Обновляем данные
+            console.log('Обновление названия проекта с ID:', activityId);
         } catch (err) {
             throw err;
         }
@@ -130,12 +161,12 @@ export const useProjects = () => {
         }
     };
 
-    //Удаление активности
-    const deleteActivity = async (token, activityId) => {
+    //Удаление проекта
+    const deleteProject = async (token, projectId) => {
         try {
-            await DeleteActivity(token, activityId);
-            emit('activityChanged'); // Обновляем данные
-            console.log('Удалена активность с ID:', activityId);
+            await api.DeleteProject(token, projectId);
+            emit('projectChanged'); // Обновляем данные
+            console.log('Удален проект с ID:', projectId);
         } catch (err) {
             throw err;
         }
@@ -143,10 +174,15 @@ export const useProjects = () => {
 
     return {
         projects,
-        projectsRef,
+        singleProject,
         loading,
         error,
         loadData,
-        createProject
+        checkUserInProject,
+        getSingleProjectInfo,
+        createProject,
+        joinToProject,
+        archiveProject,
+        deleteProject
     };
 };

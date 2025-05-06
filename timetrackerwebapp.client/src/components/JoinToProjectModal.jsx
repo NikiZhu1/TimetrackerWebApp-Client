@@ -1,6 +1,6 @@
 ﻿import React, { act, useEffect, useState } from 'react';
 import { Button, message, Form, Input, Select, Modal, Flex, Image } from 'antd';
-import Icon, { PlusOutlined } from '@ant-design/icons';
+import Icon, { LinkOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import '@ant-design/v5-patch-for-react-19';
 
@@ -10,11 +10,11 @@ const { confirm } = Modal;
 import { useProjects } from '../useProjects.jsx';
 import { GetJWT, GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
 
-export const showAddNewProject = () => {
+export const showJoinToProject = () => {
     confirm({
-        title: `Создать новый проект`,
+        title: `Присоединться к проекту`,
         icon: null,
-        content: <AddNewProjectForm/>,
+        content: <JoinToProjectForm/>,
         centered: true,
         closable: true,
         maskClosable: true,
@@ -22,18 +22,12 @@ export const showAddNewProject = () => {
     });
 };
 
-function AddNewProjectForm() {
+function JoinToProjectForm() {
 
-    const { loading, stopActivity, createProject, countStatus1, countStatus2, countStatus3 } = useProjects();
+    const { loading, createProject, joinToProject } = useProjects();
     const [form] = Form.useForm(); // Добавляем хук формы
 
-    const projects = [
-        {
-
-        }
-    ]
-
-    // Добавление активности
+    // Присоединение к проекту
     const onFinish = async (values) => {
         try {
             const token = GetJWT();
@@ -46,20 +40,19 @@ function AddNewProjectForm() {
                 return;
             }
 
-            await createProject(token, values.name);
+            await joinToProject(token, values.projectKey);
             Modal.destroyAll();
-            message.success(`${values.name}: Добавлен новый проект`);
-            console.log("Добавлен новый проект: ", values);
+            message.success(`Вы подключились к проекту`);
         }
         catch (error) {
             if (error.response?.status === 409) {
                 // Устанавливаем ошибку для конкретного поля
                 form.setFields([{
-                    name: 'name',
-                    errors: ['Уже есть активность с таким названием'],
+                    name: 'projectKey',
+                    errors: ['Код приглашения недействителен либо вы уже состоите в этом проекте'],
                 }]);
             } else {
-                message.error('Произошла ошибка при создании проекта');
+                message.error('Не получилось присоединиться к проекту');
                 console.error('Ошибка при создании проекта', error)
             }
         }
@@ -75,15 +68,15 @@ function AddNewProjectForm() {
             style={{marginRight: '-12px'}}>
             
             <Image
-                src='https://i.ibb.co/gLw8YpCK/4370108-2168800.png'
+                src='https://i.ibb.co/mdCW4D3/4398920-2317146.png'
                 preview={false}
             />
 
             <Form.Item
-                name="name"
-                label="Название"
+                name="projectKey"
+                label="Код приглашения"
                 rules={[
-                    { required: true, message: 'У проекта должно быть название' },
+                    { required: true, message: 'Введите код приглашения' },
                     // Добавляем кастомное правило для проверки уникальности
                     () => ({
                         validator(_, value) {
@@ -93,7 +86,7 @@ function AddNewProjectForm() {
                 ]}>
                 <Input
                     maxLength={50}
-                    placeholder="Как назовём проект?"
+                    placeholder="Пригласительный код"
                 />
             </Form.Item>
 
@@ -105,10 +98,10 @@ function AddNewProjectForm() {
                 <Button
                     type="primary"
                     htmlType="submit"
-                    icon={<PlusOutlined />}
+                    icon={<LinkOutlined />}
                     loading={loading}
                     onClick={() => onFinish}>
-                    Создать
+                    Присоединиться
                 </Button>
             </Flex>
             
