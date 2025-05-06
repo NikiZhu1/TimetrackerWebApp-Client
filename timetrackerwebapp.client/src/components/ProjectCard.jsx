@@ -1,29 +1,27 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, parse } from 'date-fns';
-import { Button, message, Dropdown, Flex, Card, Modal, Typography, Tag, Avatar, Tooltip } from 'antd';
+import { Button, message, Dropdown, Flex, Card, Modal, Typography, Tag, Input, Tooltip } from 'antd';
 import Icon, { EditOutlined, EllipsisOutlined, LinkOutlined, CalendarOutlined, CarryOutOutlined, CheckCircleFilled, ExclamationCircleFilled, UserDeleteOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, FolderOpenOutlined, TeamOutlined, DeleteOutlined, PauseCircleFilled, FrownOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 
 const { confirm } = Modal;
-const { Text } = Typography;
+const { Text, Paragraph } = Typography;
 
 //Стили
 import '../App.css';
 
 //Компоненты
-import ActivityTimer from './ActivityTimer.jsx';
 
 //Методы
 import { useProjects } from '../useProjects.jsx';
-import { useActivities } from '../useActivities.jsx'
-// import { UserAvatar } from '../methods/UsersMethods.jsx';
+import { GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
 
 function ProjectCard({
     token,
     projectId,
     title,
-    ascessKey,
+    projectKey,
     isUserProjet,
     dateCreate,
     dateFinish,
@@ -31,7 +29,7 @@ function ProjectCard({
     acts
 }) {
 
-    const { deleteProject, archiveProject } = useProjects();
+    const { deleteProject, archiveProject, deleteUserFromProject } = useProjects();
     const navigate = useNavigate();
 
     const cardOnClick = () => {
@@ -75,15 +73,46 @@ function ProjectCard({
             case 'edit':
                 //
                 break;
-            case 'getStats':
-                // 
+            case 'getKey':
+                Modal.info({
+                    title: `Ключ доступа ${title}`,
+                    content: (
+                        <div style={{ marginTop: 10 }}>
+                            <Text 
+                            style={{fontSize: '24px'}}
+                            copyable={{
+                                tooltips: ['Копировать', 'Скопировано!'],
+                            }}>
+                                {projectKey}
+                            </Text>
+                            <p style={{ marginTop: 10, color: '#B4B4B4' }}>
+                                Скопируйте этот ключ и поделитесь им, чтобы добавить участников в проект.
+                            </p>
+                        </div>
+                    ),
+                    okText: 'Закрыть',
+                    maskClosable: true,
+                });
+                // try {
+                //     // Копируем ключ доступа в буфер обмена
+                //     await navigator.clipboard.writeText(projectKey);
+                //     message.success('Ключ доступа скопирован в буфер обмена');
+                // } catch (error) {
+                //     console.error('Ошибка при копировании ключа:', error);
+                //     message.error('Не удалось скопировать ключ');
+                // }
                 break;
             case 'checkHistory':
                 //
                 break;
             case 'toArchive':
                 await archiveProject(token, projectId);
-                message.success(`${title}: проект закрыт`)
+                message.success(`${title}: проект закрыт`);
+                break;
+            case 'leave':
+                const userId = GetUserIdFromJWT(token);
+                await deleteUserFromProject(token, projectId, userId);
+                message.success(`Вы покинули проект ${title}`);
                 break;
             case 'delete':
                 showDeleteConfirm(() => deleteProject(token, projectId));

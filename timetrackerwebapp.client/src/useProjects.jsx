@@ -112,7 +112,7 @@ export const useProjects = () => {
         }
     };
 
-    // Добавление новой активности
+    // Присоединение в проект
     const joinToProject = async (token, projectKey) => {
         setLoading(true);
         setError(null);
@@ -163,12 +163,33 @@ export const useProjects = () => {
 
     //Удаление проекта
     const deleteProject = async (token, projectId) => {
+        setLoading(true);
+        setError(null);
         try {
             await api.DeleteProject(token, projectId);
             emit('projectChanged'); // Обновляем данные
             console.log('Удален проект с ID:', projectId);
         } catch (err) {
+            setError(err);
             throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    //Удаление участника из проекта
+    const deleteUserFromProject = async (token, projectId, userId) => {
+        setLoading(true);
+        setError(null);
+        try {
+            await api.DeleteUserFromProject(token, projectId, userId);
+            emit('projectChanged'); // Обновляем данные
+            console.log('Удален пользователь ', userId, ' из проекта ', projectId);
+        } catch (err) {
+            setError(err);
+            throw err;
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -183,6 +204,7 @@ export const useProjects = () => {
         createProject,
         joinToProject,
         archiveProject,
-        deleteProject
+        deleteProject,
+        deleteUserFromProject
     };
 };

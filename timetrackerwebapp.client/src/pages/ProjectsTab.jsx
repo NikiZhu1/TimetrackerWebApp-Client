@@ -46,8 +46,7 @@ function ProjectsTab() {
             }
         };
 
-        fetchAll();
-        console.log("проекты", projects);
+        fetchAll(); 
         subscribe('projectChanged', fetchAll); // Подписка
 
     }, []);
@@ -151,7 +150,7 @@ function ProjectsTab() {
         },
         {
             key: 'collapse3',
-            label: 'Архив',
+            label: 'Завершённые',
             children:
                 <Flex wrap gap='16px'>
                     {renderProjectsCards(null, true)}

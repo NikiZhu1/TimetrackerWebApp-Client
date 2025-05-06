@@ -20,15 +20,7 @@ import ProjectsTab from './pages/ProjectsTab.jsx';
 import ProjectDetailsTab from './pages/ProjectDetailsTab.jsx';
 import UserInfo from './components/UserInfo.jsx';
 
-const { Header, Footer, Sider, Content } = Layout;
-
-//Тест своих иконок
-const HistorySvg = () => (
-    <svg width="16" height="17" viewBox="0 0 16 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M6 14.5H3.33333C2.97971 14.5 2.64057 14.3595 2.39052 14.1095C2.14048 13.8594 2 13.5203 2 13.1667V3.83333C2 3.47971 2.14048 3.14057 2.39052 2.89052C2.64057 2.64048 2.97971 2.5 3.33333 2.5H6M10.6667 11.8333L14 8.5M14 8.5L10.6667 5.16667M14 8.5H6" stroke="#E31E1E" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-);
-const HistoryIcon = props => <Icon component={HistorySvg} {...props} />;
+const { Header, Footer, Content } = Layout;
 
 const HeaderStyle = {
     background: '#fff',
@@ -45,7 +37,7 @@ const HeaderStyle = {
 function Dashboard() {
     const navigate = useNavigate();
     const { activeTab = 'activities', projectId } = useParams(); // Получаем активную вкладку из URL
-    const { user, loadData, UserAvatar } = useUsers();
+    const { user, loadData } = useUsers();
 
     // Состояние для активной вкладки
     const [activeMenuTab, setActiveMenuTab] = useState(activeTab); 
@@ -83,8 +75,6 @@ function Dashboard() {
         console.log("Используемый userId:", userId);
 
         const fetchAll = async () => {
-
-            console.log("Событие");
             try {
                 await loadData(token, userId);
             } catch (error) {
@@ -94,7 +84,6 @@ function Dashboard() {
         };
 
         fetchAll();
-        subscribe('activityChanged', fetchAll); // Подписка
 
     }, []);
 

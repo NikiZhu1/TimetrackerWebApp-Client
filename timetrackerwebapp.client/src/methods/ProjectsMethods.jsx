@@ -76,7 +76,6 @@ export const getFullUserProjectsInfo = async (token, userId) => {
     try {
       // 1. Получаем проекты пользователя
       const userProjects = await getUserProjectInfo(token, userId);
-      console.log("Проекты пользователя:", userProjects);
   
       // 2. Для каждого проекта получаем полную информацию
       const projectsData = await Promise.all(
@@ -246,35 +245,29 @@ export const AddUserToProject = async (token, projectKey) => {
     }
 }
 
-// Общая функция для управления трекером активности
-export const ManageTrackerActivity = async (token, activityId, isStarted) => {
+// Удалить пользователя из проекта
+export const DeleteUserFromProject = async (token, projectId, userId) => {
     try {
-        const response = await axios.post('http://localhost:8080/api/ActivityPeriods',
-            {
-                ActivityId: activityId,
-                IsStarted: isStarted
-            },
+        const response = await axios.delete(`http://localhost:8080/api/Projects/${projectId}/user/${userId}`,
             {
                 headers: { Authorization: `Bearer ${token}` }
             }
         );
 
-        //emit('activityChanged'); //Обновление данных
+        //Возвращаем связь пользователь-проект
         return response.data;
     } catch (error) {
-        console.error(`Ошибка при ${isStarted ? 'старте' : 'остановке'} активности:`, error);
+        console.error(`Ошибка при присоединению к проекту:`, error);
         throw error;
     }
-};
+}
 
 // Общая функция для изменения архивации проекта
 export const ManageArchiveProject = async (token, projectId, isArchived) => {
     try {
-        const response = await axios.put(`http://localhost:8080/api/Projects/${projectId}`,
+        const response = await axios.patch(`http://localhost:8080/api/Projects/${projectId}`,
             {
-                closeProject: isArchived,
-                updateName: false,
-                projectName: ""
+                closeProject: isArchived
             },
             {
                 headers: { Authorization: `Bearer ${token}` }
@@ -291,10 +284,8 @@ export const ManageArchiveProject = async (token, projectId, isArchived) => {
 // Изменения названия активности
 export const UpdateProjectName = async (token, projectId, newProjectName) => {
     try {
-        const response = await axios.put(`http://localhost:8080/api/Projects/${projectId}`,
+        const response = await axios.patch(`http://localhost:8080/api/Projects/${projectId}`,
             {
-                closeProject: false,
-                updateName: true,
                 projectName: newProjectName
             },
             {

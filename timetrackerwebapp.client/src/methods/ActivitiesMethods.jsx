@@ -180,9 +180,8 @@ export const ManageTrackerActivity = async (token, activityId, isStarted) => {
 // Общая функция для изменения архивации активности
 export const ManageArchiveActivity = async (token, activityId, isArchived) => {
     try {
-        const response = await axios.put(`http://localhost:8080/api/Activities/${activityId}`,
+        const response = await axios.patch(`http://localhost:8080/api/Activities/${activityId}`,
             {
-                updateName: false,
                 archived: isArchived
             },
             {
@@ -200,10 +199,8 @@ export const ManageArchiveActivity = async (token, activityId, isArchived) => {
 // Изменение названия активности
 export const UpdateActivityName = async (token, activityId, newActivityName) => {
     try {
-        const response = await axios.put(`http://localhost:8080/api/Activities/${activityId}`,
+        const response = await axios.patch(`http://localhost:8080/api/Activities/${activityId}`,
             {
-                updateName: true,
-                archived: false,
                 newName: newActivityName
             },
             {
