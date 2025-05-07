@@ -1,5 +1,5 @@
 ﻿import React, { act, useEffect, useState } from 'react';
-import { Button, message, Form, Input, Select, Modal, Flex } from 'antd';
+import { Button, message, Form, Input, Select, Modal, Flex, Typography, Tag } from 'antd';
 import Icon, { PlusOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import '@ant-design/v5-patch-for-react-19';
@@ -8,6 +8,7 @@ const { confirm } = Modal;
 
 //Методы
 import { useActivities } from '../useActivities.jsx';
+import { useProjects } from '../useProjects.jsx';
 import { GetJWT, GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
 
 export const showAddNewActivity = () => {
@@ -18,20 +19,18 @@ export const showAddNewActivity = () => {
         centered: true,
         closable: true,
         maskClosable: true,
-        footer: null,
+        footer: null
     });
 };
 
-function AddNewActivityForm() {
+function AddNewActivityForm({
+    addToProject = false,
+    projectId = null,
+    projectName}) {
 
-    const { loading, stopActivity, addActivity, countStatus1, countStatus2, countStatus3 } = useActivities();
+    const { loading, addActivity } = useActivities();
+    const { addActivityToProject } = useProjects();
     const [form] = Form.useForm(); // Добавляем хук формы
-
-    const projects = [
-        {
-
-        }
-    ]
 
     // Добавление активности
     const onFinish = async (values) => {
@@ -46,7 +45,10 @@ function AddNewActivityForm() {
                 return;
             }
 
-            await addActivity(token, userId, values.name);
+            const activityData = await addActivity(token, userId, values.name);
+            // if (addToProject) {
+            //     await addActivityToProject(token, projectId, activityData.id)
+            // }
             Modal.destroyAll();
             message.success(`${values.name}: Добавлена новая активность`);
             console.log("Добавлена новая активность: ", values);
@@ -90,14 +92,9 @@ function AddNewActivityForm() {
                     placeholder="Что будем отслеживать?"
                 />
             </Form.Item>
-
-            <Form.Item
-                name="project"
-                label="Проект (не обязательно)">
-                <Select
-                    options={projects }
-                />
-            </Form.Item>
+            
+            {addToProject && (<><p>Добавление в проект:</p>
+                <p style={{fontWeight: 'bold'}}>{projectName}</p></>)}
 
             <Flex justify='flex-end' gap='12px' style={{paddingTop: '24px'} }>
                 <Button

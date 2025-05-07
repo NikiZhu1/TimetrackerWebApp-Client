@@ -110,7 +110,11 @@ function ActivitiesTab() {
             children:
             <div>
                 {countStatus1 === 0 ? (
-                    <Empty hasActivities={activities && activities.length > 0} />)
+                    <Empty 
+                        hasActivities={activities && activities.length > 0}
+                        textZeroActivities='Здесь пока пусто. Создайте свою первую активность и начните отслеживать продуктивность!'
+                        textWhenAllActivityIsBusy='Похоже, вы уже отслеживаете все доступные активности или переместили их в архив'
+                        onClickAction={() => showAddNewActivity()} />)
                         : (
                     <Flex wrap gap='16px'>
                         {renderActivityCards(1)}

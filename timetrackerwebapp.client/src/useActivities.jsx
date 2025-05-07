@@ -52,6 +52,21 @@ export const useActivities = () => {
         }
     }, []);
 
+    const loadPeriodsActivities = async (token, activities) => {
+        setLoading(true);
+        setError(null);
+        try {
+            // Загружаем периоды для полученных активностей
+            const periodsData = await getAllActivityPeriods(token, activities);
+            setPeriods(periodsData);
+
+        } catch (err) {
+            setError(err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Нажатие на карточку
     const actCard_Click = (activityId) => {
         console.log('Выбрана активность с ID:', activityId);
@@ -165,6 +180,7 @@ export const useActivities = () => {
         loading,
         error,
         loadData,
+        loadPeriodsActivities,
         addActivity,
         actCard_Click,
         startActivity,

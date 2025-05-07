@@ -54,9 +54,11 @@ const UserAvatar = ({ name, id }) => {
     return (
         // <Tooltip title={`@${safeName}`} placement="top">
             <Avatar
+                size={30}
                 style={{ 
                     backgroundColor: getColorFromString(safeName, id), 
-                    verticalAlign: 'middle' 
+                    verticalAlign: 'middle',
+                    fontSize: '14px' 
                 }}>
                 {letters}
             </Avatar>

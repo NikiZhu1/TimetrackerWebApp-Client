@@ -12,7 +12,11 @@ import { showAddNewActivity } from './AddNewActivityModal.jsx';
 import { useActivities } from '../useActivities.jsx';
 
 function Empty({
-    hasActivities
+    hasActivities,
+    textZeroActivities,
+    textWhenAllActivityIsBusy,
+    showButton = true,
+    onClickAction
 }) {
 
     const { startActivity, stopActivity, addActivity, countStatus1, countStatus2, countStatus3 } = useActivities();
@@ -31,12 +35,12 @@ function Empty({
             />
             <Typography.Text>
                 {hasActivities
-                    ? "Похоже, вы уже отслеживаете все доступные активности или переместили их в архив"
-                    : "Здесь пока пусто. Создайте свою первую активность и начните отслеживать продуктивность!"
+                    ? textWhenAllActivityIsBusy
+                    : textZeroActivities
                 }
             </Typography.Text>
 
-            <Button type="primary" onClick={() => showAddNewActivity()}>Создать активность</Button>
+            {showButton && (<Button type="primary" onClick={() => onClickAction()}>Создать активность</Button>)}
         </Flex>
     );
 }

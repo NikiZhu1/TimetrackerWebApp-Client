@@ -51,7 +51,7 @@ function ProjectCard({
     }
     
     const activityInfoConfig = {
-        3: { icon: FolderOutlined, color: '#282828', text: 'Проект в архиве,\n отслеживание активностей невозможно'},
+        3: { icon: FolderOutlined, color: '#282828', text: 'Проект завершён,\n отслеживание активностей невозможно'},
         2: { icon: CheckCircleFilled, color: '#4DCF5C', text: 'Активности в процессе:' },
         1: { icon: PauseCircleFilled, color: '#F6DD4E', text: 'Нет отслеживаемых активностей,\n откройте проект для управления' },
         0: { icon: FrownOutlined, color: '#282828', text: 'В проекте нет активностей,\n откройте проект для добавления' }
@@ -124,7 +124,7 @@ function ProjectCard({
 
     const showDeleteConfirm = (onOkClick) => {
         confirm({
-            title: `Удаление "${title}" без возможности восстановления`,
+            title: `Удаленить "${title}" без возможности восстановления`,
             icon: <ExclamationCircleFilled />,
             content: 'Вы удаляете лишь проект. Все активности, которые были в проекте останутся у их создателей, периоды отслеживания также сохранятся.',
             okText: 'Удалить',
@@ -171,15 +171,15 @@ function ProjectCard({
                 </a>
             ),
         },
-        {
-            key: 'unArchive',
-            icon: <FolderOpenOutlined />,
-            label: (
-                <a >
-                    Восстановить
-                </a>
-            ),
-        },
+        // {
+        //     key: 'unArchive',
+        //     icon: <FolderOpenOutlined />,
+        //     label: (
+        //         <a >
+        //             Восстановить
+        //         </a>
+        //     ),
+        // },
         {
             type: 'divider',
         },
@@ -235,9 +235,9 @@ function ProjectCard({
                             menu={{
                                 items: dropMenuItems.filter(item => 
                                     !(item.key === 'toArchive' && status === 3) && 
-                                    !(item.key === 'edit' && status === 3) && 
+                                    // !(item.key === 'edit' && status === 3) && 
                                     !(item.key === 'getKey' && status === 3) && 
-                                    !(item.key === 'unArchive' && status !== 3) && 
+                                    // !(item.key === 'unArchive' && status !== 3) && 
                                     !(item.key === 'delete' && status !== 3) && 
                                     !(item.key === 'edit' && isUserProjet === false) && 
                                     !(item.key === 'toArchive' && isUserProjet === false) && 

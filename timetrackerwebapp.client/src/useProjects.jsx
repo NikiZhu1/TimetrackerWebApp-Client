@@ -92,11 +92,14 @@ export const useProjects = () => {
         }
         catch (err) {
             console.error(`Ошибка при получении информации о проекте ${projectId}:`, error);
+            setError(error);
             throw error;
+        } finally {
+            setLoading(false);
         }
     };
 
-    // Добавление новой активности
+    // Созданние проекта
     const createProject = async (token, name) => {
         setLoading(true);
         setError(null);
@@ -128,6 +131,22 @@ export const useProjects = () => {
         }
     };
 
+    // Добавление активности в проект
+    const addActivityToProject = async (token, projectId, activityId) => {
+        setLoading(true);
+        setError(null);
+        try {
+            await api.AddActivityToProject(token, projectId, activityId);
+            emit('activityChanged'); // Обновляем данные
+            console.log('Добавление активности ', activityId, ' в проект ', projectId);
+        } catch (err) {
+            setError(err);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
     //Архивация проекта
     const archiveProject = async (token, projectId) => {
         try {
@@ -140,11 +159,11 @@ export const useProjects = () => {
     };
 
     //Изменение названия проекта
-    const updateProjectName = async (tokem, projectId, newProjectName) => {
+    const updateProjectName = async (token, projectId, newProjectName) => {
         try {
             await api.UpdateProjectName(token, projectId, newProjectName);
-            emit('projectChanged'); // Обновляем данные
-            console.log('Обновление названия проекта с ID:', activityId);
+            // emit('projectChanged'); // Обновляем данные
+            console.log('Обновление названия проекта с ID:', projectId, 'на новое: ', newProjectName);
         } catch (err) {
             throw err;
         }
@@ -202,7 +221,9 @@ export const useProjects = () => {
         checkUserInProject,
         getSingleProjectInfo,
         createProject,
+        updateProjectName,
         joinToProject,
+        addActivityToProject,
         archiveProject,
         deleteProject,
         deleteUserFromProject

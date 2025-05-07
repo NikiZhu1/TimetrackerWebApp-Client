@@ -124,7 +124,6 @@ export const getUserProjectInfo = async (token, userId) => {
     } catch (error) {
         console.error('Ошибка при получении проектов пользователя:', error);
         throw error;
-        return [];
     }
 };
 
@@ -241,6 +240,27 @@ export const AddUserToProject = async (token, projectKey) => {
         return response.data;
     } catch (error) {
         console.error(`Ошибка при присоединению к проекту:`, error);
+        throw error;
+    }
+};
+
+// Добавить активность в проект
+export const AddActivityToProject = async (token, projectId, activityId) => {
+    try {
+        const response = await axios.post('http://localhost:8080/api/Projects/activity',
+            {
+                activityId: activityId,
+                projectId: projectId
+            },
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+
+        //Возвращаем связь пользователь-проект
+        return response.data;
+    } catch (error) {
+        console.error(`Ошибка при добавлении активности в проект:`, error);
         throw error;
     }
 }

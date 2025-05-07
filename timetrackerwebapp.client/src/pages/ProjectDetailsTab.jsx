@@ -1,12 +1,14 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { Button, message, Collapse, ConfigProvider, Flex, Skeleton, Typography } from 'antd';
-import Icon, { PlusOutlined } from '@ant-design/icons';
+import { Button, message, Collapse, ConfigProvider, Flex, Skeleton, Typography, Modal, Divider } from 'antd';
+import Icon, { AppstoreAddOutlined, AppstoreOutlined, CalendarOutlined, CarryOutOutlined, DeleteOutlined, EditOutlined, ExclamationCircleFilled, FolderOutlined, LinkOutlined, PlusOutlined, TeamOutlined, UserDeleteOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
+import { format, parse } from 'date-fns';
 import { useNavigate, useParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { subscribe } from '../event.jsx';
 
-const { Title } = Typography;
+const { confirm } = Modal;
+const { Title, Paragraph, Text } = Typography;
 
 //Стили
 import '../Collapse.css';
@@ -20,14 +22,18 @@ import { useProjects } from '../useProjects.jsx';
 import Empty from '../components/Empty.jsx';
 import ActivityCard from '../components/ActivityCard.jsx';
 import { showAddNewActivity } from '../components/AddNewActivityModal.jsx';
+import ProjectActionButton from '../components/ProjectActionButton.jsx';
 
 function ProjectDetailsTab() {
-    const { periods, actCard_Click, getActivityStartTime } = useActivities();
-    const { singleProject, loading, loadData, getSingleProjectInfo, checkUserInProject } = useProjects();
+    const { periods, actCard_Click, getActivityStartTime, loadPeriodsActivities } = useActivities();
+    const { singleProject, loading, getSingleProjectInfo, checkUserInProject, updateProjectName, deleteUserFromProject, deleteProject } = useProjects();
     const navigate = useNavigate();
     const { projectId } = useParams();
 
     const [access, setAccess] = useState({ isMember: false, isCreator: false });
+    const [editProjectName, setProjectName] = useState('');
+    const [tempProjectName, setTempProjectName] = useState('');
+    const [projectIsClose, setProjectIsClose] = useState(false);
 
     useEffect(() => {
 
@@ -60,10 +66,16 @@ function ProjectDetailsTab() {
                 navigate('/dashboard/projects', { state: { activeTab: 'projects' } });
                 return;
             }
-
-            console.log("Событие");
+            
             try {
-                await getSingleProjectInfo(token, projectId);
+                // 2. Загружаем информацию по проекту
+                const projectData = await getSingleProjectInfo(token, projectId);
+                setProjectName(projectData.projectName);
+                setTempProjectName(projectData.projectName);
+                if (projectData.finishDate) {
+                    setProjectIsClose(true);
+                }
+                await loadPeriodsActivities(token, projectData.activities);
             } catch (error) {
                 console.error('Ошибка загрузки данных:', error);
                 message.error('Не удалось загрузить данные');
@@ -71,14 +83,41 @@ function ProjectDetailsTab() {
         };
 
         fetchProject();
-        // subscribe('activityChanged', fetchAll); // Подписка
+        subscribe('activityChanged', fetchProject); // Подписка
 
     }, []);
+
+    useEffect(() => {
+        const newProjectName = async () => {
+            try {
+                const token = GetJWT();
+                const userId = GetUserIdFromJWT(token);
+
+                if (!token || !userId) {
+                    if (!token) message.warning('Сначала войдите в систему');
+                    if (!userId) Cookies.remove('token');
+                    navigate('/');
+                    return;
+                }
+                
+                if (access.isCreator)
+                    await updateProjectName(token, projectId, tempProjectName);
+                setProjectName(tempProjectName); // Обновляем основное состояние после успешного сохранения
+              } catch (error) {
+                message.error('Не удалось обновить название');
+                console.error(error);
+                setTempProjectName(editProjectName); // Восстанавливаем предыдущее значение при ошибке
+              }
+
+        }
+
+        newProjectName();
+    }, [tempProjectName])
 
     // Рендер карточек по статусу
     const renderActivityCards = (statusId) => {
 
-        if (loading && !singleProject) return <Skeleton active />;
+        if (loading) return <Skeleton active />;
 
         const token = GetJWT();
         if (!token) {
@@ -91,7 +130,6 @@ function ProjectDetailsTab() {
         if (!singleProject || !singleProject.activities) {
             return null; // или <Empty description="Нет данных об активностях" />
         }
-
 
         return singleProject.activities
             .filter(activity => activity.statusId === statusId)
@@ -110,7 +148,7 @@ function ProjectDetailsTab() {
             ));
     };
 
-    const items = [
+    const collapseItems = [
         {
             key: 'collapseActLive',
             label: 'Текущие активности',
@@ -121,25 +159,16 @@ function ProjectDetailsTab() {
         },
         {
             key: 'collapseAct',
-            label:
-                <Flex gap='12px'>
-                    Активности
-                    {(<Button
-                        color="default"
-                        variant="outlined"
-                        icon={<PlusOutlined />}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            showAddNewActivity();
-                        }}
-                        style={{background: 'transparent'}}>
-                        Создать
-                    </Button>)}
-                </Flex>,
+            label: 'Активности',
             children:
             <div>
-                {1 === 0 ? (
-                    <Empty />)
+                {singleProject.activities && singleProject.activities.filter(activity => activity.statusId === 1).length === 0 ? (
+                    <Empty 
+                        hasActivities={singleProject.activities.length > 0}
+                        textZeroActivities='Здесь пока пусто. Создайте первую активность в проекте и начните отслеживать продуктивность вместе!'
+                        textWhenAllActivityIsBusy='Похоже, все доступные активности уже отслеживаются или перенесены в архив'
+                        showButton={!projectIsClose}
+                        onClickAction={() => showAddNewActivity()} />)
                         : (
                     <Flex wrap gap='16px'>
                         {renderActivityCards(1)}
@@ -157,7 +186,182 @@ function ProjectDetailsTab() {
         },
     ];
 
+    //Нажатие кнопки управления
+    const handleActionClick = async (key) => {
+        switch (key) {
+            case 'members':
+                //
+                break;
+            case 'addActivity':
+                //
+                break;
+            case 'getKey':
+                const projectKey = singleProject.projectKey;
+                Modal.info({
+                    title: `Ключ доступа ${editProjectName}`,
+                    content: (
+                        <div style={{ marginTop: 10 }}>
+                            <Text 
+                            style={{fontSize: '24px'}}
+                            copyable={{
+                                tooltips: ['Копировать', 'Скопировано!'],
+                            }}>
+                                {projectKey}
+                            </Text>
+                            <p style={{ marginTop: 10, color: '#B4B4B4' }}>
+                                Скопируйте этот ключ и поделитесь им, чтобы добавить участников в проект.
+                            </p>
+                        </div>
+                    ),
+                    okText: 'Закрыть',
+                    maskClosable: true,
+                });
+                break;
+            case 'toArchive':
+                //
+                break;
+            case 'leave':
+                const token = GetJWT();
+                const userId = GetUserIdFromJWT(token);
+
+                if (!token || !userId) {
+                    if (!token) message.warning('Сначала войдите в систему');
+                    if (!userId) Cookies.remove('token');
+                    navigate('/');
+                    return;
+                }
+
+                await deleteUserFromProject(token, projectId, userId);
+                message.success(`Вы покинули проект ${singleProject.projectName}`);
+                navigate('/dashboard/projects', { state: { activeTab: 'projects' } });
+                break;
+            case 'delete':
+                showDeleteConfirm(() => deleteProject(token, projectId));
+                break;
+            default:
+                message.info(`Выбран пункт: ${key}`);
+        }
+    };
+
+    //Модальное окно удаления
+    const showDeleteConfirm = (onOkClick) => {
+        confirm({
+            title: `Удаленить "${editProjectName}" без возможности восстановления`,
+            icon: <ExclamationCircleFilled />,
+            content: 'Вы удаляете лишь проект. Все активности, которые были в проекте останутся у их создателей, периоды отслеживания также сохранятся.',
+            okText: 'Удалить',
+            okType: 'danger',
+            cancelText: 'Отмена',
+            closable: true,
+            maskClosable: true,
+            async onOk() {
+                try {
+                    await onOkClick();
+                } catch (error) {
+                    console.error('Ошибка при удалении:', error);
+                    Modal.destroyAll();
+                    message.error(`Не получилось удалить проект ${editProjectName}`);
+                }
+            },
+            onCancel() {},
+        });
+    };
+
     return (
+        <div style={{paddingTop: '12px'}}>
+        <Flex vertical gap='12px'>
+            {/* {loading ? <Skeleton.Input active /> : } */}
+            {access.isCreator ? 
+            <Title
+                level={2}
+                style={{margin: '0px'}}
+                editable={{
+                    onChange: (val) => {
+                        setTempProjectName(val);
+                    },
+                    tooltip: 'Изменить название',
+                    maxLength: 80
+                }}>
+                {editProjectName}
+            </Title> : 
+
+            <Title level={2} style={{margin: '0px'}}>
+                {editProjectName}
+            </Title>}
+            
+            {/* //Кнопки управления проектом */}
+            <Flex gap='12px'>
+                {access.isCreator && (<ProjectActionButton
+                    icon={<TeamOutlined/>}
+                    text='Управление участниками'
+                    showMembers
+                    members={singleProject?.members?.length > 0 && singleProject.members}
+                    maxMembersToShow={4}
+                    onClick={() => handleActionClick('membersAdmin')}
+                />)}
+
+                {!access.isCreator && access.isMember && (<ProjectActionButton
+                    icon={<TeamOutlined/>}
+                    text='Посмотреть участников'
+                    showMembers
+                    members={singleProject?.members?.length > 0 && singleProject.members}
+                    maxMembersToShow={4}
+                    onClick={() => handleActionClick('membersMember')}
+                />)}
+
+                {!projectIsClose && (<ProjectActionButton
+                    icon={<AppstoreAddOutlined/>}
+                    text='Создать активность'
+                    onClick={() => handleActionClick('addActivity')}
+                />)}
+
+                {!projectIsClose && (<ProjectActionButton
+                    icon={<LinkOutlined/>}
+                    text='Код приглашения'
+                    onClick={() => handleActionClick('getKey')}
+                />)}
+
+                {!projectIsClose && access.isCreator && (<ProjectActionButton
+                    danger
+                    icon={<FolderOutlined/>}
+                    text='Завершить проект'
+                    onClick={() => handleActionClick('close')}
+                />)}
+
+                {projectIsClose && access.isCreator && (<ProjectActionButton
+                    danger
+                    icon={<DeleteOutlined/>}
+                    text='Удалить проект'
+                    onClick={() => handleActionClick('delete')}
+                />)}
+
+                {!access.isCreator && access.isMember && (<ProjectActionButton
+                    danger
+                    icon={<UserDeleteOutlined/>}
+                    text='Покинуть проект'
+                    onClick={() => handleActionClick('leave')}
+                />)}
+
+            </Flex>
+
+            {singleProject.creationDate && (<Flex align='flex-start' gap='10px'>
+                <CalendarOutlined style ={{fontSize: '18px', paddingTop: '2px'}}/>
+                <Text>Старт: {format(parse(singleProject.creationDate, 'yyyy-MM-dd HH:mm:ss', new Date()), 'dd.MM.yyyy')}</Text>
+            </Flex>)}
+
+            {singleProject.finishDate && (<Flex align='flex-start' gap='10px'>
+                <CarryOutOutlined style ={{fontSize: '18px', paddingTop: '2px'}}/>
+                <Text>Финиш: {format(parse(singleProject.finishDate, 'yyyy-MM-dd HH:mm:ss', new Date()), 'dd.MM.yyyy')}</Text>
+            </Flex>)}
+
+        </Flex>
+        <Divider style={{marginTop: '24px', marginBottom: '8px'}}/>
+        {projectIsClose && (<Empty 
+            hasActivities={singleProject.activities.length > 0}
+            textZeroActivities='Этот проект на данный момент закрыт. Активностей в проекте нет.'
+            textWhenAllActivityIsBusy='Этот проект завершён. Все активности перенесены в архив.'
+            showButton={!projectIsClose} />)}
+
         <ConfigProvider
             theme={{
                 components: {
@@ -168,11 +372,18 @@ function ProjectDetailsTab() {
                 },
             }}>
             <Collapse
-                defaultActiveKey={['collapseActLive', 'collapseAct']} //Открытая вкладка по умолчанию
-                ghost items={items}
+                defaultActiveKey={['collapseActLive', 'collapseAct', 'collapseActArchive']} //Открытая вкладка по умолчанию
+                ghost items={collapseItems.filter(item => 
+                    !(item.key === 'collapseActLive' && 
+                        singleProject.activities && singleProject.activities.filter(activity => activity.statusId === 2).length === 0) &&
+                    !(item.key === 'collapseAct' && 
+                        projectIsClose) && 
+                    !(item.key === 'collapseActArchive' && 
+                        singleProject.activities && singleProject.activities.filter(activity => activity.statusId === 3).length === 0))}
                 collapsible='icon'>
             </Collapse>
         </ConfigProvider>
+        </div>
     );
 }
 
