@@ -53,6 +53,8 @@ const { UserAvatar } = useUsers();
                   <UserAvatar 
                     name={member.name}
                     id={member.id}
+                    size={30}
+                    fontSize='14px'
                   >
                     {member.name?.charAt(0)?.toUpperCase()}
                   </UserAvatar>

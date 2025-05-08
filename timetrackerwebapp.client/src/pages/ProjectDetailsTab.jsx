@@ -5,7 +5,7 @@ import '@ant-design/v5-patch-for-react-19';
 import { format, parse } from 'date-fns';
 import { useNavigate, useParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { subscribe } from '../event.jsx';
+import { emit, subscribe } from '../event.jsx';
 
 const { confirm } = Modal;
 const { Title, Paragraph, Text } = Typography;
@@ -23,10 +23,11 @@ import Empty from '../components/Empty.jsx';
 import ActivityCard from '../components/ActivityCard.jsx';
 import { showAddNewActivity } from '../components/AddNewActivityModal.jsx';
 import ProjectActionButton from '../components/ProjectActionButton.jsx';
+import { MembersModal } from '../components/MembersModal.jsx';
 
 function ProjectDetailsTab() {
     const { periods, actCard_Click, getActivityStartTime, loadPeriodsActivities } = useActivities();
-    const { singleProject, loading, getSingleProjectInfo, checkUserInProject, updateProjectName, deleteUserFromProject, deleteProject } = useProjects();
+    const { singleProject, loading, getSingleProjectInfo, checkUserInProject, updateProjectName, deleteUserFromProject, deleteProject, archiveProject } = useProjects();
     const navigate = useNavigate();
     const { projectId } = useParams();
 
@@ -35,6 +36,10 @@ function ProjectDetailsTab() {
     const [tempProjectName, setTempProjectName] = useState('');
     const [projectIsClose, setProjectIsClose] = useState(false);
 
+    const [isMemberModalOpen, setMemberModalOpen] = useState(false);
+    const [members, setMembers] = useState([]);
+
+    //Первая загрузка
     useEffect(() => {
 
         const token = GetJWT();
@@ -72,6 +77,7 @@ function ProjectDetailsTab() {
                 const projectData = await getSingleProjectInfo(token, projectId);
                 setProjectName(projectData.projectName);
                 setTempProjectName(projectData.projectName);
+                setMembers(projectData.members);
                 if (projectData.finishDate) {
                     setProjectIsClose(true);
                 }
@@ -87,6 +93,7 @@ function ProjectDetailsTab() {
 
     }, []);
 
+    //Эффект при измении названия
     useEffect(() => {
         const newProjectName = async () => {
             try {
@@ -188,9 +195,22 @@ function ProjectDetailsTab() {
 
     //Нажатие кнопки управления
     const handleActionClick = async (key) => {
+
+        const token = GetJWT();
+        const userId = GetUserIdFromJWT(token);
+
+        if (!token || !userId) {
+            if (!token) message.warning('Сначала войдите в систему');
+            if (!userId) Cookies.remove('token');
+            navigate('/');
+            return;
+        }
+
         switch (key) {
             case 'members':
-                //
+                setMemberModalOpen(true);
+                
+                // showMembersModal(access.isCreator, singleProject.members, projectId);
                 break;
             case 'addActivity':
                 //
@@ -218,21 +238,13 @@ function ProjectDetailsTab() {
                 });
                 break;
             case 'toArchive':
-                //
+                await archiveProject(token, projectId);
+                message.success(`Проект завершён`);
+                emit('activityChanged');
                 break;
             case 'leave':
-                const token = GetJWT();
-                const userId = GetUserIdFromJWT(token);
-
-                if (!token || !userId) {
-                    if (!token) message.warning('Сначала войдите в систему');
-                    if (!userId) Cookies.remove('token');
-                    navigate('/');
-                    return;
-                }
-
                 await deleteUserFromProject(token, projectId, userId);
-                message.success(`Вы покинули проект ${singleProject.projectName}`);
+                message.success(`Вы покинули проект ${editProjectName}`);
                 navigate('/dashboard/projects', { state: { activeTab: 'projects' } });
                 break;
             case 'delete':
@@ -257,6 +269,8 @@ function ProjectDetailsTab() {
             async onOk() {
                 try {
                     await onOkClick();
+                    message.success(`${editProjectName} удалён`);
+                    navigate('/dashboard/projects', { state: { activeTab: 'projects' } });
                 } catch (error) {
                     console.error('Ошибка при удалении:', error);
                     Modal.destroyAll();
@@ -269,6 +283,7 @@ function ProjectDetailsTab() {
 
     return (
         <div style={{paddingTop: '12px'}}>
+
         <Flex vertical gap='12px'>
             {/* {loading ? <Skeleton.Input active /> : } */}
             {access.isCreator ? 
@@ -291,22 +306,21 @@ function ProjectDetailsTab() {
             
             {/* //Кнопки управления проектом */}
             <Flex gap='12px'>
-                {access.isCreator && (<ProjectActionButton
+                <ProjectActionButton
                     icon={<TeamOutlined/>}
-                    text='Управление участниками'
+                    text={access.isCreator ? 'Управление участниками' : 'Посмотреть участников'}
                     showMembers
                     members={singleProject?.members?.length > 0 && singleProject.members}
                     maxMembersToShow={4}
-                    onClick={() => handleActionClick('membersAdmin')}
-                />)}
+                    onClick={() => setMemberModalOpen(true)}
+                />
 
-                {!access.isCreator && access.isMember && (<ProjectActionButton
-                    icon={<TeamOutlined/>}
-                    text='Посмотреть участников'
-                    showMembers
-                    members={singleProject?.members?.length > 0 && singleProject.members}
-                    maxMembersToShow={4}
-                    onClick={() => handleActionClick('membersMember')}
+                {singleProject && singleProject?.members && (<MembersModal
+                    isOpen={isMemberModalOpen}
+                    onClose={() => setMemberModalOpen(false)}
+                    isAdmin={access.isCreator}
+                    members={singleProject.members}
+                    projectId={projectId}
                 />)}
 
                 {!projectIsClose && (<ProjectActionButton
@@ -325,7 +339,7 @@ function ProjectDetailsTab() {
                     danger
                     icon={<FolderOutlined/>}
                     text='Завершить проект'
-                    onClick={() => handleActionClick('close')}
+                    onClick={() => handleActionClick('toArchive')}
                 />)}
 
                 {projectIsClose && access.isCreator && (<ProjectActionButton

@@ -107,7 +107,7 @@ function ProjectCard({
                 break;
             case 'toArchive':
                 await archiveProject(token, projectId);
-                message.success(`${title}: проект закрыт`);
+                message.success(`${title}: проект завершён`);
                 break;
             case 'leave':
                 const userId = GetUserIdFromJWT(token);

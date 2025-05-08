@@ -106,7 +106,7 @@ function UserInfo( {
             trigger={["click", "hover"]}>
             <Button type="text" size='large'>
                 <Flex align='center' gap='8px'>
-                    {userName && <UserAvatar name={userName} id={userId} />}
+                    {userName && <UserAvatar name={userName} id={userId} size={30} fontSize='14px'/>}
                     {userName && `@${userName}`}
                 </Flex>
             </Button>

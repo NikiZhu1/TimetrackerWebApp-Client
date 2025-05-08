@@ -45,7 +45,7 @@ const getColorFromString = (str, id) => {
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
-const UserAvatar = ({ name, id }) => {
+const UserAvatar = ({ name, id, size, fontSize }) => {
 
     const safeName = typeof name === 'string' ? name : '??';
     // Берём первые 2 буквы и переводим в верхний регистр
@@ -54,11 +54,11 @@ const UserAvatar = ({ name, id }) => {
     return (
         // <Tooltip title={`@${safeName}`} placement="top">
             <Avatar
-                size={30}
+                size={size}
                 style={{ 
                     backgroundColor: getColorFromString(safeName, id), 
                     verticalAlign: 'middle',
-                    fontSize: '14px' 
+                    fontSize: fontSize
                 }}>
                 {letters}
             </Avatar>
