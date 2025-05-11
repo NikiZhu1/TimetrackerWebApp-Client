@@ -1,9 +1,10 @@
 ﻿import React, { act, useEffect, useState } from 'react';
-import { Button, message, Dropdown, Flex, Card, Modal } from 'antd';
-import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, PauseOutlined, FolderOpenOutlined, ExclamationCircleFilled, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, TeamOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Button, message, Dropdown, Flex, Card, Modal, Typography } from 'antd';
+import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, PauseOutlined, FolderOpenOutlined, ExclamationCircleFilled, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, TeamOutlined, DeleteOutlined, CloseOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 
 const { confirm } = Modal;
+const { Text } = Typography;
 
 //Компоненты
 import ActivityTimer from './ActivityTimer.jsx';
@@ -15,8 +16,10 @@ function ActivityCard({
     token,
     activityId,
     title,
+    isCreator,
+    project,
+    onProjectPage,
     cardOnClick,
-    buttonOnClick,
     startTime,
     color,
     status
@@ -186,6 +189,21 @@ function ActivityCard({
             ),
         },
         {
+            key: 'deleteFromProjectDivider',
+            type: 'divider',
+        },
+        {
+            key: 'deleteFromProject',
+            icon: <CloseOutlined />,
+            danger: true,
+            label: (
+                <a >
+                    Убрать из проекта
+                </a>
+            ),
+        },
+        {
+            key: 'deleteDivider',
             type: 'divider',
         },
         {
@@ -228,7 +246,17 @@ function ActivityCard({
 
                     <Dropdown
                         menu={{
-                            items: dropMenuItems.filter(item =>!(item.key === 'toArchive' && status === 3)),
+                            items: dropMenuItems.filter(item =>
+                                !(item.key === 'toArchive' && status === 3) &&
+                                !(item.key === 'delete' && status === 3) &&
+                                !(item.key === 'deleteDivider' && status === 3) &&
+                                !(item.key === 'addToProject' && status === 3) &&
+                                !(item.key === 'delete' && !isCreator) &&
+                                !(item.key === 'deleteDivider' && !isCreator) &&
+                                !(item.key === 'deleteFromProject' && !project) &&
+                                !(item.key === 'deleteFromProjectDivider' && !project) &&
+                                !(item.key === 'addToProject') &&
+                                !(item.key === 'edit' && !isCreator)),
                             onClick: handleMenuClick }}
                         placement="bottomLeft"
                         trigger={["hover"]}>
@@ -248,20 +276,29 @@ function ActivityCard({
                 </Flex>
             ]}
             style={{
-                width: '215px',
-                background: color
+                width: '220px',
+                minWidth: '215px',
+                flex: '1 1 220px',
+                background: color,
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
             }}>
             <Card.Meta
                 title={title}
                 description={
                     <>
-                        
                         {status === 2 && startTime && (
                             <p><ActivityTimer startTime={startTime} /></p>
                         )}
                         {status === 1 && (
                             <p>За сегодня: {}</p>
                         )}
+                        {project && !onProjectPage && 
+                        (<p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: 0}}>
+                            Проект: {project.projectName}</p>)}
+                        {!project && !onProjectPage && 
+                        (<p>Без проекта</p>)}
                     </>
                 }
             />

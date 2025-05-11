@@ -24,6 +24,7 @@ import ActivityCard from '../components/ActivityCard.jsx';
 import { showAddNewActivity } from '../components/AddNewActivityModal.jsx';
 import ProjectActionButton from '../components/ProjectActionButton.jsx';
 import { MembersModal } from '../components/MembersModal.jsx';
+import { showAddNewProject } from '../components/AddNewProjectModal.jsx';
 
 function ProjectDetailsTab() {
     const { periods, actCard_Click, getActivityStartTime, loadPeriodsActivities } = useActivities();
@@ -89,6 +90,7 @@ function ProjectDetailsTab() {
         };
 
         fetchProject();
+        subscribe('projectChanged', fetchProject); // Подписка
         subscribe('activityChanged', fetchProject); // Подписка
 
     }, []);
@@ -146,6 +148,9 @@ function ProjectDetailsTab() {
                     token={token}
                     activityId={activity.id}
                     title={activity.name}
+                    isCreator={access.isCreator}
+                    projectId={activity.projectId}
+                    onProjectPage={true}
                     //dayStats={formatActivityTime(activity.activeFrom)}
                     color='rgb(204, 194, 255)'
                     startTime={getActivityStartTime(activity.id)}
@@ -175,7 +180,7 @@ function ProjectDetailsTab() {
                         textZeroActivities='Здесь пока пусто. Создайте первую активность в проекте и начните отслеживать продуктивность вместе!'
                         textWhenAllActivityIsBusy='Похоже, все доступные активности уже отслеживаются или перенесены в архив'
                         showButton={!projectIsClose}
-                        onClickAction={() => showAddNewActivity()} />)
+                        onClickAction={() => showAddNewActivity(true, projectId, singleProject.projectName)} />)
                         : (
                     <Flex wrap gap='16px'>
                         {renderActivityCards(1)}
@@ -209,11 +214,9 @@ function ProjectDetailsTab() {
         switch (key) {
             case 'members':
                 setMemberModalOpen(true);
-                
-                // showMembersModal(access.isCreator, singleProject.members, projectId);
                 break;
             case 'addActivity':
-                //
+                showAddNewActivity(true, projectId, singleProject.projectName);
                 break;
             case 'getKey':
                 const projectKey = singleProject.projectKey;
@@ -233,6 +236,7 @@ function ProjectDetailsTab() {
                             </p>
                         </div>
                     ),
+                    centered: true,
                     okText: 'Закрыть',
                     maskClosable: true,
                 });
@@ -240,7 +244,7 @@ function ProjectDetailsTab() {
             case 'toArchive':
                 await archiveProject(token, projectId);
                 message.success(`Проект завершён`);
-                emit('activityChanged');
+                emit('projectChanged');
                 break;
             case 'leave':
                 await deleteUserFromProject(token, projectId, userId);
@@ -312,7 +316,7 @@ function ProjectDetailsTab() {
                     showMembers
                     members={singleProject?.members?.length > 0 && singleProject.members}
                     maxMembersToShow={4}
-                    onClick={() => setMemberModalOpen(true)}
+                    onClick={() => handleActionClick('members')}
                 />
 
                 {singleProject && singleProject?.members && (<MembersModal
@@ -323,7 +327,7 @@ function ProjectDetailsTab() {
                     projectId={projectId}
                 />)}
 
-                {!projectIsClose && (<ProjectActionButton
+                {!projectIsClose && access.isCreator && (<ProjectActionButton
                     icon={<AppstoreAddOutlined/>}
                     text='Создать активность'
                     onClick={() => handleActionClick('addActivity')}

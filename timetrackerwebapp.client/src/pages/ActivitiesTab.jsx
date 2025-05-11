@@ -12,6 +12,7 @@ import '../Collapse.css';
 //Методы
 import { GetJWT, GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
 import { useActivities } from '../useActivities.jsx';
+import { useProjects } from '../useProjects.jsx';
 
 //Компоненты
 import Empty from '../components/Empty.jsx';
@@ -20,6 +21,7 @@ import { showAddNewActivity } from '../components/AddNewActivityModal.jsx';
 
 function ActivitiesTab() {
     const { activities, loading, loadData, actCard_Click, getActivityStartTime, countStatus1 } = useActivities();
+    const { baseInfo, loadUserProjectsData, getProjectsBaseInfo} = useProjects();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -41,6 +43,7 @@ function ActivitiesTab() {
             console.log("Событие");
             try {
                 await loadData(token, userId);
+                await getProjectsBaseInfo(token, userId);
             } catch (error) {
                 console.error('Ошибка загрузки данных:', error);
                 message.error('Не удалось загрузить данные');
@@ -55,7 +58,7 @@ function ActivitiesTab() {
     // Рендер карточек по статусу
     const renderActivityCards = (statusId) => {
 
-        if (loading && !activities) return <Skeleton active />;
+        if (loading) return <Skeleton active />;
 
         const token = GetJWT();
         if (!token) {
@@ -72,6 +75,9 @@ function ActivitiesTab() {
                     token={token}
                     activityId={activity.id}
                     title={activity.name}
+                    project={baseInfo.find(project => project.projectId === activity.projectId)}
+                    isCreator={true}
+                    onProjectPage={false}
                     //dayStats={formatActivityTime(activity.activeFrom)}
                     color='rgb(204, 194, 255)'
                     startTime={getActivityStartTime(activity.id)}

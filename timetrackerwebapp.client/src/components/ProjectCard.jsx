@@ -222,8 +222,7 @@ function ProjectCard({
             style={{
                 width: '430px',
                 minWidth: '300px',
-                maxWidth: '500px',
-                flex: 'none',
+                flex: '1 1 430px',
                 order: 2,
                 flexGrow: 1,
             }}>

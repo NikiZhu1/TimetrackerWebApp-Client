@@ -20,7 +20,7 @@ import { showAddNewProject } from '../components/AddNewProjectModal.jsx';
 import { showJoinToProject } from '../components/JoinToProjectModal.jsx';
 
 function ProjectsTab() {
-    const { projects, loading, loadData } = useProjects();
+    const { projects, loading, loadUserProjectsData } = useProjects();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -39,7 +39,7 @@ function ProjectsTab() {
 
         const fetchAll = async () => {
             try {
-                await loadData(token, userId);
+                await loadUserProjectsData(token, userId);
             } catch (error) {
                 console.error('Ошибка загрузки данных:', error);
                 message.error('Не удалось загрузить данные');
@@ -114,9 +114,7 @@ function ProjectsTab() {
                 </Flex>,
             children:
                 <Flex wrap gap='16px' style={{
-                    order: 1,
-                    alignSelf: 'stretch',
-                    flexGrow: 0}}>
+                    alignSelf: 'stretch'}}>
                     {renderProjectsCards(true, false)}
                 </Flex>,
         },

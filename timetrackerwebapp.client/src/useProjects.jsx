@@ -5,6 +5,7 @@ import { emit, subscribe } from './event.jsx';
 export const useProjects = () => {
     const [singleProject, setSingleProject] = useState([]);
     const [projects, setProjects] = useState([]);
+    const [baseInfo, setBaseInfo] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -22,7 +23,7 @@ export const useProjects = () => {
     }, [singleProject]);
     
     //Загрузка всех данных
-    const loadData = useCallback(async (token, userId) => {
+    const loadUserProjectsData = useCallback(async (token, userId) => {
         setLoading(true);
         setError(null);
         try {
@@ -64,6 +65,30 @@ export const useProjects = () => {
             setLoading(false);
         }
       };
+    
+    //Получение базовой информации проектов пользователя
+    const getProjectsBaseInfo = async (token, userId) => {
+        setLoading(true);
+        setError(null);
+        try {
+            // 1. Получаем все проекты пользователя
+            const userProjects = await api.getUserProjectInfo(token, userId);
+
+            // 2. Получаем основную информацию о проекте
+            const projectDetails = await Promise.all(userProjects.map(user => api.getProjectDetails(token, user.projectId)));
+
+            console.log('Базовая информация о проекте:', projectDetails);
+            setBaseInfo(projectDetails);
+            return projectDetails;
+        }
+        catch (error) {
+            console.error(`Ошибка при получении информации о проектах`, error);
+            setError(error);
+            throw error;
+        } finally {
+            setLoading(false);
+        }
+    };
 
     //Получение информации по одному проекту
     const getSingleProjectInfo = async (token, projectId) => {
@@ -90,7 +115,7 @@ export const useProjects = () => {
             setSingleProject(fullProjectInfo);
             return fullProjectInfo;
         }
-        catch (err) {
+        catch (error) {
             console.error(`Ошибка при получении информации о проекте ${projectId}:`, error);
             setError(error);
             throw error;
@@ -137,7 +162,7 @@ export const useProjects = () => {
         setError(null);
         try {
             await api.AddActivityToProject(token, projectId, activityId);
-            emit('activityChanged'); // Обновляем данные
+            emit('projectChanged'); // Обновляем данные
             console.log('Добавление активности ', activityId, ' в проект ', projectId);
         } catch (err) {
             setError(err);
@@ -215,11 +240,13 @@ export const useProjects = () => {
     return {
         projects,
         singleProject,
+        baseInfo,
         loading,
         error,
-        loadData,
+        loadUserProjectsData,
         checkUserInProject,
         getSingleProjectInfo,
+        getProjectsBaseInfo,
         createProject,
         updateProjectName,
         joinToProject,

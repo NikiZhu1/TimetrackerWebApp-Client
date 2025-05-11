@@ -11,32 +11,78 @@ export const getAllActivities = async (token, userId) => {
             }
         });
 
-        // Сортируем активности по ID (по возрастанию)
-        const sortedActivities = response.data.sort((a, b) => a.id - b.id);
+        const activities = response.data;
+
+        // Получаем список projectId для каждой активности
+        const activitiesWithProject = await Promise.all(
+            activities.map(async (activity) => {
+                const projectData = await getActivityProject(token, activity.id);
+                const projectId = projectData.length > 0 ? projectData[0].projectId : null;
+                return { ...activity, projectId };
+            })
+        );
+
+        // Сортируем по ID (если нужно)
+        const sortedActivities = activitiesWithProject.sort((a, b) => a.id - b.id);
 
         console.log("Полученные активности: ", sortedActivities);
-        return response.data;
+        return sortedActivities;
     } catch (error) {
         console.error('Ошибка при получении активностей:', error);
         throw error;
-        return [];
+    }
+};
+
+export const getActivityProject = async (token, activityId) => {
+    try {
+        // Получаем список проектов, в которых есть эта активность
+        const projectResponse = await axios.get(`http://localhost:8080/api/Activities/${activityId}/projects`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const projectLinks = projectResponse.data;
+
+        // Если проект найден — добавляем projectId в объект активности
+        // if (projectLinks.length > 0) {
+        //     return projectLinks[0].projectId;
+        // }
+
+        return projectLinks;
+    }
+    catch (error) {
+        console.error(`Ошибка при получении проекта активности #${activityId}`, error);
+        throw error;
     }
 };
 
 export const getActivity = async (token, activityId) => {
     try {
-        const response = await axios.get(`http://localhost:8080/api/Activities/${activityId}`,
-        { 
-            headers: { Authorization: `Bearer ${token}` } 
+        // Получаем саму активность
+        const response = await axios.get(`http://localhost:8080/api/Activities/${activityId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const activity = response.data;
+
+        // Получаем список проектов, в которых есть эта активность
+        const projectResponse = await axios.get(`http://localhost:8080/api/Activities/${activityId}/projects`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const projectLinks = projectResponse.data;
+
+        // Если проект найден — добавляем projectId в объект активности
+        if (projectLinks.length > 0) {
+            activity.projectId = projectLinks[0].projectId;
         }
-    );
-    return response.data;
+
+        return activity;
     }
     catch (error) {
         console.error(`Ошибка при получении активности #${activityId}`, error);
         throw error;
     }
-  };
+};
 
 // Получение периодов активности
 export const getActivityPeriods = async (token, activityId) => {
@@ -65,7 +111,6 @@ export const getActivityPeriods = async (token, activityId) => {
     } catch (error) {
         console.error('Ошибка при получении периодов активности:', error);
         throw error;
-        return [];
     }
 };
 
@@ -99,7 +144,6 @@ export const getAllActivityPeriods = async (token, activities) => {
     } catch (error) {
         console.error('Ошибка при получении всех периодов:', error);
         throw error;
-        return [];
     }
 };
 
@@ -109,8 +153,8 @@ export const formatActivityTime = (dateString) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
-// Форматирование времени
-export const getStats = async (token, activityId, date1 = null, date2 = null) => {
+// Плдучение статистки активности
+export const getActivityStats = async (token, activityId, date1 = null, date2 = null) => {
     if (!token || !activityId) return;
 
     try {
@@ -127,7 +171,35 @@ export const getStats = async (token, activityId, date1 = null, date2 = null) =>
     } catch (error) {
         console.error(`Ошибка при получении статистики у activityId ${activityId}:`, error);
         throw error;
-        return [];
+    }
+};
+
+// Получение статистики всех активностей пользователя
+export const getUserStats = async (token, userId, date1 = null, date2 = null) => {
+    if (!token || !userId) return;
+
+    try {
+        // Формируем базовый URL
+        let url = `http://localhost:8080/api/ActivityPeriods?userId=${userId}`;
+        
+        // Добавляем даты, если они указаны
+        if (date1) {
+            url += `&date1=${date1}`;
+        }
+        if (date2) {
+            url += `&date2=${date2}`;
+        }
+
+        const response = await axios.get(url, {
+                headers: { Authorization: `Bearer ${token}` }}
+        );
+
+        const periods = response.data;
+        return periods;
+
+    } catch (error) {
+        console.error(`Ошибка при получении статистики у activityId ${activityId}:`, error);
+        throw error;
     }
 };
 
@@ -161,8 +233,8 @@ export const ManageTrackerActivity = async (token, activityId, isStarted) => {
     try {
         const response = await axios.post('http://localhost:8080/api/ActivityPeriods',
             {
-                ActivityId: activityId,
-                IsStarted: isStarted
+                activityId: activityId,
+                isStarted: isStarted
             },
             {
                 headers: { Authorization: `Bearer ${token}` }

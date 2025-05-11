@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { getAllActivities, getAllActivityPeriods, ManageArchiveActivity, ManageTrackerActivity, DeleteActivity, AddActivity, getStats } from './methods/ActivitiesMethods';
+import * as api from './methods/ActivitiesMethods';
 import { emit, subscribe } from './event.jsx';
 
 export const useActivities = () => {
@@ -38,13 +38,15 @@ export const useActivities = () => {
         setError(null);
         try {
             // 1. Сначала загружаем активности
-            const activitiesData = await getAllActivities(token, userId);
+            const activitiesData = await api.getAllActivities(token, userId);
             setActivities(activitiesData);
 
             // 2. Затем загружаем периоды для полученных активностей
-            const periodsData = await getAllActivityPeriods(token, activitiesData);
+            const periodsData = await api.getAllActivityPeriods(token, activitiesData);
             setPeriods(periodsData);
 
+            
+            return activitiesData;
         } catch (err) {
             setError(err);
         } finally {
@@ -57,7 +59,7 @@ export const useActivities = () => {
         setError(null);
         try {
             // Загружаем периоды для полученных активностей
-            const periodsData = await getAllActivityPeriods(token, activities);
+            const periodsData = await api.getAllActivityPeriods(token, activities);
             setPeriods(periodsData);
 
         } catch (err) {
@@ -79,12 +81,17 @@ export const useActivities = () => {
         return activities.find(activity => activity.id === activityId) || null;
     };
 
-    const getActivityStats = async (token, userId, date1 = null, date2 = null) => {
+    // Получение статистики всех активностей пользователя
+    const getUserStats = async (token, userId, date1 = null, date2 = null) => {
+        setLoading(true);
+        setError(null);
         try {
-            getStats(token, userId, date1, date2)
-        }
-        catch {
-
+            const response = await api.getUserStats(token, userId, date1, date2)
+            return response;
+        } catch (err) {
+            setError(err);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -93,9 +100,10 @@ export const useActivities = () => {
         setLoading(true);
         setError(null);
         try {
-            await AddActivity(token, userId, name);
+            const response = await api.AddActivity(token, userId, name);
             emit('activityChanged'); // Обновляем данные
             console.log('Добавлена активность ', name);
+            return response;
         } catch (err) {
             setError(err);
             throw err;
@@ -107,7 +115,7 @@ export const useActivities = () => {
     // Старт отслеживания активности
     const startActivity = async (token, activityId) => {
         try {
-            await ManageTrackerActivity(token, activityId, true);
+            await api.ManageTrackerActivity(token, activityId, true);
             emit('activityChanged'); // Обновляем данные
             console.log('Запуск активности с ID:', activityId);
         } catch (err) {
@@ -118,7 +126,7 @@ export const useActivities = () => {
     // Остановка отслеживания активности
     const stopActivity = async (token, activityId) => {
         try {
-            await ManageTrackerActivity(token, activityId, false);
+            await api.ManageTrackerActivity(token, activityId, false);
             emit('activityChanged'); // Обновляем данные
             console.log('Остановка активности с ID:', activityId);
         } catch (err) {
@@ -141,7 +149,7 @@ export const useActivities = () => {
     //Архивация активности
     const archiveActivity = async (token, activityId) => {
         try {
-            await ManageArchiveActivity(token, activityId, true);
+            await api.ManageArchiveActivity(token, activityId, true);
             emit('activityChanged'); // Обновляем данные
             console.log('Архивирование активности с ID:', activityId);
         } catch (err) {
@@ -152,7 +160,7 @@ export const useActivities = () => {
     //Восстановление активности
     const unarchiveActivity = async (token, activityId) => {
         try {
-            await ManageArchiveActivity(token, activityId, false);
+            await api.ManageArchiveActivity(token, activityId, false);
             emit('activityChanged'); // Обновляем данные
             console.log('Восстановление активности с ID:', activityId);
         } catch (err) {
@@ -163,7 +171,7 @@ export const useActivities = () => {
     //Удаление активности
     const deleteActivity = async (token, activityId) => {
         try {
-            await DeleteActivity(token, activityId);
+            await api.DeleteActivity(token, activityId);
             emit('activityChanged'); // Обновляем данные
             console.log('Удалена активность с ID:', activityId);
         } catch (err) {
@@ -186,6 +194,7 @@ export const useActivities = () => {
         startActivity,
         stopActivity,
         getActivityStartTime,
+        getUserStats,
         archiveActivity,
         unarchiveActivity,
         deleteActivity

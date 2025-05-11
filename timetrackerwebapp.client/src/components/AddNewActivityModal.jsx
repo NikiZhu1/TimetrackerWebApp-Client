@@ -11,11 +11,11 @@ import { useActivities } from '../useActivities.jsx';
 import { useProjects } from '../useProjects.jsx';
 import { GetJWT, GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
 
-export const showAddNewActivity = () => {
+export const showAddNewActivity = (addToProject = false, projectId = null, projectName = null) => {
     confirm({
         title: `Создать новую активность`,
         icon: null,
-        content: <AddNewActivityForm/>,
+        content: <AddNewActivityForm addToProject={addToProject} projectId={projectId} projectName={projectName}/>,
         centered: true,
         closable: true,
         maskClosable: true,
@@ -26,7 +26,7 @@ export const showAddNewActivity = () => {
 function AddNewActivityForm({
     addToProject = false,
     projectId = null,
-    projectName}) {
+    projectName = null}) {
 
     const { loading, addActivity } = useActivities();
     const { addActivityToProject } = useProjects();
@@ -46,21 +46,23 @@ function AddNewActivityForm({
             }
 
             const activityData = await addActivity(token, userId, values.name);
-            // if (addToProject) {
-            //     await addActivityToProject(token, projectId, activityData.id)
-            // }
+            console.warn(activityData);
+            if (addToProject) {
+                await addActivityToProject(token, projectId, activityData.id);
+            }
             Modal.destroyAll();
             message.success(`${values.name}: Добавлена новая активность`);
             console.log("Добавлена новая активность: ", values);
         }
         catch (error) {
-            if (error.response?.status === 409) {
+            if (error.response?.status === 400) {
                 // Устанавливаем ошибку для конкретного поля
                 form.setFields([{
                     name: 'name',
-                    errors: ['Уже есть активность с таким названием'],
+                    errors: ['У вас уже есть активность с таким названием'],
                 }]);
             } else {
+                console.error(error);
                 message.error('Произошла ошибка при создании активности');
             }
         }
@@ -72,7 +74,7 @@ function AddNewActivityForm({
             name="addNewActivityForm"
             layout="vertical"
             initialValues={{ remember: true }}
-            onFinish={onFinish}
+            async onFinish={onFinish}
             style={{marginRight: '-12px'}}>
 
             <Form.Item
@@ -93,8 +95,10 @@ function AddNewActivityForm({
                 />
             </Form.Item>
             
-            {addToProject && (<><p>Добавление в проект:</p>
-                <p style={{fontWeight: 'bold'}}>{projectName}</p></>)}
+            {addToProject && (<>
+                <p>Добавление в проект:</p>
+                <p style={{fontWeight: 'bold'}}>{projectName}</p>
+            </>)}
 
             <Flex justify='flex-end' gap='12px' style={{paddingTop: '24px'} }>
                 <Button
