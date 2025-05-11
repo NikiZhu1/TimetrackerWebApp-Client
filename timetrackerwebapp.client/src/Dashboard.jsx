@@ -20,6 +20,7 @@ import ProjectsTab from './pages/ProjectsTab.jsx';
 import ProjectDetailsTab from './pages/ProjectDetailsTab.jsx';
 import UserInfo from './components/UserInfo.jsx';
 import StatsTab from './pages/StatsTab.jsx';
+import HistoryTab from './pages/HistoryTab.jsx';
 
 const { Header, Footer, Content } = Layout;
 
@@ -101,7 +102,7 @@ function Dashboard() {
                 return <StatsTab/>;
 
             case 'history': // История
-                return <div>Контент истории</div>;
+                return <HistoryTab/>;
 
             case 'projects': // Проекты
                 return (<ProjectsTab />);
