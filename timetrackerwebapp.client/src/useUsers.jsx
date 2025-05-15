@@ -1,9 +1,9 @@
 ﻿import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { emit, subscribe } from './event.jsx';
-import { message, Avatar, Tooltip } from 'antd';
+import { Avatar } from 'antd';
+import Cookies from 'js-cookie';
 
 //Методы
-import { GetJWT, GetUserIdFromJWT, getUserInfo } from './methods/UsersMethods.jsx'; 
+import * as api from './API methods/UsersMethods.jsx'; 
 
 export const useUsers = () => {
     const [user, setUser] = useState([]);
@@ -21,7 +21,7 @@ export const useUsers = () => {
         setLoading(true);
         setError(null);
         try {
-            const userData = await getUserInfo(token, userId);
+            const userData = await api.getUserInfo(token, userId);
             setUser(userData);
             console.log("Пользователь: ", userData)
         } catch (err) {
@@ -30,6 +30,50 @@ export const useUsers = () => {
             setLoading(false);
         }
     }, []);
+
+const registerUser = async (values) => {
+    setLoading(true);
+    setError(null);
+    try {
+        const token = await api.AuthenticateUser(values, true);
+
+        // Сохраняем токен в cookies
+        setTokenToCookie(token);
+
+        console.log('Регистрация: ', values);
+    }
+    catch (error) {
+        console.error(`Ошибка регистрации: `, error);
+        throw error;
+    }
+    finally {
+        setLoading(false);
+    }
+}
+
+const loginUser = async (values) => {
+    setLoading(true);
+    setError(null);
+    try {
+        const token = await api.AuthenticateUser(values, false);
+
+        // Сохраняем токен в cookies
+        setTokenToCookie(token);
+        
+        console.log('Вход: ', values);
+    }
+    catch (error) {
+        console.error(`Ошибка входа: `, error);
+        throw error;
+    }
+    finally {
+        setLoading(false);
+    }
+}
+
+const setTokenToCookie = (token) => {
+    Cookies.set('token', token, { expires: 1, secure: true, sameSite: 'Strict' });
+}
 
 const getColorFromString = (str, id) => {
     if (!str || typeof str !== 'string') return '#000000';
@@ -70,6 +114,8 @@ const UserAvatar = ({ name, id, size, fontSize }) => {
         user,
         loading,
         error,
+        registerUser,
+        loginUser,
         loadData,
         UserAvatar
     };

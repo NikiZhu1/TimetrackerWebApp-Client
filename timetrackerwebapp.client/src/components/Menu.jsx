@@ -3,7 +3,6 @@ import { Menu, message, ConfigProvider, Layout, Button, Flex } from 'antd';
 import Icon, { AppstoreAddOutlined, AppstoreOutlined, PieChartOutlined, TeamOutlined, ClockCircleOutlined, MenuOutlined, SettingOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import Cookies from 'js-cookie';
 
 const { Sider } = Layout;
 
@@ -27,27 +26,9 @@ const items = [
     { key: 'statistics', icon: <PieChartOutlined />, label: 'Статистика' },
     { key: 'history', icon: <ClockCircleOutlined />, label: 'История' },
     { key: 'projects', icon: <TeamOutlined />, label: 'Проекты' },
-    {
-        key: 'menu5',
-        label: 'Navigation Two',
-        icon: <AppstoreOutlined />,
-        children: [
-            { key: '9', label: 'Option 9' },
-            { key: '10', label: 'Option 10' },
-            {
-                key: 'sub3',
-                label: 'Submenu',
-                children: [
-                    { key: '11', label: 'Option 11' },
-                    { key: '12', label: 'Option 12' },
-                ],
-            },
-        ],
-    },
 ];
 
 function MyMenu({ onMenuClick }) {
-    const navigate = useNavigate();
     const location = useLocation();
     const { activeTab } = useParams(); // Получаем активную вкладку из URL
 
@@ -61,6 +42,7 @@ function MyMenu({ onMenuClick }) {
         
         // 3. Проверяем путь
         if (location.pathname.includes('/projects')) return 'projects';
+        if (location.pathname.includes('/stats')) return 'stats';
         if (location.pathname.includes('/history')) return 'history';
         
         return 'activities'; // Значение по умолчанию
@@ -72,13 +54,6 @@ function MyMenu({ onMenuClick }) {
     //Скрытие-разворот меню
     const toggleCollapsed = () => {
         setCollapsed(!collapsed);
-    };
-
-    //Функция при выходе
-    const handleLogout = () => {
-        Cookies.remove('token'); // Удаляем токен
-        message.info('Вы вышли из системы');
-        navigate('/');
     };
 
     // Выбор вкладки меню
@@ -136,21 +111,14 @@ function MyMenu({ onMenuClick }) {
                     </ConfigProvider>
                 </div>
 
-                {/* Нижний блок (кнопка настроек) */}
                 <Flex vertical gap="small" style={{ padding: '8px' }}>
                     <MenuButton
                         collapsed={collapsed}
                         text='Бот в Telegram'
                         icon={<SettingOutlined />}
                         href="https://t.me/timetracking_hse_bot"
-                        onClick={null}/>
-
-                    {/* <MenuButton
-                        collapsed={collapsed}
-                        text='Настройки'
-                        icon={<SettingOutlined />}
-                        onClick={handleLogout}
-                        border='none'/> */}
+                        onClick={null}
+                    />
                 </Flex>
             </Flex>
         </Sider>

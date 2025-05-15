@@ -1,21 +1,21 @@
 ﻿import { message } from 'antd';
-import '@ant-design/v5-patch-for-react-19';
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import '@ant-design/v5-patch-for-react-19';
 
 //Методы
-import { AuthenticateUser } from './methods/UsersMethods.jsx';
+import { useUsers } from '../useUsers.jsx';
 
 //Компоненты
-import AuthForm from './components/AuthForm.jsx';
+import AuthForm from '../components/AuthForm.jsx';
 
 function Register() {
     const navigate = useNavigate(); // Хук для навигации между страницами
+    const { loading, registerUser } = useUsers();
 
     //Регистрация
     const onFinish = async (values) => {
             try{
-                await AuthenticateUser(values, true);
+                await registerUser(values);
                 // Перенаправляем на страницу пользователя
                 navigate('/dashboard/activities');
     
@@ -49,7 +49,8 @@ function Register() {
                     onFinish={onFinish}
                     buttonText="Зарегестрироваться" 
                     linkText="Уже есть аккаунь? Войти" 
-                    linkTo="/" /> 
+                    linkTo="/"
+                    loading={loading}/> 
             </div> 
         </div>
     );

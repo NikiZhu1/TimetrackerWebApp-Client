@@ -1,24 +1,21 @@
 ﻿import { message } from 'antd';
-import '@ant-design/v5-patch-for-react-19';
-import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from '../../node_modules/axios/index';
-import Cookies from 'js-cookie';
-import { jwtDecode } from 'jwt-decode';
+import '@ant-design/v5-patch-for-react-19';
 
 //Методы
-import { AuthenticateUser } from './methods/UsersMethods.jsx';
+import { useUsers } from '../useUsers.jsx';
 
 //Компоненты
-import AuthForm from './components/AuthForm.jsx';
+import AuthForm from '../components/AuthForm.jsx';
 
 function Login() {
     const navigate = useNavigate(); // Хук для навигации между страницами
+    const { loading, loginUser } = useUsers();
 
     //Авторизация
     const onFinish = async (values) => {
         try{
-            await AuthenticateUser(values, false);
+            await loginUser(values, false);
             // Перенаправляем на страницу пользователя
             navigate('/dashboard/activities');
 
@@ -51,7 +48,8 @@ function Login() {
                     onFinish={onFinish}
                     buttonText="Войти"
                     linkText="Нет аккаунта? Зарегистрироваться"
-                    linkTo="/register"/>
+                    linkTo="/register"
+                    loading={loading}/>
             </div>
         </div>
     );

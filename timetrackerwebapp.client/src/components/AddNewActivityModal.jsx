@@ -9,7 +9,7 @@ const { confirm } = Modal;
 //Методы
 import { useActivities } from '../useActivities.jsx';
 import { useProjects } from '../useProjects.jsx';
-import { GetJWT, GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
+import { GetJWT, GetUserIdFromJWT } from '../API methods/UsersMethods.jsx';
 
 export const showAddNewActivity = (addToProject = false, projectId = null, projectName = null) => {
     confirm({

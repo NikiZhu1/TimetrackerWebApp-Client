@@ -103,7 +103,7 @@ function UserInfo( {
                 onClick: handleMenuClick
             }}
             placement="bottomRight"
-            trigger={["click", "hover"]}>
+            trigger={["click"]}>
             <Button type="text" size='large'>
                 <Flex align='center' gap='8px'>
                     {userName && <UserAvatar name={userName} id={userId} size={30} fontSize='14px'/>}

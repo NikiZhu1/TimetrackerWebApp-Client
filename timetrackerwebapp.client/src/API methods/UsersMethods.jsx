@@ -4,18 +4,12 @@ import { jwtDecode } from 'jwt-decode';
 import Cookies from 'js-cookie';
 import { message, Avatar, Tooltip } from 'antd';
 
-/**
- * Функция для отправки пост-запроса 
+/** Функция для отправки пост-запроса 
  * @param {any} values Логин, пароль для аунтефикации
- * @param {any} isRegistration Процесс регистрации или авторизации
- * @param {any} navigate Хук для навигации
- * @returns
+ * @param {any} isRegistration Регистрация или авторизации
  */
-
 export const AuthenticateUser = async (values, isRegistration) => {
     try {
-        console.log(isRegistration ? 'Регистрация:' : 'Вход:', values);
-
         const url = 'http://localhost:8080/api/Auth/login';
         if (isRegistration) 
             url = 'http://localhost:8080/api/Users';
@@ -38,21 +32,17 @@ export const AuthenticateUser = async (values, isRegistration) => {
 
         } catch (decodeError) {
             console.error('Ошибка при декодировании токена:', decodeError);
-            message.error(`Ошибка ${isRegistration ? 'регистрации' : 'аутентификации'}. Попробуйте снова.`);
             return;
         }
 
-        // Сохраняем токен в cookies
-        Cookies.set('token', token, { expires: 1, secure: true, sameSite: 'Strict' });
+        return token;
     }
     catch (error) {
-        console.error(`Ошибка ${isRegistration ? 'регистрации' : 'авторизации'}:`, error);
         throw error;
     }
 };
 
-/**
- * Получение JWT токена из cookie
+/** Получение JWT токена из cookie
  * @returns
  */
 export const GetJWT = () => {
@@ -66,6 +56,10 @@ export const GetJWT = () => {
     return token;
 };
 
+/** Получение id пользователя из JWT-токена
+ * @param {string} token 
+ * @returns {*} id пользователя
+ */
 export const GetUserIdFromJWT = (token) => {
     try {
         let userId
@@ -81,7 +75,10 @@ export const GetUserIdFromJWT = (token) => {
     }
 };
 
-// Получение информации о пользователе
+/** Получение информации о пользователе
+ * @param {string} token JWT-токен
+ * @param {string} userId id пользователя
+ */
 export const getUserInfo = async (token, userId) => {
     try {
         const response = await axios.get(`http://localhost:8080/api/Users/${userId}`,
@@ -94,5 +91,4 @@ export const getUserInfo = async (token, userId) => {
     catch (error) {
         console.error(`Ошибка при получении информациии пользователя #${userId}`, error);
     }
-    
 };

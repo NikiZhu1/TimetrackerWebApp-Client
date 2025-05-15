@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
-import * as api from './methods/ProjectsMethods.jsx';
+import * as api from './API methods/ProjectsMethods.jsx';
 import { emit, subscribe } from './event.jsx';
 
 export const useProjects = () => {

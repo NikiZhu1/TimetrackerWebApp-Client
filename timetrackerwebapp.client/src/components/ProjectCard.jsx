@@ -15,7 +15,7 @@ import '../App.css';
 
 //Методы
 import { useProjects } from '../useProjects.jsx';
-import { GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
+import { GetUserIdFromJWT } from '../API methods/UsersMethods.jsx';
 
 function ProjectCard({
     token,

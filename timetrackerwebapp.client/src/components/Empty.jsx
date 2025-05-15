@@ -12,7 +12,7 @@ import { showAddNewActivity } from './AddNewActivityModal.jsx';
 import { useActivities } from '../useActivities.jsx';
 
 function Empty({
-    hasActivities,
+    hasActivities = false,
     textZeroActivities,
     textWhenAllActivityIsBusy,
     showButton = true,

@@ -4,20 +4,20 @@ import Icon, { PlusOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { subscribe } from '../event.jsx';
+import { subscribe } from '../../event.jsx';
 
 //Стили
-import '../Collapse.css';
+import './Collapse.css';
 
 //Методы
-import { GetJWT, GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
-import { useActivities } from '../useActivities.jsx';
-import { useProjects } from '../useProjects.jsx';
+import { GetJWT, GetUserIdFromJWT } from '../../API methods/UsersMethods.jsx';
+import { useActivities } from '../../useActivities.jsx';
+import { useProjects } from '../../useProjects.jsx';
 
 //Компоненты
-import Empty from '../components/Empty.jsx';
-import ActivityCard from '../components/ActivityCard.jsx';
-import { showAddNewActivity } from '../components/AddNewActivityModal.jsx';
+import Empty from '../../components/Empty.jsx';
+import ActivityCard from '../../components/ActivityCard.jsx';
+import { showAddNewActivity } from '../../components/AddNewActivityModal.jsx';
 
 function ActivitiesTab() {
     const { activities, loading, loadData, actCard_Click, getActivityStartTime, countStatus1 } = useActivities();
@@ -115,7 +115,7 @@ function ActivitiesTab() {
                 </Flex>,
             children:
             <div>
-                {countStatus1 === 0 ? (
+                {activities && activities.filter(activity => activity.statusId === 1).length === 0 && !loading ? (
                     <Empty 
                         hasActivities={activities && activities.length > 0}
                         textZeroActivities='Здесь пока пусто. Создайте свою первую активность и начните отслеживать продуктивность!'
@@ -150,7 +150,12 @@ function ActivitiesTab() {
             }}>
             <Collapse
                 defaultActiveKey={['collapseActLive', 'collapseAct']} //Открытая вкладка по умолчанию
-                ghost items={items}
+                ghost items={items.filter(item => 
+                    !(item.key === 'collapseActLive' && 
+                        activities && activities.filter(activity => activity.statusId === 2).length === 0) && 
+                    !(item.key === 'collapseActArchive' && 
+                        activities && activities.filter(activity => activity.statusId === 3).length === 0))}
+                
                 collapsible='icon'>
             </Collapse>
         </ConfigProvider>

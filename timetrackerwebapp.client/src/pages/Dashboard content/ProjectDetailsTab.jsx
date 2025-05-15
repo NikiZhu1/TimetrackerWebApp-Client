@@ -5,26 +5,26 @@ import '@ant-design/v5-patch-for-react-19';
 import { format, parse } from 'date-fns';
 import { useNavigate, useParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { emit, subscribe } from '../event.jsx';
+import { emit, subscribe } from '../../event.jsx';
 
 const { confirm } = Modal;
 const { Title, Paragraph, Text } = Typography;
 
 //Стили
-import '../Collapse.css';
+import './Collapse.css';
 
 //Методы
-import { GetJWT, GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
-import { useActivities } from '../useActivities.jsx';
-import { useProjects } from '../useProjects.jsx';
+import { GetJWT, GetUserIdFromJWT } from '../../API methods/UsersMethods.jsx';
+import { useActivities } from '../../useActivities.jsx';
+import { useProjects } from '../../useProjects.jsx';
 
 //Компоненты
-import Empty from '../components/Empty.jsx';
-import ActivityCard from '../components/ActivityCard.jsx';
-import { showAddNewActivity } from '../components/AddNewActivityModal.jsx';
-import ProjectActionButton from '../components/ProjectActionButton.jsx';
-import { MembersModal } from '../components/MembersModal.jsx';
-import { showAddNewProject } from '../components/AddNewProjectModal.jsx';
+import Empty from '../../components/Empty.jsx';
+import ActivityCard from '../../components/ActivityCard.jsx';
+import { showAddNewActivity } from '../../components/AddNewActivityModal.jsx';
+import ProjectActionButton from '../../components/ProjectActionButton.jsx';
+import { MembersModal } from '../../components/MembersModal.jsx';
+import { showAddNewProject } from '../../components/AddNewProjectModal.jsx';
 
 function ProjectDetailsTab() {
     const { periods, actCard_Click, getActivityStartTime, loadPeriodsActivities } = useActivities();
@@ -179,7 +179,7 @@ function ProjectDetailsTab() {
                         hasActivities={singleProject.activities.length > 0}
                         textZeroActivities='Здесь пока пусто. Создайте первую активность в проекте и начните отслеживать продуктивность вместе!'
                         textWhenAllActivityIsBusy='Похоже, все доступные активности уже отслеживаются или перенесены в архив'
-                        showButton={!projectIsClose}
+                        showButton={access.isCreator && !projectIsClose}
                         onClickAction={() => showAddNewActivity(true, projectId, singleProject.projectName)} />)
                         : (
                     <Flex wrap gap='16px'>
@@ -378,7 +378,7 @@ function ProjectDetailsTab() {
             hasActivities={singleProject.activities.length > 0}
             textZeroActivities='Этот проект на данный момент закрыт. Активностей в проекте нет.'
             textWhenAllActivityIsBusy='Этот проект завершён. Все активности перенесены в архив.'
-            showButton={!projectIsClose} />)}
+            showButton={false} />)}
 
         <ConfigProvider
             theme={{

@@ -105,7 +105,6 @@ export const getActivityPeriods = async (token, activityId) => {
         }
 
         const periods = response.data;
-        //console.log(`Полученное время активности id ${activityId}:`, periods);
         return periods;
 
     } catch (error) {

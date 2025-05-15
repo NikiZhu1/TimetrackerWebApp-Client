@@ -8,7 +8,7 @@ const { confirm } = Modal;
 
 //Методы
 import { useProjects } from '../useProjects.jsx';
-import { GetJWT, GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
+import { GetJWT, GetUserIdFromJWT } from '../API methods/UsersMethods.jsx';
 
 export const showJoinToProject = () => {
     confirm({

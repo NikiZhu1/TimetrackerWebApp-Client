@@ -1,36 +1,41 @@
 ﻿import React, { useState } from 'react';
-import { Button, Typography, Divider, Form } from 'antd';
+import { Button, Typography, Input, Divider, Form } from 'antd';
+import { EyeInvisibleOutlined, EyeTwoTone, UserOutlined, LockOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
-import LoginPasswordInput from './LoginPasswwordInput.jsx';
 
 const { Title } = Typography;
 
-/**
- * Компонент формы авторизации/регистрации
- * @param {Object} props Свойства компонента.
- * @param {string} props.title Заголовок формы.
- * @param {Function} props.onFinish Функция, вызываемая при отправке формы.
- * @param {string} props.buttonText Текст кнопки.
- * @param {string} props.linkText Текст ссылки.
- * @param {string} props.linkTo Путь ссылки.
+/** Компонент формы авторизации/регистрации
+ * @param {string} title Заголовок формы.
+ * @param {Function} onFinish Функция, вызываемая при отправке формы.
+ * @param {string} buttonText Текст кнопки.
+ * @param {string} linkText Текст ссылки.
+ * @param {string} linkTo Путь ссылки.
  */
-function AuthForm({ title, onFinish, buttonText, linkText, linkTo }) {
+function AuthForm({ 
+    title, 
+    onFinish, 
+    buttonText, 
+    linkText, 
+    linkTo,
+    loading 
+}) {
 
-    const [loadings, setLoadings] = useState([]);
-    const enterLoading = index => {
-        setLoadings(prevLoadings => {
-            const newLoadings = [...prevLoadings];
-            newLoadings[index] = true;
-            return newLoadings;
-        });
-        setTimeout(() => {
-            setLoadings(prevLoadings => {
-                const newLoadings = [...prevLoadings];
-                newLoadings[index] = false;
-                return newLoadings;
-            });
-        }, 3000);
-    };
+    // const [loadings, setLoadings] = useState([]);
+    // const enterLoading = index => {
+    //     setLoadings(prevLoadings => {
+    //         const newLoadings = [...prevLoadings];
+    //         newLoadings[index] = true;
+    //         return newLoadings;
+    //     });
+    //     setTimeout(() => {
+    //         setLoadings(prevLoadings => {
+    //             const newLoadings = [...prevLoadings];
+    //             newLoadings[index] = false;
+    //             return newLoadings;
+    //         });
+    //     }, 3000);
+    // };
 
     return (
         <Form
@@ -40,10 +45,28 @@ function AuthForm({ title, onFinish, buttonText, linkText, linkTo }) {
 
             <Title style={{ textAlign: 'center' }} level={3}>{title}</Title>
 
-            <LoginPasswordInput/>
+            <Form.Item
+                name="username"
+                rules={[{ required: true, message: 'Поле логина должно быть заполнено' }]}>
+                <Input
+                    maxLength={50}
+                    placeholder="Логин"
+                    prefix={<UserOutlined />}
+                />
+            </Form.Item>
+
+            <Form.Item
+                name="password"
+                rules={[{ required: true, message: 'Поле пароля должно быть заполнено' }]}>
+                <Input.Password
+                    placeholder="Пароль"
+                    iconRender={visible => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+                    prefix={<LockOutlined />}
+                />
+            </Form.Item>
 
             <Form.Item>
-                <Button block type="primary" htmlType="submit" loading={loadings[0]} onClick={() => enterLoading(0)}>
+                <Button block type="primary" htmlType="submit" loading={loading}>
                     {buttonText}
                 </Button>
             </Form.Item>
@@ -57,7 +80,7 @@ function AuthForm({ title, onFinish, buttonText, linkText, linkTo }) {
                     <Button block disabled>
                         Продолжить c Telegram
                     </Button>
-                    <span className="telegram-description">Больше возможностей, продолжив с помощью Telegram</span>
+                    <span className="telegram-description">(Скоро) Больше возможностей, продолжив с помощью Telegram</span>
                 </div>
             </Form.Item>
 

@@ -4,20 +4,20 @@ import { PlusOutlined, LinkOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { subscribe } from '../event.jsx';
+import { subscribe } from '../../event.jsx';
 
 //Стили
-import '../Collapse.css';
+import './Collapse.css';
 
 //Методы
-import { GetJWT, GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
-import { useProjects } from '../useProjects.jsx';
+import { GetJWT, GetUserIdFromJWT } from '../../API methods/UsersMethods.jsx';
+import { useProjects } from '../../useProjects.jsx';
 
 //Компоненты
-import Empty from '../components/Empty.jsx';
-import ProjectCard from '../components/ProjectCard.jsx';
-import { showAddNewProject } from '../components/AddNewProjectModal.jsx';
-import { showJoinToProject } from '../components/JoinToProjectModal.jsx';
+import Empty from '../../components/Empty.jsx';
+import ProjectCard from '../../components/ProjectCard.jsx';
+import { showAddNewProject } from '../../components/AddNewProjectModal.jsx';
+import { showJoinToProject } from '../../components/JoinToProjectModal.jsx';
 
 function ProjectsTab() {
     const { projects, loading, loadUserProjectsData } = useProjects();

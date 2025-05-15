@@ -3,7 +3,7 @@ import { Button, message, DatePicker, Select, Flex, ConfigProvider } from 'antd'
 import { PlusOutlined, LinkOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import Cookies from 'js-cookie';
-import { subscribe } from '../event.jsx';
+import { subscribe } from '../../event.jsx';
 import locale from 'antd/locale/ru_RU';
 import 'dayjs/locale/ru'; 
 import dayjs from 'dayjs';
@@ -11,12 +11,13 @@ import isBetween from 'dayjs/plugin/isBetween';
 dayjs.extend(isBetween); // Подключаем плагин для isBetween
 
 //Методы
-import { GetJWT, GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
-import { useActivities } from '../useActivities.jsx';
+import { GetJWT, GetUserIdFromJWT } from '../../API methods/UsersMethods.jsx';
+import { useActivities } from '../../useActivities.jsx';
 
 //Компоненты
-import StackedBarChart from '../components/StackedBarChart.jsx';
-import ActivityPieChart from '../components/PieChart.jsx';
+import StackedBarChart from '../../components/StackedBarChart.jsx';
+import ActivityPieChart from '../../components/PieChart.jsx';
+import Empty from '../../components/Empty.jsx';
 
 function StatsTab() {
     const { getUserStats, loadData} = useActivities();
@@ -110,6 +111,9 @@ function StatsTab() {
     }
     }, [dateRange, periodType, periods]);
 
+    // Проверка на пустые данные
+    const isEmptyData = filteredPeriods.length === 0;
+
     return (
         <Flex vertical>
             <Flex wrap gap='8px' style={{paddingTop: '16px', paddingBottom: '16px'}}>
@@ -132,10 +136,10 @@ function StatsTab() {
                     <p style={{fontSize: '20px', whiteSpace: 'nowrap'}}>за</p>
                     <Select
                     defaultValue='week'
-                    style={{ width: 130 }}
+                    style={{ width: 140 }}
                     onChange={setPeriodType}
                     options={[
-                        { value: 'day', label: `день (${dayjs(new Date()).format('DD.MM')})` },
+                        { value: 'day', label: `сегодня (${dayjs(new Date()).format('DD.MM')})` },
                         { value: 'week', label: `эту неделю` },
                         { value: 'month', label: `месяц (${dayjs(new Date()).format('MMMM')})` },
                         { value: 'custom', label: 'своё время...' },
@@ -148,12 +152,17 @@ function StatsTab() {
                         <p style={{fontSize: '20px', whiteSpace: 'nowrap'}}>Выберите период:</p>
                         <ConfigProvider 
                             locale={locale}>
-                            <DatePicker.RangePicker format="DD.MM.YYYY" onChange={setDateRange}/>
+                            <DatePicker.RangePicker 
+                                format="DD.MM.YYYY" 
+                                onChange={setDateRange}
+                                disabledDate={(current) => current && current > dayjs().endOf('day')}/>
                         </ConfigProvider>
                     </Flex>
                 )}
             </Flex>
-            <Flex wrap gap='16px' style={{width: '100%'}}>
+            {isEmptyData 
+            ? (<Empty textZeroActivities='Похоже у вас нет данных об отслеживании активностей за данный период' showButton={false}/>)
+            : (<Flex wrap gap='16px' style={{width: '100%'}}>
                 {selectActivity === 'all' && (periodType === 'week' || periodType === 'day') &&
                 (
                     <Flex vertical align='center' style={{width: '100%', padding: '16px', borderRadius: '12px',backgroundColor: 'rgb(180 180 180 / 20%)'}}>
@@ -173,7 +182,6 @@ function StatsTab() {
                     <Flex vertical align='center' style={{width: '100%', padding: '16px', borderRadius: '12px',backgroundColor: 'rgb(180 180 180 / 20%)'}}>
                         <p style={{fontSize: '18px', fontWeight: '500'}}>{`Топ активностей`}</p>
                         <ActivityPieChart periods={filteredPeriods} activities={activities}/>
-                        {/* {Топ активностей} */}
                     </Flex>
                 )}
                 {selectActivity !== 'all' && 
@@ -183,7 +191,7 @@ function StatsTab() {
                         <ActivityPieChart periods={filteredPeriods.filter(period => period.activityId == selectActivity)} activities={activities.filter(activity => activity.id == selectActivity)}/>
                     </Flex>
                 )}
-            </Flex>
+            </Flex>)}
             
         </Flex>
         

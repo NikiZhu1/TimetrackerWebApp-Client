@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {getActivity} from './ActivitiesMethods';
+import { getActivity } from './ActivitiesMethods';
 import { getUserInfo } from './UsersMethods';
 
 // 1 получаем инфу в каких проектах состоит пользователь http://localhost:8080/api/Users/{userID}/projects
@@ -69,7 +69,7 @@ import { getUserInfo } from './UsersMethods';
 //     "statusId": 1
 // }
 
-// Получение полной информации по всем проектам пользователя
+/** Получение полной информации по всем проектам пользователя */
 export const getFullUserProjectsInfo = async (token, userId) => {
     if (!token || !userId) return [];
   
@@ -92,7 +92,7 @@ export const getFullUserProjectsInfo = async (token, userId) => {
     }
   };
   
-// Получение полной информации по одному проекту
+/** Получение полной информации по одному проекту */ 
 export const getSingleProjectFullInfo = async (token, userProject) => {
     const [projectInfo, members, activities] = await Promise.all([
       getProjectDetails(token, userProject.projectId),
@@ -108,7 +108,7 @@ export const getSingleProjectFullInfo = async (token, userProject) => {
     };
 };
 
-// Получение информации в каких проектах состоит пользователь
+/** Получение информации в каких проектах состоит пользователь */
 export const getUserProjectInfo = async (token, userId) => {
     if (!token || !userId) return [];
 
@@ -127,7 +127,7 @@ export const getUserProjectInfo = async (token, userId) => {
     }
 };
 
-// Получение деталей проекта
+/** Получение деталей проекта */ 
 export const getProjectDetails = async (token, projectId) => {
     try {
         const response = await axios.get(`http://localhost:8080/api/Projects/${projectId}`, 
@@ -144,7 +144,7 @@ export const getProjectDetails = async (token, projectId) => {
     
   };
 
-// Получение участников проекта
+/** Получение участников проекта */
 export const getProjectMembers = async (token, projectId) => {
     try {
         // 1. Получаем связи пользователей с проектом
@@ -174,7 +174,7 @@ export const getProjectMembers = async (token, projectId) => {
     
   };
 
-// Получение активностей проекта
+/** Получение активностей проекта */
 export const getProjectActivities = async (token, projectId) => {
     try {
         // 1. Получаем связи активностей с проектом
@@ -204,7 +204,7 @@ export const getProjectActivities = async (token, projectId) => {
     }
   };
 
-// Создание проекта
+/** Создание проекта */
 export const CreateProject = async (token, name) => {
     try {
         const response = await axios.post('http://localhost:8080/api/Projects',
@@ -224,7 +224,7 @@ export const CreateProject = async (token, name) => {
     }
 };
 
-// Добавить пользователя в проект
+/** Добавить пользователя в проект */
 export const AddUserToProject = async (token, projectKey) => {
     try {
         const response = await axios.post('http://localhost:8080/api/Users/project',
@@ -244,7 +244,7 @@ export const AddUserToProject = async (token, projectKey) => {
     }
 };
 
-// Добавить активность в проект
+/** Добавить активность в проект */
 export const AddActivityToProject = async (token, projectId, activityId) => {
     try {
         const response = await axios.post('http://localhost:8080/api/Projects/activity',
@@ -265,7 +265,7 @@ export const AddActivityToProject = async (token, projectId, activityId) => {
     }
 }
 
-// Удалить пользователя из проекта
+/** Удалить пользователя из проекта */
 export const DeleteUserFromProject = async (token, projectId, userId) => {
     try {
         const response = await axios.delete(`http://localhost:8080/api/Projects/${projectId}/user/${userId}`,
@@ -282,7 +282,7 @@ export const DeleteUserFromProject = async (token, projectId, userId) => {
     }
 }
 
-// Общая функция для изменения архивации проекта
+/** Общая функция для изменения архивации проекта */
 export const ManageArchiveProject = async (token, projectId, isArchived) => {
     try {
         const response = await axios.patch(`http://localhost:8080/api/Projects/${projectId}`,
@@ -301,7 +301,7 @@ export const ManageArchiveProject = async (token, projectId, isArchived) => {
     }
 };
 
-// Изменения названия активности
+/** Изменения названия проекта */
 export const UpdateProjectName = async (token, projectId, newProjectName) => {
     try {
         const response = await axios.patch(`http://localhost:8080/api/Projects/${projectId}`,
@@ -320,7 +320,7 @@ export const UpdateProjectName = async (token, projectId, newProjectName) => {
     }
 };
 
-// Удаление проекта
+/** Удаление проекта */
 export const DeleteProject = async (token, projectId) => {
     try {
         const response = await axios.delete(`http://localhost:8080/api/Projects/${projectId}`,

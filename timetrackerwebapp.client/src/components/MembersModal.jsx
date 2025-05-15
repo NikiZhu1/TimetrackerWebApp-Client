@@ -6,7 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 //Методы
 import { useProjects } from '../useProjects.jsx';
-import { GetJWT, GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
+import { GetJWT, GetUserIdFromJWT } from '../API methods/UsersMethods.jsx';
 import { useUsers } from '../useUsers.jsx';
 import { emit } from '../event.jsx';
 

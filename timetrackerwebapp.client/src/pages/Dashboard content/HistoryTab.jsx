@@ -1,9 +1,9 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { Button, message, Table, Flex, Modal, DatePicker, TimePicker, ConfigProvider } from 'antd';
-import { PlusOutlined, LinkOutlined } from '@ant-design/icons';
+import { Button, message, Table, Flex, Modal, DatePicker, TimePicker, ConfigProvider, Dropdown } from 'antd';
+import { PlusOutlined, LinkOutlined, EllipsisOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import Cookies from 'js-cookie';
-import { subscribe } from '../event.jsx';
+import { subscribe } from '../../event.jsx';
 import locale from 'antd/locale/ru_RU';
 import 'dayjs/locale/ru'; 
 import dayjs from 'dayjs';
@@ -11,9 +11,9 @@ import isBetween from 'dayjs/plugin/isBetween';
 dayjs.extend(isBetween);
 
 // Методы
-import { GetJWT, GetUserIdFromJWT } from '../methods/UsersMethods.jsx';
-import { useActivities } from '../useActivities.jsx';
-import { useActivityPeriods } from '../useActivityPeriods.jsx';
+import { GetJWT, GetUserIdFromJWT } from '../../API methods/UsersMethods.jsx';
+import { useActivities } from '../../useActivities.jsx';
+import { useActivityPeriods } from '../../useActivityPeriods.jsx';
 
 function HistoryTab() {
     const { getUserStats, loadData } = useActivities();
@@ -88,6 +88,7 @@ function HistoryTab() {
 
     // Обработчик удаления периода
     const handleDelete = async (activityPeriodId) => {
+        setLoading(true)
         const token = GetJWT();
         try {
             await deleteActivityPeriod(token, activityPeriodId);
@@ -98,6 +99,8 @@ function HistoryTab() {
         } catch (error) {
             message.error('Ошибка при удалении периода');
             console.error('Ошибка:', error);
+        } finally {
+            setLoading(false)
         }
     };
 
@@ -112,6 +115,7 @@ function HistoryTab() {
     const handleEditSave = async () => {
         if (!editingPeriod) return;
         
+        setLoading(true);
         const token = GetJWT();
         try {
             await editActivityPeriod(
@@ -139,6 +143,22 @@ function HistoryTab() {
         } catch (error) {
             message.error('Ошибка при обновлении периода');
             console.error('Ошибка:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    //Нажатие пункта меню
+    const handleMenuClick = async (e, record) => {
+        switch (e.key) {
+            case 'edit':
+                handleEditStart(record);
+                break;
+            case 'delete':
+                await handleDelete(record.key);
+                break;
+            default:
+                // message.info(`Выбран пункт: ${e.key}`);
         }
     };
 
@@ -166,28 +186,56 @@ function HistoryTab() {
         {
             title: 'Итоговое время',
             dataIndex: 'totalTime',
+            
             key: 'totalTime',
             render: (text) => formatDuration(text),
         },
         {
-            title: 'Действия',
+            title: ' ',
             key: 'action',
             render: (_, record) => (
-                <Flex gap="small">
-                    <Button 
-                        type="link" 
-                        danger
-                        onClick={() => handleDelete(record.key)}
-                    >
-                        Удалить
+                <Dropdown
+                    menu={{
+                        items: [
+                        {
+                            key: 'edit',
+                            icon: <EditOutlined />,
+                            label: "Изменить",
+                        },
+                        {
+                            key: 'delete',
+                            icon: <DeleteOutlined />,
+                            danger: true,
+                            label: "Удалить",
+                        }],
+                        onClick: (e) => handleMenuClick(e, record)
+                    }}
+                    placement="left"
+                    trigger={["hover"]}>
+                    <Button
+                        color="default"
+                        type="text"
+                        icon={<EllipsisOutlined style={{
+                            fontSize: '16px',
+                            color: '#282828'
+                        }} />}>
                     </Button>
-                    <Button 
-                        type="link" 
-                        onClick={() => handleEditStart(record)}
-                    >
-                        Редактировать
-                    </Button>
-                </Flex>
+                </Dropdown>
+            // <Flex gap="small">
+                //     <Button 
+                //         type="link" 
+                //         danger
+                //         onClick={() => handleDelete(record.key)}
+                //     >
+                //         Удалить
+                //     </Button>
+                //     <Button 
+                //         type="link" 
+                //         onClick={() => handleEditStart(record)}
+                //     >
+                //         Редактировать
+                //     </Button>
+                // </Flex>
             ),
         },
     ];
@@ -233,6 +281,7 @@ function HistoryTab() {
                         </div>
                         <div>
                             <p>Время старта:</p>
+                            {/* <input type='date'/> */}
                             <ConfigProvider 
                                 locale={locale}>
                                 <DatePicker
