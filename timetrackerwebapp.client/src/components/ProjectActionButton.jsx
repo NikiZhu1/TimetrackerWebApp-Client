@@ -1,6 +1,6 @@
 import React from 'react';
 import { Button, Flex, Avatar, Typography } from 'antd';
-import { useUsers } from '../useUsers.jsx';
+import { useUsers } from '../hooks/useUsers.jsx';
 
 const { Text } = Typography;
 

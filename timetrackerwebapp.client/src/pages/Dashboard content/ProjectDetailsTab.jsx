@@ -15,8 +15,9 @@ import './Collapse.css';
 
 //Методы
 import { GetJWT, GetUserIdFromJWT } from '../../API methods/UsersMethods.jsx';
-import { useActivities } from '../../useActivities.jsx';
-import { useProjects } from '../../useProjects.jsx';
+import { useActivities } from '../../hooks/useActivities.jsx';
+import { useProjects } from '../../hooks/useProjects.jsx';
+import { useIsPortrait } from '../../hooks/useIsPortain.jsx';
 
 //Компоненты
 import Empty from '../../components/Empty.jsx';
@@ -29,6 +30,7 @@ import { showAddNewProject } from '../../components/AddNewProjectModal.jsx';
 function ProjectDetailsTab() {
     const { periods, actCard_Click, getActivityStartTime, loadPeriodsActivities } = useActivities();
     const { singleProject, loading, getSingleProjectInfo, checkUserInProject, updateProjectName, deleteUserFromProject, deleteProject, archiveProject } = useProjects();
+    const isPortrait = useIsPortrait();
     const navigate = useNavigate();
     const { projectId } = useParams();
 
@@ -242,9 +244,7 @@ function ProjectDetailsTab() {
                 });
                 break;
             case 'toArchive':
-                await archiveProject(token, projectId);
-                message.success(`Проект завершён`);
-                emit('projectChanged');
+                showArchiveConfirm(() => archiveProject(token, projectId));
                 break;
             case 'leave':
                 await deleteUserFromProject(token, projectId, userId);
@@ -262,13 +262,14 @@ function ProjectDetailsTab() {
     //Модальное окно удаления
     const showDeleteConfirm = (onOkClick) => {
         confirm({
-            title: `Удаленить "${editProjectName}" без возможности восстановления`,
+            title: `Удалить "${editProjectName}" без возможности восстановления?`,
             icon: <ExclamationCircleFilled />,
             content: 'Вы удаляете лишь проект. Все активности, которые были в проекте останутся у их создателей, периоды отслеживания также сохранятся.',
             okText: 'Удалить',
             okType: 'danger',
             cancelText: 'Отмена',
             closable: true,
+            centered: isPortrait,
             maskClosable: true,
             async onOk() {
                 try {
@@ -278,7 +279,34 @@ function ProjectDetailsTab() {
                 } catch (error) {
                     console.error('Ошибка при удалении:', error);
                     Modal.destroyAll();
-                    message.error(`Не получилось удалить проект ${editProjectName}`);
+                    message.error(`Не получилось удалить проект`);
+                }
+            },
+            onCancel() {},
+        });
+    };
+
+    //Модальное окно завершения
+    const showArchiveConfirm = (onOkClick) => {
+        confirm({
+            title: `Завершить "${editProjectName}" навсегда?`,
+            icon: <ExclamationCircleFilled />,
+            content: 'При завершении проекта все активности, которые были в проекте, останутся у их создателей и перенесутся в архив.',
+            okText: 'Завершить',
+            okType: 'danger',
+            cancelText: 'Отмена',
+            closable: true,
+            centered: isPortrait,
+            maskClosable: true,
+            async onOk() {
+                try {
+                    await onOkClick();
+                    message.success(`${editProjectName} завершён`);
+                    emit('projectChanged');
+                } catch (error) {
+                    console.error('Ошибка при завершении:', error);
+                    Modal.destroyAll();
+                    message.error(`Не получилось завершить проект`);
                 }
             },
             onCancel() {},
@@ -309,7 +337,7 @@ function ProjectDetailsTab() {
             </Title>}
             
             {/* //Кнопки управления проектом */}
-            <Flex gap='12px'>
+            <Flex gap='12px' className='projectActions' wrap>
                 <ProjectActionButton
                     icon={<TeamOutlined/>}
                     text={access.isCreator ? 'Управление участниками' : 'Посмотреть участников'}

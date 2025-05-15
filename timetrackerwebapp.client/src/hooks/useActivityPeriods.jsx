@@ -1,6 +1,6 @@
 ﻿import React, { useEffect, useState, useCallback, useRef } from 'react';
-import * as api from './API methods/ActivityPeriodsMethods.jsx';
-import { emit, subscribe } from './event.jsx';
+import * as api from '../API methods/ActivityPeriodsMethods.jsx';
+import { emit, subscribe } from '../event.jsx';
 
 export const useActivityPeriods = () => {
     // const [activities, setActivities] = useState([]);

@@ -9,7 +9,7 @@ const { confirm } = Modal;
 import { showAddNewActivity } from './AddNewActivityModal.jsx';
 
 //Методы
-import { useActivities } from '../useActivities.jsx';
+import { useActivities } from '../hooks/useActivities.jsx';
 
 function Empty({
     hasActivities = false,

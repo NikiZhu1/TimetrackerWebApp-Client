@@ -12,7 +12,8 @@ dayjs.extend(isBetween); // Подключаем плагин для isBetween
 
 //Методы
 import { GetJWT, GetUserIdFromJWT } from '../../API methods/UsersMethods.jsx';
-import { useActivities } from '../../useActivities.jsx';
+import { useActivities } from '../../hooks/useActivities.jsx';
+import { useIsPortrait } from '../../hooks/useIsPortain.jsx';
 
 //Компоненты
 import StackedBarChart from '../../components/StackedBarChart.jsx';
@@ -20,6 +21,8 @@ import ActivityPieChart from '../../components/PieChart.jsx';
 import Empty from '../../components/Empty.jsx';
 
 function StatsTab() {
+    const isPortrait = useIsPortrait();
+
     const { getUserStats, loadData} = useActivities();
     const [periodType, setPeriodType] = useState('week');
     const [selectActivity, setSelectActivity] = useState('all');
@@ -118,13 +121,14 @@ function StatsTab() {
         <Flex vertical>
             <Flex wrap gap='8px' style={{paddingTop: '16px', paddingBottom: '16px'}}>
                 <Flex align='center' gap='8px'>
-                    <p style={{fontSize: '20px', whiteSpace: 'nowrap'}}>Статистика по</p>
+                    {!isPortrait && <p style={{fontSize: '20px', whiteSpace: 'nowrap'}}>Статистика по</p>}
                     <Select
+                    size= {isPortrait && 'large'}
                     defaultValue='all'
                     style={{ width: '170px' }}
                     onChange={setSelectActivity}
                     options={[
-                        { value: 'all', label: 'Всем активностями' },
+                        { value: 'all', label: 'Все активности' },
                         ...activities.map(activity => ({
                             value: activity.id,
                             label: activity.name
@@ -133,8 +137,9 @@ function StatsTab() {
                     />
                 </Flex>
                 <Flex align='center' gap='8px'>
-                    <p style={{fontSize: '20px', whiteSpace: 'nowrap'}}>за</p>
+                    {!isPortrait && <p style={{fontSize: '20px', whiteSpace: 'nowrap'}}>за</p>}
                     <Select
+                    size= {isPortrait && 'large'}
                     defaultValue='week'
                     style={{ width: 140 }}
                     onChange={setPeriodType}
@@ -163,14 +168,14 @@ function StatsTab() {
             {isEmptyData 
             ? (<Empty textZeroActivities='Похоже у вас нет данных об отслеживании активностей за данный период' showButton={false}/>)
             : (<Flex wrap gap='16px' style={{width: '100%'}}>
-                {selectActivity === 'all' && (periodType === 'week' || periodType === 'day') &&
+                {selectActivity === 'all' && (periodType === 'month' || periodType === 'week' || periodType === 'day') &&
                 (
                     <Flex vertical align='center' style={{width: '100%', padding: '16px', borderRadius: '12px',backgroundColor: 'rgb(180 180 180 / 20%)'}}>
                         <p style={{fontSize: '18px', fontWeight: '500'}}>{periodType === 'day' ? `Время активностей по часам за ${dayjs(new Date()).locale('ru-ru').format('DD MMMM')}` : `Время активностей за эту неделю`}</p>
                         <StackedBarChart periods={filteredPeriods} activities={activities} periodType={periodType}/>
                     </Flex>
                 )}
-                {selectActivity !== 'all' && (periodType === 'week' || periodType === 'day') &&
+                {selectActivity !== 'all' && (periodType === 'month' || periodType === 'week' || periodType === 'day') &&
                 (
                     <Flex vertical align='center' style={{width: '100%', padding: '16px', borderRadius: '12px',backgroundColor: 'rgb(180 180 180 / 20%)'}}>
                         <p style={{fontSize: '18px', fontWeight: '500'}}>{periodType === 'day' ? `Время активности "${activities.find(activity => activity.id === selectActivity).name}" по часам за ${dayjs(new Date()).locale('ru-ru').format('DD MMMM')}` : `Время активности "${activities.find(activity => activity.id === selectActivity).name}" за эту неделю`}</p>

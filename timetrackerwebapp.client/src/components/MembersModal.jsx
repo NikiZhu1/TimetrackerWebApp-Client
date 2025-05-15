@@ -5,9 +5,9 @@ import '@ant-design/v5-patch-for-react-19';
 import { useNavigate, useParams } from 'react-router-dom';
 
 //Методы
-import { useProjects } from '../useProjects.jsx';
+import { useProjects } from '../hooks/useProjects.jsx';
 import { GetJWT, GetUserIdFromJWT } from '../API methods/UsersMethods.jsx';
-import { useUsers } from '../useUsers.jsx';
+import { useUsers } from '../hooks/useUsers.jsx';
 import { emit } from '../event.jsx';
 
 // export const oldshowMembersModal = ( isAdmin, members, projectId ) => {

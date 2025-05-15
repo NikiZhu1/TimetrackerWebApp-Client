@@ -42,7 +42,7 @@ function MyMenu({ onMenuClick }) {
         
         // 3. Проверяем путь
         if (location.pathname.includes('/projects')) return 'projects';
-        if (location.pathname.includes('/stats')) return 'stats';
+        if (location.pathname.includes('/statistics')) return 'statisticsts';
         if (location.pathname.includes('/history')) return 'history';
         
         return 'activities'; // Значение по умолчанию

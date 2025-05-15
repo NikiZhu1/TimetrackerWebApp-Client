@@ -19,7 +19,7 @@ const FooterStyle = {
     padding: 0
 };
 
-const items = [
+const menuItems = [
     { key: 'activities', icon: <AppstoreAddOutlined />, label: 'Активности' },
     { key: 'statistics', icon: <PieChartOutlined />, label: 'Статистика' },
     { key: 'history', icon: <ClockCircleOutlined />, label: 'История' },
@@ -46,27 +46,14 @@ function MyMenuMobile({ onMenuClick }) {
         return 'activities'; // Значение по умолчанию
     };
 
-    const [collapsed, setCollapsed] = useState(false);
     const [selectedKey, setSelectedKey] = useState(getActiveTab());
 
-    //Скрытие-разворот меню
-    const toggleCollapsed = () => {
-        setCollapsed(!collapsed);
-    };
-
-    //Функция при выходе
-    const handleLogout = () => {
-        Cookies.remove('token'); // Удаляем токен
-        message.info('Вы вышли из системы');
-        navigate('/');
-    };
-
     // Выбор вкладки меню
-    const handleMenuClick = (e) => {
-        console.log("Click menu", e.key)
-        setSelectedKey(e.key); // Обновляем состояние
+    const handleMenuClick = (itemMenuKey) => {
+        console.log("Click menu", itemMenuKey)
+        setSelectedKey(itemMenuKey); // Обновляем состояние
         if (onMenuClick) {
-            onMenuClick(e.key); // Пробрасываем событие в родительский компонент
+            onMenuClick(itemMenuKey); // Пробрасываем событие в родительский компонент
         }
     };
 
@@ -74,23 +61,40 @@ function MyMenuMobile({ onMenuClick }) {
         setSelectedKey(getActiveTab());
       }, [location.pathname, activeTab, location.state]);
 
-    const renderButton = () => {
-        return items
-            .map(item => (
-                <Flex key={item.key} vertical align='center' justify='center'>
-                    {React.cloneElement(item.icon, { style: { fontSize: '28px', color: '#fff' } })}
-                    <p style={{color: '#fff'}}>{item.label}</p>
-                </Flex>
-            ));
-    };
-
     return (
-        <Footer style = {FooterStyle}>
-            <Flex justify='space-between'>
-                {renderButton()}
+        <Footer style={FooterStyle}>
+            <Flex justify="space-between" align="center" style={{ height: '100%' }}>
+                {menuItems.map((item) => (
+                <Flex 
+                    key={item.key}
+                    vertical 
+                    align="center" 
+                    justify="center"
+                    onClick={() => handleMenuClick(item.key)}
+                    style={{
+                        height: '100%',
+                        flex: 1,
+                        opacity: activeTab === item.key ? 1 : 0.6,
+                        transition: 'opacity 0.2s',
+                    }}
+                >
+                    {React.cloneElement(item.icon, { 
+                    style: { 
+                        fontSize: '20px', 
+                        color: '#fff',
+                    } 
+                    })}
+                    <span style={{
+                        color: '#fff',
+                        fontSize: '12px',
+                        textAlign: 'center'
+                    }}>
+                    {item.label}
+                    </span>
+                </Flex>
+                ))}
             </Flex>
-            
-        </Footer>
+    </Footer>
     );
 }
 

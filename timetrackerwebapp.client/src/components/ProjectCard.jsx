@@ -14,7 +14,7 @@ import '../App.css';
 //Компоненты
 
 //Методы
-import { useProjects } from '../useProjects.jsx';
+import { useProjects } from '../hooks/useProjects.jsx';
 import { GetUserIdFromJWT } from '../API methods/UsersMethods.jsx';
 
 function ProjectCard({
@@ -93,14 +93,6 @@ function ProjectCard({
                     okText: 'Закрыть',
                     maskClosable: true,
                 });
-                // try {
-                //     // Копируем ключ доступа в буфер обмена
-                //     await navigator.clipboard.writeText(projectKey);
-                //     message.success('Ключ доступа скопирован в буфер обмена');
-                // } catch (error) {
-                //     console.error('Ошибка при копировании ключа:', error);
-                //     message.error('Не удалось скопировать ключ');
-                // }
                 break;
             case 'checkHistory':
                 //

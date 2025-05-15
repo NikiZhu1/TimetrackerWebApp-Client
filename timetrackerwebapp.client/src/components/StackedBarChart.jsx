@@ -62,8 +62,45 @@ const StackedBarChart = ({ periods, activities, periodType = 'week' }) => {
     return `hsl(${index * 80 % 360}, 70%, 60%)`;
   };
 
+ // Подготовка данных для месячного отчета
+ const prepareMonthData = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const days = Array.from({ length: daysInMonth }, (_, i) => `${i + 1}`);
+  const dataMap = {};
+
+  periods.forEach(period => {
+    if (!period.totalTime || !period.startTime) return;
+
+    const date = new Date(period.startTime);
+    if (date.getMonth() !== month || date.getFullYear() !== year) return;
+
+    const dayLabel = `${date.getDate()}`;
+    const activityName = getActivityName(period.activityId);
+    const seconds = parseTotalTime(period.totalTime);
+
+    if (!dataMap[activityName]) dataMap[activityName] = {};
+    dataMap[activityName][dayLabel] = (dataMap[activityName][dayLabel] || 0) + seconds;
+  });
+
+  return {
+    labels: days,
+    datasets: activityOrder
+      .filter(name => dataMap[name])
+      .map((name) => ({
+        label: name,
+        data: days.map(day => dataMap[name][day] || 0),
+        backgroundColor: getColor(name),
+        stack: 'stack1',
+      }))
+  };
+ };
+
   // Подготовка данных для недельного отчета
-  const prepareWeekData = () => {
+ const prepareWeekData = () => {
     const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
     const dataMap = {};
 
@@ -93,8 +130,8 @@ const StackedBarChart = ({ periods, activities, periodType = 'week' }) => {
     };
   };
   
-// Подготовка данных для дневного отчета
-const prepareDayData = () => {
+ // Подготовка данных для дневного отчета
+ const prepareDayData = () => {
     const hours = Array.from({ length: 24 }, (_, i) => `${i}`);
     const dataMap = {};
     const today = new Date();
@@ -152,7 +189,11 @@ const prepareDayData = () => {
   };
 
   // Выбор формата данных в зависимости от периода
-  const chartData = periodType === 'day' ? prepareDayData() : prepareWeekData();
+  const chartData = useMemo(() => {
+    if (periodType === 'day') return prepareDayData();
+    if (periodType === 'month') return prepareMonthData();
+    return prepareWeekData();
+  }, [periodType, periods, activities, activityOrder]);
 
   const options = {
     plugins: {
@@ -204,7 +245,7 @@ const prepareDayData = () => {
           display: false,
         },
         max: periodType === 'day' 
-            ? 3600
+            ? null
             : null,
         ticks: {
             stepSize: periodType === 'day' 
@@ -214,9 +255,9 @@ const prepareDayData = () => {
             // Для дневной диаграммы показываем только минуты
             if (periodType === 'day') {
                 return `${Math.round(value / 60)}м`;
-            }
-            else 
+            } else {
                 return `${Math.round(value / 3660)}ч`;
+            }
         }
         },
         grid: {

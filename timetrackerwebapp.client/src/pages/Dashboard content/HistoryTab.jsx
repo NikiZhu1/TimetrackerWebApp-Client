@@ -12,12 +12,14 @@ dayjs.extend(isBetween);
 
 // Методы
 import { GetJWT, GetUserIdFromJWT } from '../../API methods/UsersMethods.jsx';
-import { useActivities } from '../../useActivities.jsx';
-import { useActivityPeriods } from '../../useActivityPeriods.jsx';
+import { useActivities } from '../../hooks/useActivities.jsx';
+import { useActivityPeriods } from '../../hooks/useActivityPeriods.jsx';
+import { useIsPortrait } from '../../hooks/useIsPortain.jsx';
 
 function HistoryTab() {
     const { getUserStats, loadData } = useActivities();
     const { editActivityPeriod, deleteActivityPeriod } = useActivityPeriods();
+    const isPortrait = useIsPortrait();
     
     const [periods, setPeriods] = useState([]);
     const [activities, setActivities] = useState([]);
@@ -170,21 +172,21 @@ function HistoryTab() {
             render: (text) => <span style={{ fontWeight: 500 }}>{text}</span>,
         },
         {
-            title: 'Время старта',
+            title: isPortrait ? 'Старт' : 'Время старта',
             dataIndex: 'startTime',
             key: 'startTime',
             render: (text) => formatDateTime(text),
             sorter: (a, b) => dayjs(a.startTime).unix() - dayjs(b.startTime).unix(),
         },
         {
-            title: 'Время финиша',
+            title: isPortrait ? 'Финиш' : 'Время финиша',
             dataIndex: 'finishTime',
             key: 'finishTime',
             render: (text) => formatDateTime(text),
             sorter: (a, b) => dayjs(a.finishTime || 0).unix() - dayjs(b.finishTime || 0).unix(),
         },
         {
-            title: 'Итоговое время',
+            title: isPortrait ? 'Итог. время' : 'Итоговое время',
             dataIndex: 'totalTime',
             
             key: 'totalTime',
@@ -253,7 +255,7 @@ function HistoryTab() {
         <Flex vertical style={{paddingTop: '16px'}}>
             <Flex vertical style={{paddingBottom: '16px'}}>
                 <p style={{fontSize: '20px', fontWeight: 500}}>История периодов отслеживания ваших активностей</p>
-                <p style={{fontSize: '16px'}}>На этой странице вы можете отредактировать или удалить период активности, если например таймер активности был случайно запущен или забыли остановить.</p>
+                <p style={{fontSize: '16px'}}>На этой странице вы можете отредактировать или удалить период активности, если например таймер был случайно запущен или забыли остановить.</p>
             </Flex>
             
             <Table 
@@ -263,6 +265,7 @@ function HistoryTab() {
                 pagination={{ pageSize: 10 }}
                 scroll={{ x: true }}
                 bordered
+                size={isPortrait && 'small'}
             />
             
             {/* Модальное окно редактирования */}

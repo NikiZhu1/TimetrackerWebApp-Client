@@ -3,7 +3,7 @@ import { Avatar } from 'antd';
 import Cookies from 'js-cookie';
 
 //Методы
-import * as api from './API methods/UsersMethods.jsx'; 
+import * as api from '../API methods/UsersMethods.jsx'; 
 
 export const useUsers = () => {
     const [user, setUser] = useState([]);

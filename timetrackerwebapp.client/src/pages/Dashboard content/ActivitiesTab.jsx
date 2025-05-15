@@ -11,8 +11,8 @@ import './Collapse.css';
 
 //Методы
 import { GetJWT, GetUserIdFromJWT } from '../../API methods/UsersMethods.jsx';
-import { useActivities } from '../../useActivities.jsx';
-import { useProjects } from '../../useProjects.jsx';
+import { useActivities } from '../../hooks/useActivities.jsx';
+import { useProjects } from '../../hooks/useProjects.jsx';
 
 //Компоненты
 import Empty from '../../components/Empty.jsx';

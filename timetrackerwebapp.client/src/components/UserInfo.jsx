@@ -8,7 +8,7 @@ import Cookies from 'js-cookie';
 const { confirm } = Modal;
 
 //Методы
-import { useUsers } from '../useUsers.jsx';
+import { useUsers } from '../hooks/useUsers.jsx';
 
 function UserInfo( {
     userId,

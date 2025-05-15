@@ -7,7 +7,7 @@ import '@ant-design/v5-patch-for-react-19';
 const { confirm } = Modal;
 
 //Методы
-import { useProjects } from '../useProjects.jsx';
+import { useProjects } from '../hooks/useProjects.jsx';
 import { GetJWT, GetUserIdFromJWT } from '../API methods/UsersMethods.jsx';
 
 export const showJoinToProject = () => {

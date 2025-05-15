@@ -10,7 +10,7 @@ const { Text } = Typography;
 import ActivityTimer from './ActivityTimer.jsx';
 
 //Методы
-import { useActivities } from '../useActivities.jsx';
+import { useActivities } from '../hooks/useActivities.jsx';
 
 function ActivityCard({
     token,
@@ -128,29 +128,17 @@ function ActivityCard({
         {
             key: 'edit',
             icon: <EditOutlined />,
-            label: (
-                <a >
-                    Изменить
-                </a>
-            ),
+            label: 'Изменить',
         },
         {
             key: 'getStats',
             icon: <PieChartOutlined />,
-            label: (
-                <a >
-                    Получить статистику
-                </a>
-            ),
+            label: 'Получить статистику',
         },
         {
             key: 'checkHistory',
             icon: <ClockCircleOutlined />,
-            label: (
-                <a >
-                    Посмотреть в истории
-                </a>
-            ),
+            label: 'Посмотреть в истории',
         },
         {
             key: 'addToProject',
@@ -182,11 +170,7 @@ function ActivityCard({
         {
             key: 'toArchive',
             icon: <FolderOutlined />,
-            label: (
-                <a >
-                    В архив
-                </a>
-            ),
+            label: 'В архив',
         },
         {
             key: 'deleteFromProjectDivider',
@@ -196,11 +180,7 @@ function ActivityCard({
             key: 'deleteFromProject',
             icon: <CloseOutlined />,
             danger: true,
-            label: (
-                <a >
-                    Убрать из проекта
-                </a>
-            ),
+            label: 'Убрать из проекта',
         },
         {
             key: 'deleteDivider',
@@ -210,11 +190,7 @@ function ActivityCard({
             key: 'delete',
             icon: <DeleteOutlined />,
             danger: true,
-            label: (
-                <a >
-                    Удалить
-                </a>
-            ),
+            label: 'Удалить',
         },
     ];
 

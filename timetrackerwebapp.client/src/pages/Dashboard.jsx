@@ -4,12 +4,13 @@ import Icon, { HomeOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate, useParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { subscribe } from '../event.jsx';
+// import { useDeviceDetect } from '../hooks/useDeviceDetect';
 
 //Методы
 import { GetJWT, GetUserIdFromJWT, getUserInfo } from '../API methods/UsersMethods.jsx';
 import { getProjectDetails } from '../API methods/ProjectsMethods.jsx';
-import { useUsers } from '../useUsers.jsx';
+import { useUsers } from '../hooks/useUsers.jsx';
+import { useIsPortrait } from '../hooks/useIsPortain.jsx';
 
 //Компоненты
 import MyMenu from '../components/Menu.jsx';
@@ -38,9 +39,9 @@ const HeaderStyle = {
 // Функция для преобразования ключа вкладки в читаемое название
 const getTabName = (tabKey) => {
     switch (tabKey) {
-        case 'activities': return 'Активности';
+        case 'activities': return 'Ваши активности';
         case 'statistics': return 'Статистика';
-        case 'history': return 'История';
+        case 'history': return 'История отслеживания';
         case 'projects': return 'Проекты';
         default: return 'Активности';
     }
@@ -48,6 +49,7 @@ const getTabName = (tabKey) => {
 
 function Dashboard() {
     const navigate = useNavigate();
+    const isPortrait = useIsPortrait();
     const { activeTab = 'activities', projectId } = useParams(); // Получаем активную вкладку из URL
     const { user, loadData } = useUsers();
 
@@ -132,7 +134,7 @@ function Dashboard() {
         }
     ];
     // Если открыт проект, добавляем его в breadcrumbs
-    if (projectId) {
+    if (projectId && !isPortrait) {
         breadcrumbsItems.push({
             title: projectName || `Проект ${projectId}`
         });
@@ -141,7 +143,7 @@ function Dashboard() {
     return (
         <div>
             <Layout>
-                <MyMenu onMenuClick={handleMenuClick} />
+                {!isPortrait && (<MyMenu onMenuClick={handleMenuClick} />)}
                 <Layout>
                     <Header style={HeaderStyle}>
                         <Flex justify='space-between' align='center' style={{width: '100%'}}>
@@ -149,10 +151,14 @@ function Dashboard() {
                             <UserInfo userId={user.id} userName={user.name}/>
                         </Flex>
                     </Header>
-                    <Content style={{ padding: '24px', paddingTop: '0px' }} >
+                    <Content style={{ 
+                        padding: isPortrait ? '0px 16px 0px 16px' : '0px 24px 0px 24px', 
+                        height: '100vh',
+                        boxSizing: 'border-box',
+                        overflowY: 'auto'}} >
                         {renderContent()}
                     </Content>
-                    <MyMenuMobile/>
+                    {isPortrait && (<MyMenuMobile onMenuClick={handleMenuClick}/>)}
                 </Layout>
             </Layout>
         </div>

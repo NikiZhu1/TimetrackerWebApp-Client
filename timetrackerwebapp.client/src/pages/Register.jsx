@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '@ant-design/v5-patch-for-react-19';
 
 //Методы
-import { useUsers } from '../useUsers.jsx';
+import { useUsers } from '../hooks/useUsers.jsx';
 
 //Компоненты
 import AuthForm from '../components/AuthForm.jsx';

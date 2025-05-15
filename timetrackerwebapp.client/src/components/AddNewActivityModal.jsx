@@ -7,8 +7,8 @@ import '@ant-design/v5-patch-for-react-19';
 const { confirm } = Modal;
 
 //Методы
-import { useActivities } from '../useActivities.jsx';
-import { useProjects } from '../useProjects.jsx';
+import { useActivities } from '../hooks/useActivities.jsx';
+import { useProjects } from '../hooks/useProjects.jsx';
 import { GetJWT, GetUserIdFromJWT } from '../API methods/UsersMethods.jsx';
 
 export const showAddNewActivity = (addToProject = false, projectId = null, projectName = null) => {
@@ -111,7 +111,7 @@ function AddNewActivityForm({
                     icon={<PlusOutlined />}
                     loading={loading}
                     onClick={() => onFinish}>
-                    Добавить
+                    Создать
                 </Button>
             </Flex>
             
