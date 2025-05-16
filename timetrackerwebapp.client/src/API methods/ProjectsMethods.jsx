@@ -1,8 +1,8 @@
-import axios from 'axios';
+import apiClient from './.ApiClient';
 import { getActivity } from './ActivitiesMethods';
 import { getUserInfo } from './UsersMethods';
 
-// 1 получаем инфу в каких проектах состоит пользователь http://localhost:8080/api/Users/{userID}/projects
+// 1 получаем инфу в каких проектах состоит пользователь /Users/{userID}/projects
 // [
 //     {
 //       "id": 1,
@@ -23,7 +23,7 @@ import { getUserInfo } from './UsersMethods';
 //       "isCreator": true
 //     }
 // ]
-// 2 получаем циклом инфу про проект http://localhost:8080/api/Projects/{projectId}
+// 2 получаем циклом инфу про проект /Projects/{projectId}
 // {
 //     "projectId": 2,
 //     "projectName": "test",
@@ -31,7 +31,7 @@ import { getUserInfo } from './UsersMethods';
 //     "creationDate": "2025-04-11 00:00:00",
 //     "finishDate": null
 // }
-// 3 получаем id участников в проекте http://localhost:8080/api/Projects/{projectId}/users
+// 3 получаем id участников в проекте /Projects/{projectId}/users
 // [
 //     {
 //       "id": 2,
@@ -46,13 +46,13 @@ import { getUserInfo } from './UsersMethods';
 //       "isCreator": false
 //     }
 // ]
-// 3.1 получаем циклом участников http://localhost:8080/api/Users/{userId}
+// 3.1 получаем циклом участников /Users/{userId}
 // {
 //     "id": 1,
 //     "chatId": 0,
 //     "name": "nikizhu"
 // }
-// 4 получаем id акивностей в проекте http://localhost:8080/api/Projects/{projectId}/activities
+// 4 получаем id акивностей в проекте /Projects/{projectId}/activities
 // [
 //     {
 //       "id": 1,
@@ -60,7 +60,7 @@ import { getUserInfo } from './UsersMethods';
 //       "projectId": 2
 //     }
 // ]
-// 4.1 получаем циклом активности http://localhost:8080/api/Activities/{activityId}
+// 4.1 получаем циклом активности /Activities/{activityId}
 // {
 //     "id": 1,
 //     "name": "Работа",
@@ -113,7 +113,7 @@ export const getUserProjectInfo = async (token, userId) => {
     if (!token || !userId) return [];
 
     try {
-        const response = await axios.get(`http://localhost:8080/api/Users/${userId}/projects`, {
+        const response = await apiClient.get(`/Users/${userId}/projects`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -130,7 +130,7 @@ export const getUserProjectInfo = async (token, userId) => {
 /** Получение деталей проекта */ 
 export const getProjectDetails = async (token, projectId) => {
     try {
-        const response = await axios.get(`http://localhost:8080/api/Projects/${projectId}`, 
+        const response = await apiClient.get(`/Projects/${projectId}`, 
             { 
                 headers: { Authorization: `Bearer ${token}` } 
             }
@@ -148,7 +148,7 @@ export const getProjectDetails = async (token, projectId) => {
 export const getProjectMembers = async (token, projectId) => {
     try {
         // 1. Получаем связи пользователей с проектом
-        const response = await axios.get(`http://localhost:8080/api/Projects/${projectId}/users`,
+        const response = await apiClient.get(`/Projects/${projectId}/users`,
             { 
                 headers: { Authorization: `Bearer ${token}` } 
             }
@@ -178,7 +178,7 @@ export const getProjectMembers = async (token, projectId) => {
 export const getProjectActivities = async (token, projectId) => {
     try {
         // 1. Получаем связи активностей с проектом
-        const response = await axios.get(`http://localhost:8080/api/Projects/${projectId}/activities`,
+        const response = await apiClient.get(`/Projects/${projectId}/activities`,
         { 
             headers: { Authorization: `Bearer ${token}` },
             validateStatus: status => (status >= 200 && status < 300) || status === 404
@@ -207,7 +207,7 @@ export const getProjectActivities = async (token, projectId) => {
 /** Создание проекта */
 export const CreateProject = async (token, name) => {
     try {
-        const response = await axios.post('http://localhost:8080/api/Projects',
+        const response = await apiClient.post('/Projects',
             {
                 projectName: name
             },
@@ -227,7 +227,7 @@ export const CreateProject = async (token, name) => {
 /** Добавить пользователя в проект */
 export const AddUserToProject = async (token, projectKey) => {
     try {
-        const response = await axios.post('http://localhost:8080/api/Users/project',
+        const response = await apiClient.post('/Users/project',
             {
                 accessKey: projectKey
             },
@@ -247,7 +247,7 @@ export const AddUserToProject = async (token, projectKey) => {
 /** Добавить активность в проект */
 export const AddActivityToProject = async (token, projectId, activityId) => {
     try {
-        const response = await axios.post('http://localhost:8080/api/Projects/activity',
+        const response = await apiClient.post('/Projects/activity',
             {
                 activityId: activityId,
                 projectId: projectId
@@ -268,7 +268,7 @@ export const AddActivityToProject = async (token, projectId, activityId) => {
 /** Удалить пользователя из проекта */
 export const DeleteUserFromProject = async (token, projectId, userId) => {
     try {
-        const response = await axios.delete(`http://localhost:8080/api/Projects/${projectId}/user/${userId}`,
+        const response = await apiClient.delete(`/Projects/${projectId}/user/${userId}`,
             {
                 headers: { Authorization: `Bearer ${token}` }
             }
@@ -285,7 +285,7 @@ export const DeleteUserFromProject = async (token, projectId, userId) => {
 /** Общая функция для изменения архивации проекта */
 export const ManageArchiveProject = async (token, projectId, isArchived) => {
     try {
-        const response = await axios.patch(`http://localhost:8080/api/Projects/${projectId}`,
+        const response = await apiClient.patch(`/Projects/${projectId}`,
             {
                 closeProject: isArchived
             },
@@ -304,7 +304,7 @@ export const ManageArchiveProject = async (token, projectId, isArchived) => {
 /** Изменения названия проекта */
 export const UpdateProjectName = async (token, projectId, newProjectName) => {
     try {
-        const response = await axios.patch(`http://localhost:8080/api/Projects/${projectId}`,
+        const response = await apiClient.patch(`/Projects/${projectId}`,
             {
                 projectName: newProjectName
             },
@@ -323,7 +323,7 @@ export const UpdateProjectName = async (token, projectId, newProjectName) => {
 /** Удаление проекта */
 export const DeleteProject = async (token, projectId) => {
     try {
-        const response = await axios.delete(`http://localhost:8080/api/Projects/${projectId}`,
+        const response = await apiClient.delete(`/Projects/${projectId}`,
             {
                 headers: { Authorization: `Bearer ${token}` }
             }

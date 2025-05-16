@@ -1,9 +1,9 @@
-﻿import axios from 'axios';
+﻿import apiClient from './.ApiClient';
 
 // Изменение времени периода активности
 export const EditActivityPeriod = async (token, activityPeriodId, newStartTime, newStopTime) => {
     try {
-        const response = await axios.patch(`http://localhost:8080/api/ActivityPeriods/${activityPeriodId}`,
+        const response = await apiClient.patch(`/ActivityPeriods/${activityPeriodId}`,
             {
                 newStartTime: newStartTime,
                 newStopTime: newStopTime
@@ -23,7 +23,7 @@ export const EditActivityPeriod = async (token, activityPeriodId, newStartTime, 
 // Удаление периода активности
 export const DeleteActivityPeriod = async (token, activityPeriodId) => {
     try {
-        const response = await axios.delete(`http://localhost:8080/api/ActivityPeriods/${activityPeriodId}`,
+        const response = await apiClient.delete(`/ActivityPeriods/${activityPeriodId}`,
             {
                 headers: { Authorization: `Bearer ${token}` }
             }

@@ -1,8 +1,6 @@
-﻿import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+﻿import apiClient from './.ApiClient';
 import { jwtDecode } from 'jwt-decode';
 import Cookies from 'js-cookie';
-import { message, Avatar, Tooltip } from 'antd';
 
 /** Функция для отправки пост-запроса 
  * @param {any} values Логин, пароль для аунтефикации
@@ -10,11 +8,11 @@ import { message, Avatar, Tooltip } from 'antd';
  */
 export const AuthenticateUser = async (values, isRegistration) => {
     try {
-        const url = 'http://localhost:8080/api/Auth/login';
+        const url = '/Auth/login';
         if (isRegistration) 
-            url = 'http://localhost:8080/api/Users';
+            url = '/Users';
 
-        const response = await axios.post(url, {
+        const response = await apiClient.post(url, {
             name: values.username,
             password: values.password
         });
@@ -81,7 +79,7 @@ export const GetUserIdFromJWT = (token) => {
  */
 export const getUserInfo = async (token, userId) => {
     try {
-        const response = await axios.get(`http://localhost:8080/api/Users/${userId}`,
+        const response = await apiClient.get(`/Users/${userId}`,
             { 
                 headers: { Authorization: `Bearer ${token}` } 
             }

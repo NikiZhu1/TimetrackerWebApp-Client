@@ -1,11 +1,11 @@
-﻿import axios from 'axios';
+﻿import apiClient from './.ApiClient';
 
 // Получение активностей
 export const getAllActivities = async (token, userId) => {
     if (!token || !userId) return [];
 
     try {
-        const response = await axios.get(`http://localhost:8080/api/Users/${userId}/activities?onlyArchived=false&onlyInProcces=false&onlyActive=false`, {
+        const response = await apiClient.get(`/Users/${userId}/activities?onlyArchived=false&onlyInProcces=false&onlyActive=false`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -36,7 +36,7 @@ export const getAllActivities = async (token, userId) => {
 export const getActivityProject = async (token, activityId) => {
     try {
         // Получаем список проектов, в которых есть эта активность
-        const projectResponse = await axios.get(`http://localhost:8080/api/Activities/${activityId}/projects`, {
+        const projectResponse = await apiClient.get(`/Activities/${activityId}/projects`, {
             headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -58,14 +58,14 @@ export const getActivityProject = async (token, activityId) => {
 export const getActivity = async (token, activityId) => {
     try {
         // Получаем саму активность
-        const response = await axios.get(`http://localhost:8080/api/Activities/${activityId}`, {
+        const response = await apiClient.get(`/Activities/${activityId}`, {
             headers: { Authorization: `Bearer ${token}` }
         });
 
         const activity = response.data;
 
         // Получаем список проектов, в которых есть эта активность
-        const projectResponse = await axios.get(`http://localhost:8080/api/Activities/${activityId}/projects`, {
+        const projectResponse = await apiClient.get(`/Activities/${activityId}/projects`, {
             headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -90,8 +90,8 @@ export const getActivityPeriods = async (token, activityId) => {
     if (!token || !activityId) return;
 
     try {
-        const response = await axios.get(
-            `http://localhost:8080/api/ActivityPeriods?activityId=${activityId}`,
+        const response = await apiClient.get(
+            `/ActivityPeriods?activityId=${activityId}`,
             {
                 headers: { Authorization: `Bearer ${token}` },
                 validateStatus: status => (status >= 200 && status < 300) || status === 404
@@ -157,8 +157,8 @@ export const getActivityStats = async (token, activityId, date1 = null, date2 = 
     if (!token || !activityId) return;
 
     try {
-        const response = await axios.get(
-            `http://localhost:8080/api/ActivityPeriods?activityId=${activityId}${date1 && (`&data1=${date1}`)}${date2 && (`&data2=${date2}`)}`,
+        const response = await apiClient.get(
+            `/ActivityPeriods?activityId=${activityId}${date1 && (`&data1=${date1}`)}${date2 && (`&data2=${date2}`)}`,
             {
                 headers: { Authorization: `Bearer ${token}` }
             }
@@ -179,7 +179,7 @@ export const getUserStats = async (token, userId, date1 = null, date2 = null) =>
 
     try {
         // Формируем базовый URL
-        let url = `http://localhost:8080/api/ActivityPeriods?userId=${userId}`;
+        let url = `/ActivityPeriods?userId=${userId}`;
         
         // Добавляем даты, если они указаны
         if (date1) {
@@ -189,7 +189,7 @@ export const getUserStats = async (token, userId, date1 = null, date2 = null) =>
             url += `&date2=${date2}`;
         }
 
-        const response = await axios.get(url, {
+        const response = await apiClient.get(url, {
                 headers: { Authorization: `Bearer ${token}` }}
         );
 
@@ -210,7 +210,7 @@ export const actCard_Click = (activityId) => {
 // Добавление активности
 export const AddActivity = async (token, userId, name) => {
     try {
-        const response = await axios.post('http://localhost:8080/api/Activities',
+        const response = await apiClient.post('/Activities',
             {
                 userId: userId,
                 activityName: name
@@ -230,7 +230,7 @@ export const AddActivity = async (token, userId, name) => {
 // Общая функция для управления трекером активности
 export const ManageTrackerActivity = async (token, activityId, isStarted) => {
     try {
-        const response = await axios.post('http://localhost:8080/api/ActivityPeriods',
+        const response = await apiClient.post('/ActivityPeriods',
             {
                 activityId: activityId,
                 isStarted: isStarted
@@ -251,7 +251,7 @@ export const ManageTrackerActivity = async (token, activityId, isStarted) => {
 // Общая функция для изменения архивации активности
 export const ManageArchiveActivity = async (token, activityId, isArchived) => {
     try {
-        const response = await axios.patch(`http://localhost:8080/api/Activities/${activityId}`,
+        const response = await apiClient.patch(`/Activities/${activityId}`,
             {
                 archived: isArchived
             },
@@ -270,7 +270,7 @@ export const ManageArchiveActivity = async (token, activityId, isArchived) => {
 // Изменение названия активности
 export const UpdateActivityName = async (token, activityId, newActivityName) => {
     try {
-        const response = await axios.patch(`http://localhost:8080/api/Activities/${activityId}`,
+        const response = await apiClient.patch(`/Activities/${activityId}`,
             {
                 newName: newActivityName
             },
@@ -289,7 +289,7 @@ export const UpdateActivityName = async (token, activityId, newActivityName) => 
 // Удаление активности
 export const DeleteActivity = async (token, activityId) => {
     try {
-        const response = await axios.delete(`http://localhost:8080/api/Activities/${activityId}`,
+        const response = await apiClient.delete(`/Activities/${activityId}`,
             {
                 headers: { Authorization: `Bearer ${token}` }
             }
