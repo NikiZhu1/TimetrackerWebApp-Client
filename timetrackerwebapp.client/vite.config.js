@@ -47,12 +47,12 @@ export default defineConfig({
         fs: {
             strict: false,
         },
-        proxy: {
-            '/api': {
-                target: 'http://localhost:8080',
-                secure: false
-            }
-        },
+        // proxy: {
+        //     '/api': {
+        //         target: 'http://localhost:8080',
+        //         secure: false
+        //     }
+        // },
         port: 5173,
         https: false,
         // https: {

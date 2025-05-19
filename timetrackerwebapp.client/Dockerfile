@@ -10,6 +10,7 @@ COPY package.json package-lock.json ./
 RUN npm install
 
 COPY . .
+RUN echo "REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL" > .env
 RUN npm run build
 
 FROM nginx:stable-alpine
