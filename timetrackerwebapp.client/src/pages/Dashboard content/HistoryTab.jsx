@@ -120,6 +120,13 @@ function HistoryTab() {
         setLoading(true);
         const token = GetJWT();
         try {
+
+            // Проверка, что время старта не больше времени финиша
+            if (editStopTime && editStartTime > editStopTime) {
+                message.error('Время старта не может быть больше времени финиша');
+                return;
+            }
+
             await editActivityPeriod(
                 token,
                 editingPeriod.key, // activityPeriodId
@@ -223,21 +230,6 @@ function HistoryTab() {
                         }} />}>
                     </Button>
                 </Dropdown>
-            // <Flex gap="small">
-                //     <Button 
-                //         type="link" 
-                //         danger
-                //         onClick={() => handleDelete(record.key)}
-                //     >
-                //         Удалить
-                //     </Button>
-                //     <Button 
-                //         type="link" 
-                //         onClick={() => handleEditStart(record)}
-                //     >
-                //         Редактировать
-                //     </Button>
-                // </Flex>
             ),
         },
     ];
@@ -290,8 +282,8 @@ function HistoryTab() {
                                 <DatePicker
                                     showTime
                                     format="DD.MM.YYYY HH:mm:ss"
-                                    value={editStopTime}
-                                    onChange={setEditStopTime}
+                                    value={editStartTime}
+                                    onChange={setEditStartTime}
                                     style={{ width: '100%' }}
                                 />
                             </ConfigProvider>

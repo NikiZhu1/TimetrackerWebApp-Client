@@ -1,9 +1,10 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format, parse } from 'date-fns';
 import { Button, message, Dropdown, Flex, Card, Modal, Typography, Tag, Input, Tooltip } from 'antd';
 import Icon, { EditOutlined, EllipsisOutlined, LinkOutlined, CalendarOutlined, CarryOutOutlined, CheckCircleFilled, ExclamationCircleFilled, UserDeleteOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, FolderOpenOutlined, TeamOutlined, DeleteOutlined, PauseCircleFilled, FrownOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
+import 'dayjs/locale/ru'; 
+import dayjs from 'dayjs';
 
 const { confirm } = Modal;
 const { Text, Paragraph } = Typography;
@@ -60,9 +61,9 @@ function ProjectCard({
     const StatusIcon = currentConfig.icon;
 
     //Конвертируем даты в нормальный вид
-    dateCreate = format(parse(dateCreate, 'yyyy-MM-dd HH:mm:ss', new Date()), 'dd.MM.yyyy');
+    dateCreate = dayjs(dateCreate).format('DD.MM.YYYY');
     if (dateFinish !== null)
-        dateFinish = format(parse(dateFinish, 'yyyy-MM-dd HH:mm:ss', new Date()), 'dd.MM.yyyy');
+        dateFinish = dayjs(dateFinish).format('DD.MM.YYYY');
 
     //Нажатие пункта меню
     const handleMenuClick = async e => {

@@ -21,22 +21,6 @@ function AuthForm({
     loading 
 }) {
 
-    // const [loadings, setLoadings] = useState([]);
-    // const enterLoading = index => {
-    //     setLoadings(prevLoadings => {
-    //         const newLoadings = [...prevLoadings];
-    //         newLoadings[index] = true;
-    //         return newLoadings;
-    //     });
-    //     setTimeout(() => {
-    //         setLoadings(prevLoadings => {
-    //             const newLoadings = [...prevLoadings];
-    //             newLoadings[index] = false;
-    //             return newLoadings;
-    //         });
-    //     }, 3000);
-    // };
-
     return (
         <Form
             name="auth-form"
@@ -49,6 +33,7 @@ function AuthForm({
                 name="username"
                 rules={[{ required: true, message: 'Поле логина должно быть заполнено' }]}>
                 <Input
+                    size='large'
                     maxLength={50}
                     placeholder="Логин"
                     prefix={<UserOutlined />}
@@ -59,6 +44,7 @@ function AuthForm({
                 name="password"
                 rules={[{ required: true, message: 'Поле пароля должно быть заполнено' }]}>
                 <Input.Password
+                    size='large'
                     placeholder="Пароль"
                     iconRender={visible => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
                     prefix={<LockOutlined />}
@@ -66,7 +52,12 @@ function AuthForm({
             </Form.Item>
 
             <Form.Item>
-                <Button block type="primary" htmlType="submit" loading={loading}>
+                <Button 
+                    block 
+                    size='large'
+                    type="primary" 
+                    htmlType="submit" 
+                    loading={loading}>
                     {buttonText}
                 </Button>
             </Form.Item>

@@ -3,7 +3,6 @@ import { Button, message, DatePicker, Select, Flex, ConfigProvider } from 'antd'
 import { PlusOutlined, LinkOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import Cookies from 'js-cookie';
-import { subscribe } from '../../event.jsx';
 import locale from 'antd/locale/ru_RU';
 import 'dayjs/locale/ru'; 
 import dayjs from 'dayjs';

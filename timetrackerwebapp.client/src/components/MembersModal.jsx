@@ -2,7 +2,6 @@
 import { Button, message, Form, Input, Select, Modal, Flex, Typography, Tag, Divider } from 'antd';
 import Icon, { PlusOutlined, StarFilled, UserDeleteOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
-import { useNavigate, useParams } from 'react-router-dom';
 
 //Методы
 import { useProjects } from '../hooks/useProjects.jsx';

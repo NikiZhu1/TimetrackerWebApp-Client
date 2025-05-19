@@ -1,0 +1,14 @@
+version: '3.8'
+networks:
+  dev:
+
+services:
+  client:
+    build: 
+      context: ./timetrackerwebapp.client
+      dockerfile: Dockerfile
+    environment:
+      - REACT_APP_API_BASE_URL=http://crow.ommat.ru/api
+    restart: always
+    networks:
+      - dev

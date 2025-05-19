@@ -2,7 +2,8 @@
 import { Button, message, Collapse, ConfigProvider, Flex, Skeleton, Typography, Modal, Divider } from 'antd';
 import Icon, { AppstoreAddOutlined, AppstoreOutlined, CalendarOutlined, CarryOutOutlined, DeleteOutlined, EditOutlined, ExclamationCircleFilled, FolderOutlined, LinkOutlined, PlusOutlined, TeamOutlined, UserDeleteOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
-import { format, parse } from 'date-fns';
+import 'dayjs/locale/ru'; 
+import dayjs from 'dayjs';
 import { useNavigate, useParams } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { emit, subscribe } from '../../event.jsx';
@@ -321,7 +322,7 @@ function ProjectDetailsTab() {
             {access.isCreator ? 
             <Title
                 level={2}
-                style={{margin: '0px'}}
+                style={{margin: '0px', fontSize: '28px'}}
                 editable={{
                     onChange: (val) => {
                         setTempProjectName(val);
@@ -392,12 +393,12 @@ function ProjectDetailsTab() {
 
             {singleProject.creationDate && (<Flex align='flex-start' gap='10px'>
                 <CalendarOutlined style ={{fontSize: '18px', paddingTop: '2px'}}/>
-                <Text>Старт: {format(parse(singleProject.creationDate, 'yyyy-MM-dd HH:mm:ss', new Date()), 'dd.MM.yyyy')}</Text>
+                <Text>Старт: {dayjs(singleProject.creationDate).format('DD.MM.YYYY')} </Text>
             </Flex>)}
 
             {singleProject.finishDate && (<Flex align='flex-start' gap='10px'>
                 <CarryOutOutlined style ={{fontSize: '18px', paddingTop: '2px'}}/>
-                <Text>Финиш: {format(parse(singleProject.finishDate, 'yyyy-MM-dd HH:mm:ss', new Date()), 'dd.MM.yyyy')}</Text>
+                <Text>Финиш: {dayjs(singleProject.finishDate).format('DD.MM.YYYY')}</Text>
             </Flex>)}
 
         </Flex>

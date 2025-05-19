@@ -8,7 +8,7 @@ import Cookies from 'js-cookie';
  */
 export const AuthenticateUser = async (values, isRegistration) => {
     try {
-        const url = '/Auth/login';
+        let url = '/Auth/login';
         if (isRegistration) 
             url = '/Users';
 

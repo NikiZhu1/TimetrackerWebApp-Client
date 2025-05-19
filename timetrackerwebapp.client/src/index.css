@@ -1,8 +1,17 @@
-@import "tailwindcss";
-
 :root {
     font-family: Arial, "Helvetica Neue", sans-serif;
     line-height: 1.5;
     font-weight: 400;
 }
 
+body {
+    margin: 0;
+}
+
+p {
+    margin: 0;
+}
+
+.ant-typography-edit {
+    font-size: 28px;
+}

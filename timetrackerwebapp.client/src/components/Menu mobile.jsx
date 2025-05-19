@@ -3,7 +3,6 @@ import { Menu, message, ConfigProvider, Layout, Button, Flex } from 'antd';
 import Icon, { AppstoreAddOutlined, AppstoreOutlined, PieChartOutlined, TeamOutlined, ClockCircleOutlined, MenuOutlined, SettingOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import Cookies from 'js-cookie';
 
 const { Footer } = Layout;
 
