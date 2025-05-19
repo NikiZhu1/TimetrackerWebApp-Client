@@ -26,6 +26,6 @@ jobs:
         context: ./timetrackerwebapp.client
         file: ./timetrackerwebapp.client/Dockerfile
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/timetrackerwebapp-client:latest
+        tags: ghcr.io/nikizhu1/timetrackerwebapp-client:latest
         build-args: |
           REACT_APP_API_BASE_URL=https://crow.ommat.ru/api
