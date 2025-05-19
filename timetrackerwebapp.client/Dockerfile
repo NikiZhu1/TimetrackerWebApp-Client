@@ -2,6 +2,10 @@ FROM node:alpine as build
 
 WORKDIR /app
 
+# Объявляем аргумент сборки
+ARG REACT_APP_API_BASE_URL
+ENV REACT_APP_API_BASE_URL=$REACT_APP_API_BASE_URL
+
 COPY package.json package-lock.json ./
 RUN npm install
 
