@@ -6,9 +6,9 @@ services:
       context: ./timetrackerwebapp.client
       dockerfile: Dockerfile
       args:
-        - REACT_APP_API_BASE_URL=http://crow.ommat.ru/api
+        - VITE_APP_API_BASE_URL=http://crow.ommat.ru/api
     environment:
-      - REACT_APP_API_BASE_URL=http://crow.ommat.ru/api
+      - VITE_APP_API_BASE_URL=http://crow.ommat.ru/api
     restart: always
     ports:
       - '3000:80'
