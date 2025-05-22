@@ -1,5 +1,5 @@
 ﻿import React, { act, useEffect, useState } from 'react';
-import { Button, message, Dropdown, Flex, Card, Modal, Typography } from 'antd';
+import { Button, message, Dropdown, Flex, Card, Modal, Typography, Input } from 'antd';
 import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, PauseOutlined, FolderOpenOutlined, ExclamationCircleFilled, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, TeamOutlined, DeleteOutlined, CloseOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 
@@ -11,6 +11,7 @@ import ActivityTimer from './ActivityTimer.jsx';
 
 //Методы
 import { useActivities } from '../hooks/useActivities.jsx';
+import { useProjects } from '../hooks/useProjects.jsx';
 
 function ActivityCard({
     token,
@@ -18,6 +19,7 @@ function ActivityCard({
     title,
     isCreator,
     project,
+    dayStats,
     onProjectPage,
     cardOnClick,
     startTime,
@@ -25,7 +27,10 @@ function ActivityCard({
     status
 }) {
 
-    const { startActivity, stopActivity, archiveActivity, unarchiveActivity, deleteActivity } = useActivities();
+    const { startActivity, stopActivity, editActivityName, archiveActivity, unarchiveActivity, deleteActivity } = useActivities();
+    const { removeActivityFromProject } = useProjects();
+    const [isEditModalOpen, setEditModalOpen] = useState(false);
+    const [newTitle, setNewTitle] = useState(title);
 
     //Действие кнопки
     const handleAction = async () => {
@@ -68,7 +73,8 @@ function ActivityCard({
 
         switch (e.key) {
             case 'edit':
-                //
+                setNewTitle(title);
+                setEditModalOpen(true);
                 break;
             case 'getStats':
                 // 
@@ -78,6 +84,9 @@ function ActivityCard({
                 break;
             case 'createNewProject':
                 //
+                break;
+            case 'deleteFromProject':
+                await removeActivityFromProject(token, project.projectId, activityId);
                 break;
             case 'toArchive':
                 if (status === 3)
@@ -92,6 +101,24 @@ function ActivityCard({
                 break;
             default:
                 message.info(`Выбран пункт: ${e.key}`);
+        }
+    };
+
+    const handleEditTitle = async () => {
+        try {
+            console.log(newTitle, title);
+            // if (newTitle.ToString() === title.ToString()) {
+            //     Modal.destroyAll();
+            //     return;
+            // }
+            await editActivityName(token, activityId, newTitle);
+            message.success('Название успешно обновлено');
+            setEditModalOpen(false);
+        } catch (err) {
+            if(err.status === 400)
+                message.warning('У вас уже есть активность с этим названием');
+            else
+                message.error('Не удалось изменить название');
         }
     };
 
@@ -130,16 +157,16 @@ function ActivityCard({
             icon: <EditOutlined />,
             label: 'Изменить',
         },
-        {
-            key: 'getStats',
-            icon: <PieChartOutlined />,
-            label: 'Получить статистику',
-        },
-        {
-            key: 'checkHistory',
-            icon: <ClockCircleOutlined />,
-            label: 'Посмотреть в истории',
-        },
+        // {
+        //     key: 'getStats',
+        //     icon: <PieChartOutlined />,
+        //     label: 'Получить статистику',
+        // },
+        // {
+        //     key: 'checkHistory',
+        //     icon: <ClockCircleOutlined />,
+        //     label: 'Посмотреть в истории',
+        // },
         {
             key: 'addToProject',
             icon: <TeamOutlined />,
@@ -170,7 +197,7 @@ function ActivityCard({
         {
             key: 'toArchive',
             icon: <FolderOutlined />,
-            label: 'В архив',
+            label: 'Поместить в архив',
         },
         {
             key: 'deleteFromProjectDivider',
@@ -267,8 +294,11 @@ function ActivityCard({
                         {status === 2 && startTime && (
                             <p><ActivityTimer startTime={startTime} /></p>
                         )}
-                        {status === 1 && (
-                            <p>За сегодня: {}</p>
+                        {status === 1 && dayStats !== '0м 0с' && (
+                            <p>За сегодня: {dayStats}</p>
+                        )}
+                        {status === 1 && dayStats === '0м 0с' && (
+                            <p>За сегодня нет записей</p>
                         )}
                         {project && !onProjectPage && 
                         (<p style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', margin: 0}}>
@@ -278,6 +308,33 @@ function ActivityCard({
                     </>
                 }
             />
+
+            {/* Модальное окно редактирования */}
+            <Modal
+                title="Изменить название активности"
+                open={isEditModalOpen}
+                async onOk={handleEditTitle}
+                onCancel={() => setEditModalOpen(false)}
+                okText="Изменить"
+                cancelText="Отмена"
+                destroyOnHidden 
+            >
+                <Flex vertical gap="middle">
+                        <div>
+                            <p>Активность:</p>
+                            <p style={{fontSize: '16px', fontWeight: 'bold'}}>{title}</p>
+                        </div>
+                        <div>
+                            <p>Новое название:</p>
+                             <Input
+                                value={newTitle}
+                                onChange={(e) => setNewTitle(e.target.value)}
+                                placeholder="Новое название"
+                                maxLength={100}
+                            />
+                        </div>
+                    </Flex>
+            </Modal>
         </Card>
     );
 }

@@ -10,11 +10,11 @@ const { confirm } = Modal;
 import { useProjects } from '../hooks/useProjects.jsx';
 import { GetJWT, GetUserIdFromJWT } from '../API methods/UsersMethods.jsx';
 
-export const showJoinToProject = () => {
+export const showJoinToProject = (userProjects) => {
     confirm({
         title: `Присоединться к проекту`,
         icon: null,
-        content: <JoinToProjectForm/>,
+        content: <JoinToProjectForm userProjects={userProjects}/>,
         centered: true,
         closable: true,
         maskClosable: true,
@@ -22,14 +22,33 @@ export const showJoinToProject = () => {
     });
 };
 
-function JoinToProjectForm() {
+function JoinToProjectForm({userProjects}) {
 
-    const { loading, createProject, joinToProject } = useProjects();
+    const { loading, joinToProject } = useProjects();
     const [form] = Form.useForm(); // Добавляем хук формы
 
     // Присоединение к проекту
     const onFinish = async (values) => {
         try {
+            const alreadyJoin = userProjects.find(project => project.projectKey === values.projectKey);
+            console.log(alreadyJoin);
+            if (alreadyJoin && alreadyJoin.isCreator) {
+                // message.warning("Вы уже управляете этим проектом");
+                form.setFields([{
+                    name: 'projectKey',
+                    errors: ['Вы уже управляете этим проектом'],
+                }]);
+                return;
+            }
+            else if (alreadyJoin) {
+                // message.warning("Вы уже состоите в этом проекте");
+                form.setFields([{
+                    name: 'projectKey',
+                    errors: ['Вы уже состоите в этом проекте'],
+                }]);
+                return;
+            }
+
             const token = GetJWT();
             const userId = GetUserIdFromJWT(token);
 
@@ -49,7 +68,7 @@ function JoinToProjectForm() {
                 // Устанавливаем ошибку для конкретного поля
                 form.setFields([{
                     name: 'projectKey',
-                    errors: ['Код приглашения недействителен либо вы уже состоите в этом проекте'],
+                    errors: ['Код приглашения недействителен'],
                 }]);
             } else {
                 message.error('Не получилось присоединиться к проекту');

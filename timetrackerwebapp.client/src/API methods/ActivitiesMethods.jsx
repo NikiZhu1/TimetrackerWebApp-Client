@@ -1,4 +1,34 @@
 ﻿import apiClient from './.ApiClient';
+import 'dayjs/locale/ru'; 
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+dayjs.extend(duration);
+
+const formatTime = (totalSeconds) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+    
+    if (totalSeconds < 600) {
+      return `${minutes}м ${seconds}с`;
+    }
+    return `${hours && (`${hours}ч`)} ${minutes}м ${seconds}с`;
+  };
+
+function sumTotalTime(stats) {
+    const totalSeconds = stats.reduce((acc, item) => {
+        const [h, m, s] = item.totalTime.split(':');
+        const [sec, ms = 0] = s.split('.');
+        const dur = dayjs.duration({
+            hours: +h,
+            minutes: +m,
+            seconds: +sec
+        });
+        return acc + dur.asSeconds();
+    }, 0);
+
+    return formatTime(totalSeconds);
+}
 
 // Получение активностей
 export const getAllActivities = async (token, userId) => {
@@ -12,14 +42,23 @@ export const getAllActivities = async (token, userId) => {
         });
 
         const activities = response.data;
+        const today = dayjs().format('YYYY-MM-DD')
 
         // Получаем список projectId для каждой активности
         const activitiesWithProject = await Promise.all(
-            activities.map(async (activity) => {
-                const projectData = await getActivityProject(token, activity.id);
-                const projectId = projectData.length > 0 ? projectData[0].projectId : null;
-                return { ...activity, projectId };
-            })
+        activities.map(async (activity) => {
+            const [projectData, stats] = await Promise.all([
+            getActivityProject(token, activity.id),
+            getActivityStats(token, activity.id, today, today)
+            ]);
+
+            console.log(`Stats for activity ${activity.id}:`, stats);
+
+            const projectId = projectData.length > 0 ? projectData[0].projectId : null;
+            const dayStats = sumTotalTime(stats);
+
+            return { ...activity, projectId, dayStats };
+        })
         );
 
         // Сортируем по ID (если нужно)
@@ -146,26 +185,29 @@ export const getAllActivityPeriods = async (token, activities) => {
     }
 };
 
-// Форматирование времени
-export const formatActivityTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-};
-
-// Плдучение статистки активности
+// Получение статистки активности
 export const getActivityStats = async (token, activityId, date1 = null, date2 = null) => {
     if (!token || !activityId) return;
 
     try {
-        const response = await apiClient.get(
-            `/ActivityPeriods?activityId=${activityId}${date1 && (`&data1=${date1}`)}${date2 && (`&data2=${date2}`)}`,
+        // Формируем базовый URL
+        let url = `/ActivityPeriods?activityId=${activityId}`;
+        
+        // Добавляем даты, если они указаны
+        if (date1) {
+            url += `&data1=${date1}`;
+        }
+        if (date2) {
+            url += `&data2=${date2}`;
+        }
+
+        const response = await apiClient.get(url,
             {
                 headers: { Authorization: `Bearer ${token}` }
             }
         );
 
-        const periods = response.data?.ActivityPeriods || [];
-        return periods;
+        return response.data;
 
     } catch (error) {
         console.error(`Ошибка при получении статистики у activityId ${activityId}:`, error);
@@ -240,7 +282,6 @@ export const ManageTrackerActivity = async (token, activityId, isStarted) => {
             }
         );
 
-        //emit('activityChanged'); //Обновление данных
         return response.data;
     } catch (error) {
         console.error(`Ошибка при ${isStarted ? 'старте' : 'остановке'} активности:`, error);

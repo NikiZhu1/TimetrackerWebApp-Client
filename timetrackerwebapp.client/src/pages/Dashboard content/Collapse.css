@@ -2,7 +2,7 @@
     padding-block: 0px !important;
 }
 
-:where(.css-dev-only-do-not-override-1dfb39e).ant-collapse>.ant-collapse-item >.ant-collapse-header {
+.ant-collapse-header {
     align-items: baseline;
     font-size: 18px;
 }

@@ -78,7 +78,7 @@ function ActivitiesTab() {
                     project={baseInfo.find(project => project.projectId === activity.projectId)}
                     isCreator={true}
                     onProjectPage={false}
-                    //dayStats={formatActivityTime(activity.activeFrom)}
+                    dayStats={activity.dayStats}
                     color='rgb(204, 194, 255)'
                     startTime={getActivityStartTime(activity.id)}
                     status={activity.statusId}

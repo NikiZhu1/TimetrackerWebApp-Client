@@ -277,7 +277,23 @@ export const DeleteUserFromProject = async (token, projectId, userId) => {
         //Возвращаем связь пользователь-проект
         return response.data;
     } catch (error) {
-        console.error(`Ошибка при присоединению к проекту:`, error);
+        console.error(`Ошибка при удалении пользователя из проекта:`, error);
+        throw error;
+    }
+}
+
+/** Удалить активность из проекта */
+export const DeleteActivityFromProject = async (token, projectId, activityId) => {
+    try {
+        const response = await apiClient.delete(`/Projects/${projectId}/activity/${activityId}`,
+            {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error(`Ошибка при удалении активности из проекта`, error);
         throw error;
     }
 }

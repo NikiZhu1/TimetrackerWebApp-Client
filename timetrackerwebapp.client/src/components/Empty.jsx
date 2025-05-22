@@ -1,26 +1,19 @@
 ﻿import React, { act, useEffect, useState } from 'react';
-import { Button, message, Typography, Flex, Image, Modal } from 'antd';
+import { Button, message, Typography, Flex, Image } from 'antd';
 import Icon, { EditOutlined, EllipsisOutlined, CaretRightOutlined, PauseOutlined, FolderOpenOutlined, ExclamationCircleFilled, PlusOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, TeamOutlined, DeleteOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
-
-const { confirm } = Modal;
-
-//Компоненты
-import { showAddNewActivity } from './AddNewActivityModal.jsx';
-
-//Методы
-import { useActivities } from '../hooks/useActivities.jsx';
 
 function Empty({
     hasActivities = false,
     textZeroActivities,
     textWhenAllActivityIsBusy,
     showButton = true,
-    onClickAction
+    onClickAction,
+    buttonText = 'Создать активность',
+    showButton2 = false,
+    onClickAction2,
+    buttonText2
 }) {
-
-    const { startActivity, stopActivity, addActivity, countStatus1, countStatus2, countStatus3 } = useActivities();
-
     return (
         <Flex vertical align='center' gap='12px'
             style={{
@@ -40,7 +33,10 @@ function Empty({
                 }
             </Typography.Text>
 
-            {showButton && (<Button type="primary" onClick={() => onClickAction()}>Создать активность</Button>)}
+            <Flex gap='8px'>
+                {showButton && (<Button type="primary" onClick={() => onClickAction()}>{buttonText}</Button>)}
+                {showButton2 && (<Button color="default" style={{background: 'transparent'}} variant="dashed" onClick={() => onClickAction2()}>{buttonText2}</Button>)}
+            </Flex>
         </Flex>
     );
 }

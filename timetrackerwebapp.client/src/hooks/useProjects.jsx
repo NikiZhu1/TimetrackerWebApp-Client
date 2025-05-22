@@ -172,6 +172,21 @@ export const useProjects = () => {
         }
     };
 
+    const removeActivityFromProject = async (token, projectId, activityId) => {
+        setLoading(true);
+        setError(null);
+        try {
+            await api.DeleteActivityFromProject(token, projectId, activityId);
+            emit('activityChanged');
+            console.log('Удаление активности ', activityId, ' из проекта ', projectId);
+        } catch (err) {
+            setError(err);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }
+
     //Архивация проекта
     const archiveProject = async (token, projectId) => {
         try {
@@ -245,6 +260,7 @@ export const useProjects = () => {
         error,
         loadUserProjectsData,
         checkUserInProject,
+        removeActivityFromProject,
         getSingleProjectInfo,
         getProjectsBaseInfo,
         createProject,

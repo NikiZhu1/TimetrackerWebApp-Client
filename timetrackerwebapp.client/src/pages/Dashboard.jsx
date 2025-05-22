@@ -41,7 +41,7 @@ const getTabName = (tabKey) => {
     switch (tabKey) {
         case 'activities': return 'Ваши активности';
         case 'statistics': return 'Статистика';
-        case 'history': return 'История отслеживания';
+        case 'history': return 'История';
         case 'projects': return 'Проекты';
         default: return 'Активности';
     }

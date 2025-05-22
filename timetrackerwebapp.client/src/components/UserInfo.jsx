@@ -1,11 +1,9 @@
 ﻿import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, message, Dropdown, Flex, Modal, Typography, Avatar, Tooltip } from 'antd';
+import { Button, message, Dropdown, Flex, Modal, Space, Input, Tooltip } from 'antd';
 import Icon, { UserOutlined, QuestionCircleOutlined, LinkOutlined, CalendarOutlined, CarryOutOutlined, CheckCircleFilled, ExclamationCircleFilled, UserDeleteOutlined, PieChartOutlined, ClockCircleOutlined, FolderOutlined, FolderOpenOutlined, TeamOutlined, DeleteOutlined, PauseCircleFilled, FrownOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import Cookies from 'js-cookie';
-
-const { confirm } = Modal;
 
 //Методы
 import { useUsers } from '../hooks/useUsers.jsx';
@@ -15,8 +13,12 @@ function UserInfo( {
     userName
 }) {
 
-    const { UserAvatar } = useUsers();
+    const { UserAvatar, changeUsername } = useUsers();
     const navigate = useNavigate();
+
+    const [isEditModalOpen, setEditModalOpen] = useState(false);
+    const [newUsername, setNewUsername] = useState(userName);
+    const [newPasword, setNewPassword] = useState('');
 
     //Тест своих иконок
     const LogoutSvg = () => (
@@ -38,18 +40,9 @@ function UserInfo( {
         console.log('Клик меню карточки', e);
 
         switch (e.key) {
-            case 'edit':
-                //
-                break;
-            case 'getStats':
-                // 
-                break;
-            case 'checkHistory':
-                //
-                break;
-            case 'toArchive':
-                await archiveProject(token, projectId);
-                message.success(`${title}: проект закрыт`)
+            case 'profile':
+                setNewUsername(userName);
+                setEditModalOpen(true);
                 break;
             case 'logout':
                 Cookies.remove('token'); // Удаляем токен
@@ -66,20 +59,15 @@ function UserInfo( {
         {
             key: 'profile',
             icon: <UserOutlined />,
-            label: (
-                <a >
-                    Профиль
-                </a>
-            ),
+            label: 'Профиль',
         },
         {
             key: 'qa',
             icon: <QuestionCircleOutlined />,
-            label: (
-                <a >
-                    Справка
-                </a>
-            ),
+            label: 
+            <a target="_blank" rel="noopener noreferrer" href="https://telegra.ph/Lovec-vremeni-Veb-prilozhenie--Spravka-05-22">
+                Справка
+            </a>,
         },
         {
             type: 'divider',
@@ -88,15 +76,30 @@ function UserInfo( {
             key: 'logout',
             icon: <LogOutIcon />,
             danger: true,
-            label: (
-                <a>
-                    Выйти
-                </a>
-            ),
+            label: 'Выйти',
         },
     ];
 
+    const handleChangeUsername = async () => {
+        try {
+            if (newUsername === userName) {
+                message.success("Это уже ваше имя");
+                return;
+            }   
+            await changeUsername(userId, newUsername);
+            message.success(`Имя изменено @${newUsername}`);
+        } catch (error) {
+            console.log(error);
+            if (error.status === 400)
+                message.warning('Это имя пользователя уже занято')
+            else
+                message.error('Не получилось поменять имя')
+        }
+
+    }
+
     return (
+        <div>
         <Dropdown
             menu={{
                 items: dropMenuItems,
@@ -111,6 +114,60 @@ function UserInfo( {
                 </Flex>
             </Button>
         </Dropdown>
+
+        {/* Модальное окно редактирования */}
+        <Modal
+            title="Профиль"
+            open={isEditModalOpen}
+            // onOk={handleEditSave}
+            onCancel={() => setEditModalOpen(false)}
+            okText="Закрыть"
+            width={400}
+            footer={[
+            // <Button key="submit" type="default" onClick={() => setEditModalOpen(false)}>
+            //     Закрыть
+            // </Button>
+            ]}
+        >
+            <Flex vertical gap="middle" >
+                <Flex justify='center'>
+                    <UserAvatar name={userName} id={userId} size={64} fontSize={26}/>
+                </Flex>
+                <div style={{width: '100%'}}>
+                    <p>Ваше уникальное имя пользователя:</p>
+                    <Space.Compact style={{ width: '100%' }}>
+                        <Input
+                            addonBefore="@"
+                            value={newUsername} 
+                            maxLength={50}
+                            onChange={(e) => setNewUsername(e.target.value)}/>
+                        <Button 
+                            type="primary" 
+                            disabled={newUsername?.length <= 3}
+                            onClick={() => handleChangeUsername()}>
+                                Изменить
+                        </Button>
+                    </Space.Compact>
+                    {/* {(<p style={{color: 'red'}}>Это имя пользователя уже занято</p>)} */}
+                </div>
+                {/* <div>
+                    <p>Пароль:</p>
+                    <Space.Compact style={{ width: '100%' }}>
+                        <Input
+                            placeholder='Новый пароль'
+                            value={newPasword}
+                            maxLength={50}
+                            onChange={(e) => setNewPassword(e.target.value)}/>
+                        <Button 
+                            type="primary" 
+                            disabled={newUsername?.length <= 3}>
+                                Изменить
+                        </Button>
+                    </Space.Compact>
+                </div> */}
+            </Flex>
+        </Modal>
+        </div>
     );
 }
 

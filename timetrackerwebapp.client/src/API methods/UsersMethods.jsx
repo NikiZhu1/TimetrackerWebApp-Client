@@ -90,3 +90,21 @@ export const getUserInfo = async (token, userId) => {
         console.error(`Ошибка при получении информациии пользователя #${userId}`, error);
     }
 };
+
+/** Изменить имя пользователя */
+export const changeUsername = async (token, userId, newName) => {
+    try {
+        const responce = await apiClient.patch(`/Users/${userId}`,
+            {
+                userName: newName
+            },
+            { 
+                headers: { Authorization: `Bearer ${token}` } 
+            }
+        );
+        return responce.data;
+    } catch (error) {
+        console.error(`Ошибка при обновлении имени пользователя #${userId}`, error);
+        throw error;
+    }
+}

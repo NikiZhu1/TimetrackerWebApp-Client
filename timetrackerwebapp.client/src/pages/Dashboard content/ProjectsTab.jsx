@@ -129,7 +129,7 @@ function ProjectsTab() {
                         icon={<LinkOutlined />}
                         onClick={(e) => {
                             e.stopPropagation();
-                            showJoinToProject();
+                            showJoinToProject(projects);
                         }}
                         style={{background: 'transparent'}}>
                         Присоединиться
@@ -147,7 +147,7 @@ function ProjectsTab() {
             </div>,
         },
         {
-            key: 'collapse3',
+            key: 'collapseArchiveProjects',
             label: 'Завершённые',
             children:
                 <Flex wrap gap='16px'>
@@ -167,11 +167,18 @@ function ProjectsTab() {
                         },
                     },
                 }}>
-                <Collapse
+                {projects?.length === 0 && !loading ?
+                (<Empty 
+                    textZeroActivities='Кажется у вас нет ни одного проекта. Вы можете создать свой проект, чтобы управлять несколькими активностями. Или же присоединиться к уже существующему проекту по пригласительному коду.'
+                    showButton buttonText='Создать проект' onClickAction={() => showAddNewProject()}
+                    showButton2 buttonText2='Присоединиться' onClickAction2={() => showJoinToProject(projects)}/>)
+                : (<Collapse
                     defaultActiveKey={['collapseMyProjects', 'collapsePartisipatingProjects']} //Открытая вкладка по умолчанию
-                    ghost items={items}
+                    ghost items={items.filter(item => 
+                    !(item.key === 'collapseArchiveProjects' && 
+                        projects && projects.filter(project => project.finishDate !== null).length === 0))}
                     collapsible='icon'>
-                </Collapse>
+                </Collapse>)}
             </ConfigProvider>
         </>
     );

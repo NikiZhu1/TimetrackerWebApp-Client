@@ -44,7 +44,6 @@ export const useActivities = () => {
             // 2. Затем загружаем периоды для полученных активностей
             const periodsData = await api.getAllActivityPeriods(token, activitiesData);
             setPeriods(periodsData);
-
             
             return activitiesData;
         } catch (err) {
@@ -74,12 +73,19 @@ export const useActivities = () => {
         console.log('Выбрана активность с ID:', activityId);
     };
 
-    // Получение одной активности из массива полученных
-    const getActivity = (activityId) => {
-        if (!activities || !Array.isArray(activities))
-            return null;
-        return activities.find(activity => activity.id === activityId) || null;
-    };
+    // Получение статистики активности
+    const getActivityStats = async (token, activityId, date1 = null, date2 = null) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await api.getActivityStats(token, activityId, date1, date2)
+            return response;
+        } catch (err) {
+            setError(err);
+        } finally {
+            setLoading(false);
+        }
+    }
 
     // Получение статистики всех активностей пользователя
     const getUserStats = async (token, userId, date1 = null, date2 = null) => {
@@ -111,6 +117,23 @@ export const useActivities = () => {
             setLoading(false);
         }
     };
+
+    // Изменение названия активности
+    const editActivityName = async (token, activityId, newName) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await api.UpdateActivityName(token, activityId, newName);
+            emit('activityChanged'); // Обновляем данные
+            console.log('Обновлено название активности ', activityId, newName);
+            return response;
+        } catch (err) {
+            setError(err);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }
 
     // Старт отслеживания активности
     const startActivity = async (token, activityId) => {
@@ -190,10 +213,12 @@ export const useActivities = () => {
         loadData,
         loadPeriodsActivities,
         addActivity,
+        editActivityName,
         actCard_Click,
         startActivity,
         stopActivity,
         getActivityStartTime,
+        getActivityStats,
         getUserStats,
         archiveActivity,
         unarchiveActivity,

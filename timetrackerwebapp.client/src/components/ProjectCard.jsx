@@ -265,7 +265,7 @@ function ProjectCard({
                                 <Tag key={`liveActTag${act.id}`} style={{margin: 0}} color='purple'>{act.name}</Tag>
                             ))}
 
-                            {acts.length > 3 && (
+                            {activityInfoConfig === 2 && acts.length > 3 && (
                                 <Text>+ ещё {liveActs.length - 3}</Text>
                             )}
                         </Flex>

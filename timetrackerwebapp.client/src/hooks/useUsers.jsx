@@ -75,6 +75,33 @@ const setTokenToCookie = (token) => {
     Cookies.set('token', token, { expires: 1, secure: true, sameSite: 'Strict' });
 }
 
+const changeUsername = async (userId, newUserName) => {
+    setLoading(true);
+    setError(null);
+
+    const token = api.GetJWT();
+    const userIdToken = api.GetUserIdFromJWT(token);
+
+    if (!token || !userIdToken) {
+        if (!token) message.warning('Сначала войдите в систему');
+        if (!userId) Cookies.remove('token');
+        navigate('/');
+        return;
+    }
+    
+    try {
+        const responce = await api.changeUsername(token, userId, newUserName);
+        return responce;
+    }
+    catch (error) {
+        setError(error);
+        throw error;
+    }
+    finally {
+        setLoading(false);
+    }
+}
+
 const getColorFromString = (str, id) => {
     if (!str || typeof str !== 'string') return '#000000';
     
@@ -117,6 +144,7 @@ const UserAvatar = ({ name, id, size, fontSize }) => {
         registerUser,
         loginUser,
         loadData,
+        changeUsername,
         UserAvatar
     };
 };

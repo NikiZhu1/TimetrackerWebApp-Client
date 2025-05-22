@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState } from 'react';
-import { Button, message, Table, Flex, Modal, DatePicker, TimePicker, ConfigProvider, Dropdown } from 'antd';
+import { Button, message, Table, Flex, Modal, DatePicker, Select, ConfigProvider, Dropdown } from 'antd';
 import { PlusOutlined, LinkOutlined, EllipsisOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import '@ant-design/v5-patch-for-react-19';
 import Cookies from 'js-cookie';
@@ -27,6 +27,7 @@ function HistoryTab() {
     const [editingPeriod, setEditingPeriod] = useState(null);
     const [editStartTime, setEditStartTime] = useState(null);
     const [editStopTime, setEditStopTime] = useState(null);
+    const [selectedActivityId, setSelectedActivityId] = useState(null);
 
     useEffect(() => {
         const token = GetJWT();
@@ -177,6 +178,11 @@ function HistoryTab() {
             dataIndex: 'name',
             key: 'name',
             render: (text) => <span style={{ fontWeight: 500 }}>{text}</span>,
+            filters: activities.map(activity => ({
+                text: activity.name,
+                value: activity.name
+            })),
+            onFilter: (value, record) => record.name === value,
         },
         {
             title: isPortrait ? 'Старт' : 'Время старта',
@@ -184,6 +190,8 @@ function HistoryTab() {
             key: 'startTime',
             render: (text) => formatDateTime(text),
             sorter: (a, b) => dayjs(a.startTime).unix() - dayjs(b.startTime).unix(),
+            defaultSortOrder: 'descend',
+            sortDirections: ['descend', 'ascend']
         },
         {
             title: isPortrait ? 'Финиш' : 'Время финиша',
@@ -191,6 +199,7 @@ function HistoryTab() {
             key: 'finishTime',
             render: (text) => formatDateTime(text),
             sorter: (a, b) => dayjs(a.finishTime || 0).unix() - dayjs(b.finishTime || 0).unix(),
+                sortDirections: ['descend', 'ascend']
         },
         {
             title: isPortrait ? 'Итог. время' : 'Итоговое время',
@@ -249,7 +258,6 @@ function HistoryTab() {
                 <p style={{fontSize: '20px', fontWeight: 500}}>История периодов отслеживания ваших активностей</p>
                 <p style={{fontSize: '16px'}}>На этой странице вы можете отредактировать или удалить период активности, если например таймер был случайно запущен или забыли остановить.</p>
             </Flex>
-            
             <Table 
                 columns={columns} 
                 dataSource={tableData} 
@@ -258,12 +266,18 @@ function HistoryTab() {
                 scroll={{ x: true }}
                 bordered
                 size={isPortrait && 'small'}
+                locale={{ 
+                    emptyText: 'Нет данных для отображения',
+                    triggerDesc: 'Сортировать по убыванию',
+                    triggerAsc: 'Сортировать по возрастанию',
+                    cancelSort: 'Отменить сортировку', 
+                    filterReset: 'Сбросить'}}
             />
             
             {/* Модальное окно редактирования */}
             <Modal
                 title="Редактирование периода активности"
-                visible={!!editingPeriod}
+                open={!!editingPeriod}
                 onOk={handleEditSave}
                 onCancel={() => setEditingPeriod(null)}
                 okText="Сохранить"
