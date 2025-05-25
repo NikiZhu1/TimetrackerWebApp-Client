@@ -115,6 +115,10 @@ export const getActivity = async (token, activityId) => {
             activity.projectId = projectLinks[0].projectId;
         }
 
+        const today = dayjs().format('YYYY-MM-DD');
+        const stats = await getActivityStats(token, activityId, today, today);
+        activity.dayStats = sumTotalTime(stats);
+
         return activity;
     }
     catch (error) {

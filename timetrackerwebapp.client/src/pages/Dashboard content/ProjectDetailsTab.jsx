@@ -152,9 +152,9 @@ function ProjectDetailsTab() {
                     activityId={activity.id}
                     title={activity.name}
                     isCreator={access.isCreator}
-                    projectId={activity.projectId}
+                    projectId={projectId}
                     onProjectPage={true}
-                    //dayStats={formatActivityTime(activity.activeFrom)}
+                    dayStats={activity.dayStats}
                     color='rgb(204, 194, 255)'
                     startTime={getActivityStartTime(activity.id)}
                     status={activity.statusId}
