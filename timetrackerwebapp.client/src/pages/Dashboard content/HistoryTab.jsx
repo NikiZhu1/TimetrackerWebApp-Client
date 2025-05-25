@@ -131,8 +131,8 @@ function HistoryTab() {
             await editActivityPeriod(
                 token,
                 editingPeriod.key, // activityPeriodId
-                editStartTime.toISOString(),
-                editStopTime?.toISOString()
+                dayjs(editStartTime).format('YYYY-MM-DD HH:mm:ss'),
+                dayjs(editStopTime).format('YYYY-MM-DD HH:mm:ss')
             );
             
             message.success('Период успешно обновлен');
